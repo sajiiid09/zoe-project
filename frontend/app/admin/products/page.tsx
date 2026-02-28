@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Plus, Edit2, Trash2, Search } from "lucide-react"
+import { Plus, PencilSimple, Trash, MagnifyingGlass } from "@phosphor-icons/react"
 
 const mockProducts = [
   { id: 1, name: "Ceramic Vase", price: 89.99, stock: 24, category: "Vases", image: "/ceramic-vase.png" },
@@ -30,7 +30,7 @@ export default function ProductsPage() {
           href="/admin/products/add"
           className="flex items-center gap-2 bg-[#546A50] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#3F4E40] transition"
         >
-          <Plus size={20} />
+          <Plus size={20} weight="bold" />
           Add Product
         </Link>
       </div>
@@ -41,7 +41,7 @@ export default function ProductsPage() {
         className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
       >
         <div className="mb-6 flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-          <Search size={20} className="text-[#B5B89B]" />
+          <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
           <input
             type="text"
             placeholder="Search products..."
@@ -103,7 +103,7 @@ export default function ProductsPage() {
                         whileTap={{ scale: 0.95 }}
                         className="p-2 text-[#7EBAAD] hover:bg-[#F5F3F0] rounded transition"
                       >
-                        <Edit2 size={18} />
+                        <PencilSimple size={18} weight="bold" />
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.1 }}
@@ -111,7 +111,7 @@ export default function ProductsPage() {
                         onClick={() => deleteProduct(product.id)}
                         className="p-2 text-red-500 hover:bg-red-50 rounded transition"
                       >
-                        <Trash2 size={18} />
+                        <Trash size={18} weight="bold" />
                       </motion.button>
                     </div>
                   </td>

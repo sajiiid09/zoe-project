@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Search, Trash2 } from "lucide-react"
+import { MagnifyingGlass, Trash } from "@phosphor-icons/react"
 
 const mockUsers = [
   { id: 1, name: "John Doe", email: "john@example.com", joinDate: "2024-01-15", status: "Active" },
@@ -35,7 +35,7 @@ export default function UsersPage() {
         className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
       >
         <div className="mb-6 flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-          <Search size={20} className="text-[#B5B89B]" />
+          <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
           <input
             type="text"
             placeholder="Search users..."
@@ -84,7 +84,7 @@ export default function UsersPage() {
                       onClick={() => deleteUser(user.id)}
                       className="p-2 text-red-500 hover:bg-red-50 rounded transition"
                     >
-                      <Trash2 size={18} />
+                      <Trash size={18} weight="bold" />
                     </motion.button>
                   </td>
                 </motion.tr>
