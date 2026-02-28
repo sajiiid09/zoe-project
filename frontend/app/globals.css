@@ -1,0 +1,156 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap");
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated to Olive Garden color palette */
+  --background: #ffffff;
+  --foreground: #3f4e40;
+  --card: #f5f3f0;
+  --card-foreground: #3f4e40;
+  --popover: #ffffff;
+  --popover-foreground: #3f4e40;
+  --primary: #546a50;
+  --primary-foreground: #ffffff;
+  --secondary: #7ebaad;
+  --secondary-foreground: #ffffff;
+  --muted: #b5b89b;
+  --muted-foreground: #546a50;
+  --accent: #d2a880;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e5e0d8;
+  --input: #f5f3f0;
+  --ring: #7ebaad;
+  --chart-1: #546a50;
+  --chart-2: #7ebaad;
+  --chart-3: #d2a880;
+  --chart-4: #b5b89b;
+  --chart-5: #b3b792;
+  --radius: 0.625rem;
+  --sidebar: #f5f3f0;
+  --sidebar-foreground: #3f4e40;
+  --sidebar-primary: #546a50;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #7ebaad;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e5e0d8;
+  --sidebar-ring: #7ebaad;
+}
+
+.dark {
+  --background: #1f2620;
+  --foreground: #e5e0d8;
+  --card: #2a3530;
+  --card-foreground: #e5e0d8;
+  --popover: #1f2620;
+  --popover-foreground: #e5e0d8;
+  --primary: #7ebaad;
+  --primary-foreground: #1f2620;
+  --secondary: #b5b89b;
+  --secondary-foreground: #1f2620;
+  --muted: #546a50;
+  --muted-foreground: #b5b89b;
+  --accent: #d2a880;
+  --accent-foreground: #1f2620;
+  --destructive: #ef4444;
+  --destructive-foreground: #1f2620;
+  --border: #3f4e40;
+  --input: #2a3530;
+  --ring: #7ebaad;
+  --chart-1: #7ebaad;
+  --chart-2: #d2a880;
+  --chart-3: #b5b89b;
+  --chart-4: #b3b792;
+  --chart-5: #546a50;
+  --sidebar: #2a3530;
+  --sidebar-foreground: #e5e0d8;
+  --sidebar-primary: #7ebaad;
+  --sidebar-primary-foreground: #1f2620;
+  --sidebar-accent: #b5b89b;
+  --sidebar-accent-foreground: #1f2620;
+  --sidebar-border: #3f4e40;
+  --sidebar-ring: #7ebaad;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/poppins-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/poppins-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src: url("/fonts/poppins-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
+* {
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background-color: #ffffff;
+  color: #3f4e40;
+}
