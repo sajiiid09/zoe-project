@@ -91,6 +91,12 @@
       "namedRegex": "^/admin/users(?:/)?$"
     },
     {
+      "page": "/admin/vendors",
+      "regex": "^/admin/vendors(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/vendors(?:/)?$"
+    },
+    {
       "page": "/checkout",
       "regex": "^/checkout(?:/)?$",
       "routeKeys": {},
@@ -125,6 +131,48 @@
       "regex": "^/shop(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/shop(?:/)?$"
+    },
+    {
+      "page": "/vendor",
+      "regex": "^/vendor(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/vendor(?:/)?$"
+    },
+    {
+      "page": "/vendor/orders",
+      "regex": "^/vendor/orders(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/vendor/orders(?:/)?$"
+    },
+    {
+      "page": "/vendor/products",
+      "regex": "^/vendor/products(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/vendor/products(?:/)?$"
+    },
+    {
+      "page": "/vendor/products/add",
+      "regex": "^/vendor/products/add(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/vendor/products/add(?:/)?$"
+    },
+    {
+      "page": "/vendor/store",
+      "regex": "^/vendor/store(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/vendor/store(?:/)?$"
+    },
+    {
+      "page": "/vendor-payment",
+      "regex": "^/vendor\\-payment(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/vendor\\-payment(?:/)?$"
+    },
+    {
+      "page": "/vendor-payment-success",
+      "regex": "^/vendor\\-payment\\-success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/vendor\\-payment\\-success(?:/)?$"
     }
   ],
   "dataRoutes": [],

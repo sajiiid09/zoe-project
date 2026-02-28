@@ -8,6 +8,7 @@
   "/admin/products/page": "/admin/products",
   "/admin/revenue/page": "/admin/revenue",
   "/admin/users/page": "/admin/users",
+  "/admin/vendors/page": "/admin/vendors",
   "/checkout/page": "/checkout",
   "/contact/page": "/contact",
   "/login/page": "/login",
@@ -15,5 +16,12 @@
   "/profile/page": "/profile",
   "/register/page": "/register",
   "/shop/[id]/page": "/shop/[id]",
-  "/shop/page": "/shop"
+  "/shop/page": "/shop",
+  "/vendor-payment-success/page": "/vendor-payment-success",
+  "/vendor-payment/page": "/vendor-payment",
+  "/vendor/orders/page": "/vendor/orders",
+  "/vendor/page": "/vendor",
+  "/vendor/products/add/page": "/vendor/products/add",
+  "/vendor/products/page": "/vendor/products",
+  "/vendor/store/page": "/vendor/store"
 }

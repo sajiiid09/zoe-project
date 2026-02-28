@@ -11,6 +11,9 @@ import {
   getProductCategories,
   getFeaturedProducts,
   getRelatedProducts,
+  getPendingProducts,
+  approveProduct,
+  rejectProduct,
 } from '../controllers/productController.js';
 import { requireAuth, requireAdmin, optionalAuth } from '../middleware/authMiddleware.js';
 
@@ -29,6 +32,9 @@ router.put('/:id/reviews/:reviewId', requireAuth, updateProductReview);
 router.delete('/:id/reviews/:reviewId', requireAuth, deleteProductReview);
 
 // Admin routes (require authentication + admin role)
+router.get('/admin/pending', requireAuth, requireAdmin, getPendingProducts);
+router.put('/admin/:id/approve', requireAuth, requireAdmin, approveProduct);
+router.put('/admin/:id/reject', requireAuth, requireAdmin, rejectProduct);
 router.post('/', requireAuth, requireAdmin, createProduct);
 router.put('/:id', requireAuth, requireAdmin, updateProduct);
 router.delete('/:id', requireAuth, requireAdmin, deleteProduct);

@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { EnvelopeSimple, Lock, UserPlus, User } from "@phosphor-icons/react"
+import { EnvelopeSimple, Lock, UserPlus, User, Storefront } from "@phosphor-icons/react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [role, setRole] = useState<"CUSTOMER" | "VENDOR">("CUSTOMER")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -38,10 +39,14 @@ export default function RegisterPage() {
 
     setIsSubmitting(true)
 
-    const result = await register({ email, password, firstName, lastName })
+    const result = await register({ email, password, firstName, lastName, role })
 
     if (result.success) {
-      router.push("/")
+      if (role === "VENDOR") {
+        router.push("/vendor-payment")
+      } else {
+        router.push("/")
+      }
     } else {
       setError(result.message || "Registration failed")
     }
@@ -163,6 +168,43 @@ export default function RegisterPage() {
                     placeholder="Repeat your password"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[#3F4E40] mb-2">
+                  I want to
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRole("CUSTOMER")}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                      role === "CUSTOMER"
+                        ? "border-[#546A50] bg-[#546A50]/5 text-[#546A50]"
+                        : "border-[#E5E0D8] text-[#B5B89B] hover:border-[#7EBAAD]"
+                    }`}
+                  >
+                    <User size={18} weight="bold" />
+                    Shop
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRole("VENDOR")}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-semibold transition ${
+                      role === "VENDOR"
+                        ? "border-[#546A50] bg-[#546A50]/5 text-[#546A50]"
+                        : "border-[#E5E0D8] text-[#B5B89B] hover:border-[#7EBAAD]"
+                    }`}
+                  >
+                    <Storefront size={18} weight="bold" />
+                    Sell
+                  </button>
+                </div>
+                {role === "VENDOR" && (
+                  <p className="mt-2 text-xs text-[#7EBAAD]">
+                    A one-time $10 registration fee is required. You&apos;ll be redirected to payment after sign-up.
+                  </p>
+                )}
               </div>
 
               <motion.button

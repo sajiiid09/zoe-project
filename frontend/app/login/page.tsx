@@ -28,6 +28,8 @@ export default function LoginPage() {
 
     if (result.success) {
       router.push("/")
+    } else if (result.requiresPayment) {
+      router.push("/vendor-payment")
     } else {
       setError(result.message || "Login failed")
     }

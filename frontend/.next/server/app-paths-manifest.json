@@ -8,6 +8,7 @@
   "/admin/products/page": "app/admin/products/page.js",
   "/admin/revenue/page": "app/admin/revenue/page.js",
   "/admin/users/page": "app/admin/users/page.js",
+  "/admin/vendors/page": "app/admin/vendors/page.js",
   "/checkout/page": "app/checkout/page.js",
   "/contact/page": "app/contact/page.js",
   "/login/page": "app/login/page.js",
@@ -15,5 +16,12 @@
   "/profile/page": "app/profile/page.js",
   "/register/page": "app/register/page.js",
   "/shop/[id]/page": "app/shop/[id]/page.js",
-  "/shop/page": "app/shop/page.js"
+  "/shop/page": "app/shop/page.js",
+  "/vendor-payment-success/page": "app/vendor-payment-success/page.js",
+  "/vendor-payment/page": "app/vendor-payment/page.js",
+  "/vendor/orders/page": "app/vendor/orders/page.js",
+  "/vendor/page": "app/vendor/page.js",
+  "/vendor/products/add/page": "app/vendor/products/add/page.js",
+  "/vendor/products/page": "app/vendor/products/page.js",
+  "/vendor/store/page": "app/vendor/store/page.js"
 }

@@ -10,26 +10,36 @@ datasource db {
 enum UserRole {
   ADMIN
   CUSTOMER
+  VENDOR
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
-  id             String        @id @default(cuid())
-  email          String        @unique
+  id             String         @id @default(cuid())
+  email          String         @unique
   password       String
   firstName      String?
   lastName       String?
   phone          String?
-  role           UserRole      @default(CUSTOMER)
-  isActive       Boolean       @default(true)
+  role           UserRole       @default(CUSTOMER)
+  isActive       Boolean        @default(true)
+  vendorFeePaid  Boolean        @default(false)
+  stripeSessionId String?
   preferences    Json?
   profilePicture String?
-  loginCount     Int           @default(0)
+  loginCount     Int            @default(0)
   lastLogin      DateTime?
   addresses      UserAddress[]
   reviews        Review[]
   orders         Order[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  store          Store?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model UserAddress {
@@ -45,22 +55,46 @@ model UserAddress {
   updatedAt DateTime @updatedAt
 }
 
+model Store {
+  id             String         @id @default(cuid())
+  name           String
+  slug           String         @unique
+  description    String?
+  logo           String?
+  banner         String?
+  address        String?
+  phone          String?
+  email          String?
+  approvalStatus ApprovalStatus @default(PENDING)
+  rejectionNote  String?
+  isActive       Boolean        @default(true)
+  owner          User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId        String         @unique
+  products       Product[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
 model Product {
-  id            String      @id @default(cuid())
-  name          String
-  description   String?
-  category      String?
-  price         Decimal     
-  stock         Int         @default(0)
-  images        Json?
-  isActive      Boolean     @default(true)
-  isFeatured    Boolean     @default(false)
-  ratingAverage Float       @default(0)
-  ratingCount   Int         @default(0)
-  reviews       Review[]
-  orderItems    OrderItem[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id             String         @id @default(cuid())
+  name           String
+  description    String?
+  category       String?
+  price          Decimal
+  stock          Int            @default(0)
+  images         Json?
+  isActive       Boolean        @default(true)
+  isFeatured     Boolean        @default(false)
+  approvalStatus ApprovalStatus @default(PENDING)
+  rejectionNote  String?
+  ratingAverage  Float          @default(0)
+  ratingCount    Int            @default(0)
+  store          Store?         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId        String?
+  reviews        Review[]
+  orderItems     OrderItem[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model Review {

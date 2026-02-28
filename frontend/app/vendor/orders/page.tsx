@@ -1,0 +1,52 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { ShoppingCart, Clock } from "@phosphor-icons/react"
+import { useAuth } from "@/context/AuthContext"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+
+interface OrderItem {
+  orderId: string
+  total: number
+}
+
+export default function VendorOrdersPage() {
+  const { token } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [orders, setOrders] = useState<OrderItem[]>([])
+
+  useEffect(() => {
+    // Orders endpoint would require a dedicated vendor orders API
+    // For now, show a placeholder that the vendor can see stats from the dashboard
+    setLoading(false)
+  }, [token])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-3 border-[#546A50] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-[#546A50]">Orders</h1>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-[#E5E0D8] shadow-sm"
+      >
+        <ShoppingCart size={48} weight="duotone" className="text-[#B5B89B] mb-4" />
+        <h2 className="text-xl font-semibold text-[#546A50] mb-2">Order tracking</h2>
+        <p className="text-[#B5B89B] text-sm text-center max-w-md">
+          Orders containing your products will appear here. You can view aggregate order stats on your
+          <a href="/vendor" className="text-[#546A50] font-semibold hover:underline ml-1">dashboard</a>.
+        </p>
+      </motion.div>
+    </div>
+  )
+}
