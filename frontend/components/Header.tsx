@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, X, Plus, Minus, LogOut, User } from "lucide-react"
+import { MagnifyingGlass, X, Plus, Minus, SignOut, User, ShoppingBag, List } from "@phosphor-icons/react"
 import NoticeBanner from "./NoticeBanner"
 import { useCart } from "@/context/CartContext"
 
@@ -91,7 +91,7 @@ export default function Header() {
                       onClick={() => setIsSearchOpen(true)}
                       className="text-[#546A50] hover:text-[#3F4E40] transition"
                     >
-                      <Search size={20} />
+                      <MagnifyingGlass size={20} weight="bold" />
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -106,7 +106,7 @@ export default function Header() {
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-2 px-3 py-2 bg-[#F5F3F0] text-[#546A50] rounded-lg font-semibold hover:bg-[#E5E0D8] transition"
                   >
-                    <User size={18} />
+                    <User size={18} weight="bold" />
                     <span className="hidden sm:inline">{user?.firstName || "Account"}</span>
                   </motion.button>
                   <AnimatePresence>
@@ -140,7 +140,7 @@ export default function Header() {
                           }}
                           className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition flex items-center gap-2"
                         >
-                          <LogOut size={16} /> Logout
+                          <SignOut size={16} weight="bold" /> Logout
                         </button>
                       </motion.div>
                     )}
@@ -164,14 +164,14 @@ export default function Header() {
                 onClick={() => setIsCartOpen(!isCartOpen)}
                 className="relative"
               >
-                <span className="text-2xl">🛒</span>
+                <ShoppingBag size={22} weight="bold" className="text-[#546A50]" />
                 {items.length > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-2 -right-2 bg-[#546A50] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                    className="absolute -top-2 -right-2 bg-[#D2A880] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
                   >
-                    {items.length}
+                    {items.reduce((sum, i) => sum + i.quantity, 0)}
                   </motion.span>
                 )}
               </motion.button>
@@ -180,7 +180,7 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden text-[#546A50]">
-              ☰
+              <List size={24} weight="bold" />
             </button>
           </div>
         </header>
@@ -219,14 +219,14 @@ export default function Header() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsCartOpen(false)}
-              className="fixed inset-0 bg-black/50 z-40 top-32"
+              className="fixed inset-0 bg-black/50 z-40"
             />
             <motion.div
               initial={{ x: 400 }}
               animate={{ x: 0 }}
               exit={{ x: 400 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="fixed right-0 top-32 h-screen w-full max-w-md bg-white shadow-lg z-40 overflow-y-auto"
+              className="fixed right-0 top-0 h-screen w-full max-w-md bg-white shadow-lg z-[60] overflow-y-auto"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">

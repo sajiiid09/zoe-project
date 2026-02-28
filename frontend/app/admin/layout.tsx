@@ -5,17 +5,17 @@ import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Menu, X, BarChart3, Package, Users, ShoppingCart, TrendingUp, LogOut } from "lucide-react"
+import { List, X, ChartBar, Package, Users, ShoppingCart, TrendUp, SignOut } from "@phosphor-icons/react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const menuItems = [
-    { href: "/admin", label: "Dashboard", icon: BarChart3 },
+    { href: "/admin", label: "Dashboard", icon: ChartBar },
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-    { href: "/admin/revenue", label: "Revenue", icon: TrendingUp },
+    { href: "/admin/revenue", label: "Revenue", icon: TrendUp },
   ]
 
   return (
@@ -29,7 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-6 flex items-center justify-between">
           {sidebarOpen && <h1 className="text-xl font-bold">Decormade</h1>}
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-[#3F4E40] rounded transition">
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {sidebarOpen ? <X size={20} weight="bold" /> : <List size={20} weight="bold" />}
           </button>
         </div>
 
@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 href={item.href}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#3F4E40] transition group"
               >
-                <Icon size={20} />
+                <Icon size={20} weight="bold" />
                 {sidebarOpen && <span className="group-hover:translate-x-1 transition">{item.label}</span>}
               </Link>
             )
@@ -51,7 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <div className="absolute bottom-6 left-0 right-0 px-3">
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#3F4E40] transition text-red-400">
-            <LogOut size={20} />
+            <SignOut size={20} weight="bold" />
             {sidebarOpen && <span>Logout</span>}
           </button>
         </div>
