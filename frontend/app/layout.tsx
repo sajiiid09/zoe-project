@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
 import { CartProvider } from "@/context/CartContext"
-import { ClerkProvider } from '@clerk/nextjs'
+import { AuthProvider } from "@/context/AuthContext"
 
 export const metadata: Metadata = {
   title: "Decormade - Modern Decoration Store",
@@ -15,12 +15,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className="font-sans">
+    <html lang="en">
+      <body className="font-sans">
+        <AuthProvider>
           <CartProvider>{children}</CartProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+        </AuthProvider>
+      </body>
+    </html>
   )
 }
