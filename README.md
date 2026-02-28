@@ -1,81 +1,82 @@
 
 # E-Commerce Decor Website
 
-This is a full-stack e-commerce website built with the MERN stack (MongoDB, Express.js, React, Node.js) and Next.js for the frontend. It features a complete shopping experience, from browsing products to a fully functional checkout process. The website also includes an admin dashboard for managing products, orders, and users.
+A full-stack e-commerce website built with **Node.js / Express.js** (backend), **Next.js / React** (frontend), and **NeonDB (PostgreSQL)** via Prisma. It features a complete shopping experience with JWT-based authentication, an admin dashboard, and a clean, responsive UI.
 
 ## Features
 
 ### Frontend
 
-*   **Responsive Design:** The website is fully responsive and works on all devices.
-*   **Theme Provider:** The website uses a theme provider to allow for easy customization of the website's appearance.
-*   **Product Listings:** Products are displayed in a clean and organized manner, with options to sort and filter.
-*   **Product Details:** Each product has a dedicated page with a detailed description, images, and an "add to cart" button.
-*   **Shopping Cart:** A fully functional shopping cart that allows users to add, remove, and update the quantity of products.
-*   **Checkout Process:** A seamless checkout process with a multi-step form for shipping and payment information.
-*   **User Authentication:** Users can sign up, log in, and manage their profiles.
-*   **Admin Dashboard:** A comprehensive admin dashboard for managing products, orders, and users.
-*   **UI Components:** A rich set of UI components, including carousels, accordions, dialogs, and more.
+- Responsive design that works on all devices
+- Product listings with sorting and filtering
+- Dedicated product detail pages with reviews
+- Fully functional shopping cart with localStorage persistence
+- Multi-step checkout flow
+- JWT-based user authentication (login / register)
+- Admin dashboard for products, orders, users, and revenue
 
 ### Backend
 
-*   **RESTful API:** A well-structured RESTful API for managing products, orders, users, and payments.
-*   **Database:** MongoDB is used as the database, with Mongoose as the ODM.
-*   **Authentication:** JWT-based authentication for securing the API endpoints.
-*   **Payment Gateway:** Integration with a payment gateway for processing payments.
-*   **Order Management:** A complete order management system, including order creation, status updates, and order history.
-*   **User Management:** A user management system for creating, updating, and deleting users.
-*   **Product Management:** A product management system for creating, updating, and deleting products.
+- RESTful API built with Express.js
+- PostgreSQL database hosted on NeonDB, accessed via Prisma ORM
+- JWT authentication with bcrypt password hashing
+- Role-based access control (Customer / Admin)
+- Complete order management with stock tracking
+- Rate limiting and async error handling middleware
 
-## Technologies Used
+## Tech Stack
 
-*   **Frontend:**
-    *   Next.js
-    *   React
-    *   TypeScript
-    *   Tailwind CSS
-    *   Shadcn UI
-*   **Backend:**
-    *   Node.js
-    *   Express.js
-    *   MongoDB
-    *   Mongoose
-    *   Prisma
-    *   Clerk
-    *   Inngest
-*   **Deployment:**
-    *   Render
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS, Shadcn UI, Framer Motion
+- **Backend:** Node.js, Express.js, Prisma, PostgreSQL (NeonDB)
+- **Auth:** JSON Web Tokens (JWT), bcryptjs
+- **Deployment:** Render
 
 ## Getting Started
 
-To get a local copy up and running, follow these simple steps.
-
 ### Prerequisites
 
-*   Node.js
-*   npm
+- Node.js (v18+)
+- npm or pnpm
 
 ### Installation
 
-1.  Clone the repo
-    ```sh
-    git clone https://github.com/your_username_/your_project_name.git
-    ```
-2.  Install NPM packages
-    ```sh
-    npm install
-    ```
-3.  Create a `.env` file in the root directory and add the following environment variables:
-    ```
-    DATABASE_URL=
-    CLERK_SECRET_KEY=
-    INNGEST_EVENT_KEY=
-    ```
-4.  Start the development server
-    ```sh
-    npm run dev
-    ```
+1. Clone the repo:
+   ```sh
+   git clone https://github.com/your_username/decor-website.git
+   ```
+2. Install backend dependencies:
+   ```sh
+   npm install
+   ```
+3. Install frontend dependencies:
+   ```sh
+   cd frontend && pnpm install
+   ```
+4. Create a `.env` file in the root directory:
+   ```
+   DATABASE_URL="postgresql://user:password@host.neon.tech/dbname?sslmode=require"
+   JWT_SECRET="your-secret-key"
+   PORT=5000
+   NODE_ENV=development
+   FRONTEND_URL=http://localhost:3000
+   ```
+5. Generate Prisma client and run migrations:
+   ```sh
+   npx prisma generate
+   npx prisma db push
+   ```
+6. Start the backend:
+   ```sh
+   npm run dev
+   ```
+7. Start the frontend (in another terminal):
+   ```sh
+   cd frontend && pnpm dev
+   ```
 
 ## Usage
 
-Once the development server is running, you can access the website at `http://localhost:3000`. The admin dashboard is available at `http://localhost:3000/admin`.
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:5000/api`
+- Admin dashboard: `http://localhost:3000/admin`
+
