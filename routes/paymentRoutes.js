@@ -1,20 +1,13 @@
 import express from 'express';
-import { requireAuthenticated } from '../middleware/clerkAuth.js';
+import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Placeholder payment routes - to be implemented later
-router.post('/create-payment-intent', requireAuthenticated, (req, res) => {
+// Placeholder payment routes — to be implemented later
+router.post('/create-payment-intent', requireAuth, (req, res) => {
   res.json({
     success: false,
-    message: 'Payment integration not implemented yet'
-  });
-});
-
-router.post('/webhook', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Webhook received'
+    message: 'Payment integration not implemented yet',
   });
 });
 

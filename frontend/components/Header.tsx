@@ -1,21 +1,22 @@
 "use client"
 
-import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import { useAuth } from "@/context/AuthContext"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, X, Plus, Minus } from "lucide-react"
+import { Search, X, Plus, Minus, LogOut, User } from "lucide-react"
 import NoticeBanner from "./NoticeBanner"
 import { useCart } from "@/context/CartContext"
 
 export default function Header() {
   const { items, subtotal, updateQuantity } = useCart()
-  const { isSignedIn } = useUser();
+  const { isAuthenticated, user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [showUserMenu, setShowUserMenu] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,11 +97,57 @@ export default function Header() {
                 </AnimatePresence>
               </div>
 
-              {/* Replace Profile link with Login button */}
-              {isSignedIn ? (
-                <UserButton afterSignOutUrl="/" />
+              {/* Auth Section */}
+              {isAuthenticated ? (
+                <div className="relative">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 px-3 py-2 bg-[#F5F3F0] text-[#546A50] rounded-lg font-semibold hover:bg-[#E5E0D8] transition"
+                  >
+                    <User size={18} />
+                    <span className="hidden sm:inline">{user?.firstName || "Account"}</span>
+                  </motion.button>
+                  <AnimatePresence>
+                    {showUserMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        className="absolute right-0 mt-2 w-44 bg-white border border-[#E5E0D8] rounded-lg shadow-lg overflow-hidden z-50"
+                      >
+                        <Link
+                          href="/profile"
+                          onClick={() => setShowUserMenu(false)}
+                          className="block px-4 py-2 text-[#546A50] hover:bg-[#F5F3F0] transition"
+                        >
+                          Profile
+                        </Link>
+                        {user?.role === "ADMIN" && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setShowUserMenu(false)}
+                            className="block px-4 py-2 text-[#546A50] hover:bg-[#F5F3F0] transition"
+                          >
+                            Admin Panel
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => {
+                            logout()
+                            setShowUserMenu(false)
+                          }}
+                          className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50 transition flex items-center gap-2"
+                        >
+                          <LogOut size={16} /> Logout
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               ) : (
-                <SignInButton mode="modal">
+                <Link href="/login">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -108,7 +155,7 @@ export default function Header() {
                   >
                     Login
                   </motion.button>
-                </SignInButton>
+                </Link>
               )}
 
               <motion.button

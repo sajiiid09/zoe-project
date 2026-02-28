@@ -101,12 +101,11 @@ export const createOrder = asyncHandler(async (req, res) => {
   const tax = subtotal * 0.05;
   const total = subtotal + shippingCost + tax;
 
-  const user = req.prismaUser || req.user;
   const order = await prisma.$transaction(async tx => {
     const createdOrder = await tx.order.create({
       data: {
         orderNumber: generateOrderNumber(),
-        userId: user.id,
+        userId: req.user.id,
         shippingAddress: shippingAddress || {},
         billingAddress: billingAddress || shippingAddress || {},
         paymentMethod,
@@ -144,7 +143,6 @@ export const createOrder = asyncHandler(async (req, res) => {
 });
 
 export const getUserOrders = asyncHandler(async (req, res) => {
-  const user = req.prismaUser || req.user;
   const {
     page = 1,
     limit = 10,
@@ -152,7 +150,7 @@ export const getUserOrders = asyncHandler(async (req, res) => {
     paymentStatus,
   } = req.query;
 
-  const where = { userId: user.id };
+  const where = { userId: req.user.id };
   if (status) where.status = status;
   if (paymentStatus) where.paymentStatus = paymentStatus;
 
@@ -195,8 +193,7 @@ export const getOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  const user = req.prismaUser || req.user;
-  if (order.userId !== user.id && user.role !== 'admin' && user.role !== 'ADMIN') {
+  if (order.userId !== req.user.id && req.user.role !== 'ADMIN') {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to view this order',
@@ -314,8 +311,7 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  const user = req.prismaUser || req.user;
-  if (order.userId !== user.id && user.role !== 'admin' && user.role !== 'ADMIN') {
+  if (order.userId !== req.user.id && req.user.role !== 'ADMIN') {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to cancel this order',

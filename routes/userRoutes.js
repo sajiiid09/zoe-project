@@ -1,5 +1,7 @@
 import express from 'express';
 import {
+  registerUser,
+  loginUser,
   getUserProfile,
   updateUserProfile,
   addUserAddress,
@@ -12,36 +14,29 @@ import {
   deleteUser,
   getUserStats,
 } from '../controllers/userController.js';
-import { requireAdmin } from '../middleware/clerkAuth.js';
+import { requireAuth, requireAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Middleware to require authentication
-const requireAuthenticated = (req, res, next) => {
-  if (!req.prismaUser) {
-    return res.status(401).json({
-      success: false,
-      message: 'Authentication required',
-    });
-  }
-  next();
-};
+// Public routes
+router.post('/register', registerUser);
+router.post('/login', loginUser);
 
 // User profile routes (require authentication)
-router.get('/profile', requireAuthenticated, getUserProfile);
-router.put('/profile', requireAuthenticated, updateUserProfile);
-router.get('/orders-summary', requireAuthenticated, getUserOrdersSummary);
+router.get('/profile', requireAuth, getUserProfile);
+router.put('/profile', requireAuth, updateUserProfile);
+router.get('/orders-summary', requireAuth, getUserOrdersSummary);
 
 // Address management routes (require authentication)
-router.post('/addresses', requireAuthenticated, addUserAddress);
-router.put('/addresses/:addressId', requireAuthenticated, updateUserAddress);
-router.delete('/addresses/:addressId', requireAuthenticated, deleteUserAddress);
+router.post('/addresses', requireAuth, addUserAddress);
+router.put('/addresses/:addressId', requireAuth, updateUserAddress);
+router.delete('/addresses/:addressId', requireAuth, deleteUserAddress);
 
 // Admin routes (require authentication + admin role)
-router.get('/admin/all', requireAuthenticated, requireAdmin, getAllUsers);
-router.get('/admin/stats', requireAuthenticated, requireAdmin, getUserStats);
-router.get('/admin/:id', requireAuthenticated, requireAdmin, getUserById);
-router.put('/admin/:id', requireAuthenticated, requireAdmin, updateUser);
-router.delete('/admin/:id', requireAuthenticated, requireAdmin, deleteUser);
+router.get('/admin/all', requireAuth, requireAdmin, getAllUsers);
+router.get('/admin/stats', requireAuth, requireAdmin, getUserStats);
+router.get('/admin/:id', requireAuth, requireAdmin, getUserById);
+router.put('/admin/:id', requireAuth, requireAdmin, updateUser);
+router.delete('/admin/:id', requireAuth, requireAdmin, deleteUser);
 
 export default router;
