@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
-import { ChevronLeft, Check, Minus, Plus, Trash2 } from "lucide-react"
+import { CaretLeft, CheckCircle, Minus, Plus, Trash } from "@phosphor-icons/react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
@@ -89,13 +89,13 @@ export default function CheckoutPage() {
   const finalTotal = subtotal + deliveryFee
 
   if (!mounted) {
-    return <div className="min-h-screen bg-white" />
+    return <div className="min-h-screen bg-[#FAFAF8]" />
   }
 
   if (orderConfirmed) {
     return (
-      <div className="min-h-screen flex flex-col bg-white">
-        <Header cartCount={items.length} />
+      <div className="min-h-screen flex flex-col bg-[#FAFAF8]">
+        <Header />
         <PageTransition>
           <div className="flex-1 flex items-center justify-center px-4 py-20">
             <motion.div
@@ -110,7 +110,7 @@ export default function CheckoutPage() {
                 transition={{ delay: 0.2, duration: 0.5 }}
                 className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#7EBAAD]/20 mb-6"
               >
-                <Check className="w-10 h-10 text-[#546A50]" />
+                <CheckCircle size={40} weight="fill" className="text-[#546A50]" />
               </motion.div>
               <h1 className="text-4xl font-bold text-[#546A50] mb-4">Order Confirmed!</h1>
               <p className="text-[#B5B89B] mb-2">Thank you for your purchase. Your order has been received.</p>
@@ -132,12 +132,12 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Header cartCount={items.length} />
+    <div className="min-h-screen flex flex-col bg-[#FAFAF8]">
+      <Header />
       <PageTransition>
         <div className="flex-1 max-w-7xl mx-auto w-full px-4 py-12">
           <Link href="/shop" className="flex items-center text-[#546A50] hover:text-[#3F4E40] mb-8 transition">
-            <ChevronLeft size={20} />
+            <CaretLeft size={20} weight="bold" />
             <span className="ml-2">Back to Shop</span>
           </Link>
 
@@ -199,7 +199,7 @@ export default function CheckoutPage() {
                                   disabled={isProcessing}
                                   className="w-8 h-8 flex items-center justify-center border border-[#E5E0D8] rounded hover:bg-[#F5F5F0] hover:border-[#D2A880] transition text-[#B5B89B] hover:text-[#546A50] disabled:opacity-50"
                                 >
-                                  <Minus size={16} />
+                                  <Minus size={16} weight="bold" />
                                 </motion.button>
                                 <input
                                   type="number"
@@ -216,7 +216,7 @@ export default function CheckoutPage() {
                                   disabled={isProcessing}
                                   className="w-8 h-8 flex items-center justify-center border border-[#E5E0D8] rounded hover:bg-[#F5F5F0] hover:border-[#D2A880] transition text-[#B5B89B] hover:text-[#546A50] disabled:opacity-50"
                                 >
-                                  <Plus size={16} />
+                                  <Plus size={16} weight="bold" />
                                 </motion.button>
                               </div>
 
@@ -232,7 +232,7 @@ export default function CheckoutPage() {
                                   disabled={isProcessing}
                                   className="text-[#D2A880] hover:text-[#3F4E40] text-sm font-medium transition flex items-center gap-1 disabled:opacity-50"
                                 >
-                                  <Trash2 size={16} />
+                                  <Trash size={16} weight="bold" />
                                   Remove
                                 </motion.button>
                               </div>

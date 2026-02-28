@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { TrendingUp, Package, Users, ShoppingCart } from "lucide-react"
+import { TrendUp, Package, Users, ShoppingCart } from "@phosphor-icons/react"
 import {
   LineChart,
   Line,
@@ -32,7 +32,7 @@ const recentOrders = [
 
 export default function AdminDashboard() {
   const stats = [
-    { label: "Total Revenue", value: "$12,450", icon: TrendingUp, color: "#546A50" },
+    { label: "Total Revenue", value: "$12,450", icon: TrendUp, color: "#546A50" },
     { label: "Total Orders", value: "342", icon: ShoppingCart, color: "#7EBAAD" },
     { label: "Total Products", value: "48", icon: Package, color: "#D2A880" },
     { label: "Total Users", value: "1,240", icon: Users, color: "#B5B89B" },
@@ -57,7 +57,7 @@ export default function AdminDashboard() {
                   <p className="text-[#B5B89B] text-sm font-medium">{stat.label}</p>
                   <p className="text-3xl font-bold text-[#546A50] mt-2">{stat.value}</p>
                 </div>
-                <Icon size={32} color={stat.color} className="opacity-20" />
+                <Icon size={32} weight="bold" color={stat.color} className="opacity-20" />
               </div>
             </motion.div>
           )

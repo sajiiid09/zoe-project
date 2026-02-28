@@ -1,0 +1,3 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["chunks/Documents_decor website_frontend_edge-wrapper_6f256f35.js",91319,(e,t,n)=>{self._ENTRIES||={};let r=Promise.resolve().then(()=>e.i(6441));r.catch(()=>{}),self._ENTRIES.middleware_middleware=new Proxy(r,{get(e,t){if("then"===t)return(t,n)=>e.then(t,n);let n=(...n)=>e.then(e=>(0,e[t])(...n));return n.then=(n,r)=>e.then(e=>e[t]).then(n,r),n}})}]);
+
+//# sourceMappingURL=Documents_decor%20website_frontend_edge-wrapper_6f256f35.js.map

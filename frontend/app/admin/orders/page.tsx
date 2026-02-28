@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Search, Eye } from "lucide-react"
+import { MagnifyingGlass, Eye } from "@phosphor-icons/react"
 
 const mockOrders = [
   { id: "ORD-001", customer: "John Doe", total: "$320", status: "Completed", date: "2024-03-15" },
@@ -31,7 +31,7 @@ export default function OrdersPage() {
         className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
       >
         <div className="mb-6 flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-          <Search size={20} className="text-[#B5B89B]" />
+          <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
           <input
             type="text"
             placeholder="Search orders..."
@@ -85,7 +85,7 @@ export default function OrdersPage() {
                       whileTap={{ scale: 0.95 }}
                       className="p-2 text-[#7EBAAD] hover:bg-[#F5F3F0] rounded transition"
                     >
-                      <Eye size={18} />
+                      <Eye size={18} weight="bold" />
                     </motion.button>
                   </td>
                 </motion.tr>
