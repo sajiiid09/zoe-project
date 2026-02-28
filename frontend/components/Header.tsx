@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { MagnifyingGlass, X, Plus, Minus, SignOut, User, ShoppingBag, List } from "@phosphor-icons/react"
+import { MagnifyingGlass, X, Plus, Minus, SignOut, User, ShoppingBag, List, Storefront } from "@phosphor-icons/react"
 import NoticeBanner from "./NoticeBanner"
 import { useCart } from "@/context/CartContext"
 
@@ -131,6 +131,15 @@ export default function Header() {
                             className="block px-4 py-2 text-[#546A50] hover:bg-[#F5F3F0] transition"
                           >
                             Admin Panel
+                          </Link>
+                        )}
+                        {user?.role === "VENDOR" && (
+                          <Link
+                            href="/vendor"
+                            onClick={() => setShowUserMenu(false)}
+                            className="block px-4 py-2 text-[#546A50] hover:bg-[#F5F3F0] transition flex items-center gap-2"
+                          >
+                            <Storefront size={16} weight="bold" /> Vendor Dashboard
                           </Link>
                         )}
                         <button

@@ -5,6 +5,18 @@ import { createContext, useContext, useState, useEffect, useCallback } from "rea
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
+interface Store {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  logo: string | null
+  banner: string | null
+  approvalStatus: string
+  rejectionNote: string | null
+  isActive: boolean
+}
+
 interface User {
   id: string
   email: string
@@ -13,7 +25,9 @@ interface User {
   phone: string | null
   profilePicture: string | null
   role: string
+  vendorFeePaid: boolean
   addresses: unknown[]
+  store: Store | null
 }
 
 interface AuthContextType {
@@ -21,9 +35,10 @@ interface AuthContextType {
   token: string | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string; requiresPayment?: boolean }>
   register: (data: RegisterData) => Promise<{ success: boolean; message?: string }>
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 interface RegisterData {
@@ -31,6 +46,7 @@ interface RegisterData {
   password: string
   firstName?: string
   lastName?: string
+  role?: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -107,6 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true }
       }
 
+      // 402: vendor must pay before full access
+      if (data.requiresPayment && data.token) {
+        persistSession(data.token, data.user)
+        return { success: false, requiresPayment: true, message: data.message }
+      }
+
       return { success: false, message: data.message || "Login failed" }
     } catch {
       return { success: false, message: "Network error" }
@@ -138,6 +160,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSession()
   }
 
+  const refreshUser = useCallback(async () => {
+    const savedToken = localStorage.getItem(TOKEN_KEY)
+    if (savedToken) {
+      await fetchProfile(savedToken)
+    }
+  }, [fetchProfile])
+
   return (
     <AuthContext.Provider
       value={{
@@ -148,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        refreshUser,
       }}
     >
       {children}

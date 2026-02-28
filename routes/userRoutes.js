@@ -13,6 +13,9 @@ import {
   updateUser,
   deleteUser,
   getUserStats,
+  getVendors,
+  approveVendorStore,
+  rejectVendorStore,
 } from '../controllers/userController.js';
 import { requireAuth, requireAdmin } from '../middleware/authMiddleware.js';
 
@@ -35,6 +38,9 @@ router.delete('/addresses/:addressId', requireAuth, deleteUserAddress);
 // Admin routes (require authentication + admin role)
 router.get('/admin/all', requireAuth, requireAdmin, getAllUsers);
 router.get('/admin/stats', requireAuth, requireAdmin, getUserStats);
+router.get('/admin/vendors', requireAuth, requireAdmin, getVendors);
+router.put('/admin/vendors/:storeId/approve', requireAuth, requireAdmin, approveVendorStore);
+router.put('/admin/vendors/:storeId/reject', requireAuth, requireAdmin, rejectVendorStore);
 router.get('/admin/:id', requireAuth, requireAdmin, getUserById);
 router.put('/admin/:id', requireAuth, requireAdmin, updateUser);
 router.delete('/admin/:id', requireAuth, requireAdmin, deleteUser);
