@@ -18,14 +18,16 @@ const formatUserResponse = (user) => ({
   phone: user.phone,
   profilePicture: user.profilePicture,
   role: user.role,
+  vendorFeePaid: user.vendorFeePaid || false,
   preferences: user.preferences,
   addresses: user.addresses ?? [],
+  store: user.store ?? null,
   lastLogin: user.lastLogin,
   createdAt: user.createdAt,
 });
 
 export const registerUser = asyncHandler(async (req, res) => {
-  const { email, password, firstName, lastName } = req.body;
+  const { email, password, firstName, lastName, role } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({
@@ -33,6 +35,10 @@ export const registerUser = asyncHandler(async (req, res) => {
       message: 'Email and password are required',
     });
   }
+
+  // Allow registering as VENDOR; default to CUSTOMER
+  const validRoles = ['CUSTOMER', 'VENDOR'];
+  const userRole = validRoles.includes(role) ? role : 'CUSTOMER';
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
 
@@ -51,12 +57,12 @@ export const registerUser = asyncHandler(async (req, res) => {
       password: hashedPassword,
       firstName: firstName || null,
       lastName: lastName || null,
-      role: 'CUSTOMER',
+      role: userRole,
       isActive: true,
       loginCount: 1,
       lastLogin: new Date(),
     },
-    include: { addresses: true },
+    include: { addresses: true, store: true },
   });
 
   const token = generateToken(user.id);
@@ -81,7 +87,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { addresses: true },
+    include: { addresses: true, store: true },
   });
 
   if (!user) {
@@ -95,6 +101,23 @@ export const loginUser = asyncHandler(async (req, res) => {
     return res.status(401).json({
       success: false,
       message: 'Account is deactivated',
+    });
+  }
+
+  // Vendors must pay the registration fee before they can sign in
+  if (user.role === 'VENDOR' && !user.vendorFeePaid) {
+    // Still authenticate so the frontend can redirect to payment
+    const isPassValid = await bcrypt.compare(password, user.password);
+    if (!isPassValid) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+    const tempToken = generateToken(user.id);
+    return res.status(402).json({
+      success: false,
+      requiresPayment: true,
+      token: tempToken,
+      user: formatUserResponse(user),
+      message: 'Vendor registration fee required. Please complete payment to access your account.',
     });
   }
 
@@ -128,7 +151,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 export const getUserProfile = asyncHandler(async (req, res) => {
   const fullUser = await prisma.user.findUnique({
     where: { id: req.user.id },
-    include: { addresses: true },
+    include: { addresses: true, store: true },
   });
 
   res.json({
@@ -302,7 +325,7 @@ export const getAllUsers = asyncHandler(async (req, res) => {
   } = req.query;
 
   const where = {};
-  if (role) where.role = role === 'admin' ? 'ADMIN' : role === 'customer' ? 'CUSTOMER' : role;
+  if (role) where.role = role === 'admin' ? 'ADMIN' : role === 'customer' ? 'CUSTOMER' : role === 'vendor' ? 'VENDOR' : role;
   if (isActive !== undefined) where.isActive = isActive === 'true';
 
   if (search) {
@@ -321,7 +344,7 @@ export const getAllUsers = asyncHandler(async (req, res) => {
       orderBy: { createdAt: 'desc' },
       skip,
       take: Number(limit),
-      include: { addresses: true },
+      include: { addresses: true, store: true },
     }),
     prisma.user.count({ where }),
   ]);
@@ -438,11 +461,12 @@ export const getUserStats = asyncHandler(async (req, res) => {
       startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   }
 
-  const [totalUsers, activeUsers, adminUsers, customerUsers] = await Promise.all([
+  const [totalUsers, activeUsers, adminUsers, customerUsers, vendorUsers] = await Promise.all([
     prisma.user.count({ where: { createdAt: { gte: startDate } } }),
     prisma.user.count({ where: { createdAt: { gte: startDate }, isActive: true } }),
     prisma.user.count({ where: { createdAt: { gte: startDate }, role: 'ADMIN' } }),
     prisma.user.count({ where: { createdAt: { gte: startDate }, role: 'CUSTOMER' } }),
+    prisma.user.count({ where: { createdAt: { gte: startDate }, role: 'VENDOR' } }),
   ]);
 
   res.json({
@@ -452,7 +476,116 @@ export const getUserStats = asyncHandler(async (req, res) => {
       activeUsers,
       adminUsers,
       customerUsers,
+      vendorUsers,
     },
   });
 });
 
+/* ─── Admin vendor-management endpoints ─── */
+
+/**
+ * GET /api/users/admin/vendors – List vendors with their store info.
+ */
+export const getVendors = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 20, status } = req.query;
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const where = { role: 'VENDOR' };
+
+  const storeWhere = {};
+  if (status) storeWhere.approvalStatus = status.toUpperCase();
+
+  const [vendors, total] = await prisma.$transaction([
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: Number(limit),
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        isActive: true,
+        createdAt: true,
+        store: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            approvalStatus: true,
+            rejectionNote: true,
+            isActive: true,
+            createdAt: true,
+            _count: { select: { products: true } },
+          },
+        },
+      },
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  res.json({
+    success: true,
+    data: vendors,
+    pagination: {
+      currentPage: Number(page),
+      totalPages: Math.ceil(total / Number(limit)) || 1,
+      total,
+      hasNext: skip + vendors.length < total,
+      hasPrev: Number(page) > 1,
+    },
+  });
+});
+
+/**
+ * PUT /api/users/admin/vendors/:storeId/approve – Approve a vendor's store.
+ */
+export const approveVendorStore = asyncHandler(async (req, res) => {
+  const store = await prisma.store.findUnique({
+    where: { id: req.params.storeId },
+  });
+
+  if (!store) {
+    return res.status(404).json({ success: false, message: 'Store not found' });
+  }
+
+  const updated = await prisma.store.update({
+    where: { id: req.params.storeId },
+    data: { approvalStatus: 'APPROVED', isActive: true, rejectionNote: null },
+  });
+
+  res.json({
+    success: true,
+    data: updated,
+    message: 'Vendor store approved successfully',
+  });
+});
+
+/**
+ * PUT /api/users/admin/vendors/:storeId/reject – Reject a vendor's store.
+ */
+export const rejectVendorStore = asyncHandler(async (req, res) => {
+  const store = await prisma.store.findUnique({
+    where: { id: req.params.storeId },
+  });
+
+  if (!store) {
+    return res.status(404).json({ success: false, message: 'Store not found' });
+  }
+
+  const updated = await prisma.store.update({
+    where: { id: req.params.storeId },
+    data: {
+      approvalStatus: 'REJECTED',
+      isActive: false,
+      rejectionNote: req.body.reason || null,
+    },
+  });
+
+  res.json({
+    success: true,
+    data: updated,
+    message: 'Vendor store rejected',
+  });
+});

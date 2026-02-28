@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { List, X, ChartBar, Package, Users, ShoppingCart, TrendUp, SignOut } from "@phosphor-icons/react"
+import { List, X, ChartBar, Package, Users, ShoppingCart, TrendUp, SignOut, Storefront } from "@phosphor-icons/react"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -13,6 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const menuItems = [
     { href: "/admin", label: "Dashboard", icon: ChartBar },
     { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/vendors", label: "Vendors", icon: Storefront },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/revenue", label: "Revenue", icon: TrendUp },

@@ -18,6 +18,9 @@ const reviewInclude = {
 
 const productInclude = {
   reviews: reviewInclude,
+  store: {
+    select: { id: true, name: true, slug: true, logo: true },
+  },
 };
 
 const mapSortField = (sort) => {
@@ -66,6 +69,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const where = {
     isActive: active === 'true',
+    approvalStatus: 'APPROVED',
   };
 
   if (category) {
@@ -355,6 +359,7 @@ export const getFeaturedProducts = asyncHandler(async (req, res) => {
     where: {
       isFeatured: true,
       isActive: true,
+      approvalStatus: 'APPROVED',
     },
     orderBy: { createdAt: 'desc' },
     take: Number(limit),
@@ -385,6 +390,7 @@ export const getRelatedProducts = asyncHandler(async (req, res) => {
       id: { not: product.id },
       category: product.category,
       isActive: true,
+      approvalStatus: 'APPROVED',
     },
     take: Number(limit),
     include: productInclude,
@@ -393,5 +399,92 @@ export const getRelatedProducts = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: related,
+  });
+});
+
+/* ─── Admin product-approval endpoints ─── */
+
+/**
+ * GET /api/products/admin/pending – List products pending approval.
+ */
+export const getPendingProducts = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 20, status = 'PENDING' } = req.query;
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const where = { approvalStatus: status.toUpperCase() };
+
+  const [products, total] = await prisma.$transaction([
+    prisma.product.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: Number(limit),
+      include: {
+        ...productInclude,
+        store: { select: { id: true, name: true, slug: true, logo: true, owner: { select: { id: true, email: true, firstName: true, lastName: true } } } },
+      },
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  res.json({
+    success: true,
+    data: products,
+    pagination: {
+      currentPage: Number(page),
+      totalPages: Math.ceil(total / Number(limit)) || 1,
+      total,
+      hasNext: skip + products.length < total,
+      hasPrev: Number(page) > 1,
+    },
+  });
+});
+
+/**
+ * PUT /api/products/admin/:id/approve – Approve a pending product.
+ */
+export const approveProduct = asyncHandler(async (req, res) => {
+  const product = await prisma.product.findUnique({ where: { id: req.params.id } });
+
+  if (!product) {
+    return res.status(404).json({ success: false, message: 'Product not found' });
+  }
+
+  const updated = await prisma.product.update({
+    where: { id: req.params.id },
+    data: { approvalStatus: 'APPROVED', rejectionNote: null },
+    include: productInclude,
+  });
+
+  res.json({
+    success: true,
+    data: updated,
+    message: 'Product approved successfully',
+  });
+});
+
+/**
+ * PUT /api/products/admin/:id/reject – Reject a pending product.
+ */
+export const rejectProduct = asyncHandler(async (req, res) => {
+  const product = await prisma.product.findUnique({ where: { id: req.params.id } });
+
+  if (!product) {
+    return res.status(404).json({ success: false, message: 'Product not found' });
+  }
+
+  const updated = await prisma.product.update({
+    where: { id: req.params.id },
+    data: {
+      approvalStatus: 'REJECTED',
+      rejectionNote: req.body.reason || null,
+    },
+    include: productInclude,
+  });
+
+  res.json({
+    success: true,
+    data: updated,
+    message: 'Product rejected',
   });
 });

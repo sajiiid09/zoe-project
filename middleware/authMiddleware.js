@@ -101,6 +101,36 @@ export const requireAdmin = (req, res, next) => {
 };
 
 /**
+ * Require vendor role — must run after `requireAuth`.
+ */
+export const requireVendor = (req, res, next) => {
+  if (!req.user) {
+    return respondUnauthorized(res);
+  }
+
+  if (req.user.role !== 'VENDOR') {
+    return respondForbidden(res, 'Vendor access required');
+  }
+
+  next();
+};
+
+/**
+ * Require admin or vendor role — must run after `requireAuth`.
+ */
+export const requireAdminOrVendor = (req, res, next) => {
+  if (!req.user) {
+    return respondUnauthorized(res);
+  }
+
+  if (req.user.role !== 'ADMIN' && req.user.role !== 'VENDOR') {
+    return respondForbidden(res, 'Admin or Vendor access required');
+  }
+
+  next();
+};
+
+/**
  * Simple in-memory rate limiter.
  */
 const rateLimitStore = new Map();
