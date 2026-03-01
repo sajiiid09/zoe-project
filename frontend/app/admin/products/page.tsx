@@ -152,7 +152,7 @@ export default function AdminProductsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-3 border-[#546A50] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-[#3D5A3E] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -160,21 +160,21 @@ export default function AdminProductsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 className="text-3xl font-bold text-[#546A50]">Products Management</h1>
+        <h1 className="text-3xl font-bold text-[#3D5A3E]">Products Management</h1>
         <Link
           href="/admin/products/add"
-          className="flex items-center gap-2 bg-[#546A50] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#3F4E40] transition"
+          className="flex items-center gap-2 bg-[#3D5A3E] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#2C3B2D] transition"
         >
           <Plus size={20} weight="bold" /> Add Product
         </Link>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-[#F5F3F0] p-1 rounded-lg w-fit">
+      <div className="flex gap-1 bg-[#F5F2ED] p-1 rounded-lg w-fit">
         <button
           onClick={() => setTab("all")}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-            tab === "all" ? "bg-white text-[#546A50] shadow-sm" : "text-[#B5B89B] hover:text-[#546A50]"
+            tab === "all" ? "bg-white text-[#3D5A3E] shadow-sm" : "text-[#6B7C5E] hover:text-[#3D5A3E]"
           }`}
         >
           All Products ({allProducts.length})
@@ -182,7 +182,7 @@ export default function AdminProductsPage() {
         <button
           onClick={() => setTab("pending")}
           className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-            tab === "pending" ? "bg-white text-[#546A50] shadow-sm" : "text-[#B5B89B] hover:text-[#546A50]"
+            tab === "pending" ? "bg-white text-[#3D5A3E] shadow-sm" : "text-[#6B7C5E] hover:text-[#3D5A3E]"
           }`}
         >
           Pending Approval
@@ -197,36 +197,36 @@ export default function AdminProductsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
+        className="bg-white rounded-lg p-6 shadow-sm border border-[#E8E3DA]"
       >
-        <div className="mb-6 flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-          <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
+        <div className="mb-6 flex items-center gap-2 bg-[#F5F2ED] px-4 py-2 rounded-lg">
+          <MagnifyingGlass size={20} weight="bold" className="text-[#6B7C5E]" />
           <input
             type="text"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent outline-none text-[#546A50] flex-1 text-sm"
+            className="bg-transparent outline-none text-[#3D5A3E] flex-1 text-sm"
           />
         </div>
 
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-[#B5B89B]">
+          <div className="text-center py-12 text-[#6B7C5E]">
             <p className="font-medium">No products found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#E5E0D8]">
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Product</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Price</th>
+                <tr className="border-b border-[#E8E3DA]">
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Product</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Price</th>
                   {tab === "pending" && (
-                    <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Vendor</th>
+                    <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Vendor</th>
                   )}
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Stock</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Actions</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Stock</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -236,31 +236,31 @@ export default function AdminProductsPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.03 }}
-                    className="border-b border-[#E5E0D8] hover:bg-[#F5F3F0] transition"
+                    className="border-b border-[#E8E3DA] hover:bg-[#F5F2ED] transition"
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <img
                           src={product.images?.[0] || "/placeholder.svg"}
                           alt={product.name}
-                          className="w-10 h-10 rounded object-cover bg-[#E5E0D8]"
+                          className="w-10 h-10 rounded object-cover bg-[#E8E3DA]"
                         />
                         <div>
-                          <span className="font-semibold text-[#546A50] text-sm">{product.name}</span>
-                          {product.category && <p className="text-xs text-[#B5B89B]">{product.category}</p>}
+                          <span className="font-semibold text-[#3D5A3E] text-sm">{product.name}</span>
+                          {product.category && <p className="text-xs text-[#6B7C5E]">{product.category}</p>}
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-[#546A50] font-medium text-sm">${Number(product.price).toFixed(2)}</td>
+                    <td className="py-3 px-4 text-[#3D5A3E] font-medium text-sm">${Number(product.price).toFixed(2)}</td>
                     {tab === "pending" && (
                       <td className="py-3 px-4">
                         {product.store ? (
                           <div className="flex items-center gap-2">
-                            <Storefront size={14} className="text-[#7EBAAD]" />
-                            <span className="text-sm text-[#546A50]">{product.store.name}</span>
+                            <Storefront size={14} className="text-[#8AADA0]" />
+                            <span className="text-sm text-[#3D5A3E]">{product.store.name}</span>
                           </div>
                         ) : (
-                          <span className="text-xs text-[#B5B89B]">Admin</span>
+                          <span className="text-xs text-[#6B7C5E]">Admin</span>
                         )}
                       </td>
                     )}
@@ -308,7 +308,7 @@ export default function AdminProductsPage() {
                             <motion.button
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.95 }}
-                              className="p-2 text-[#7EBAAD] hover:bg-[#F5F3F0] rounded transition"
+                              className="p-2 text-[#8AADA0] hover:bg-[#F5F2ED] rounded transition"
                             >
                               <PencilSimple size={18} weight="bold" />
                             </motion.button>
@@ -348,23 +348,23 @@ export default function AdminProductsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-xl border border-[#E5E0D8]"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-xl border border-[#E8E3DA]"
             >
-              <h3 className="text-lg font-bold text-[#546A50] mb-2">Reject Product</h3>
-              <p className="text-sm text-[#B5B89B] mb-4">
-                Rejecting <span className="font-semibold text-[#546A50]">{rejectModal.productName}</span>
+              <h3 className="text-lg font-bold text-[#3D5A3E] mb-2">Reject Product</h3>
+              <p className="text-sm text-[#6B7C5E] mb-4">
+                Rejecting <span className="font-semibold text-[#3D5A3E]">{rejectModal.productName}</span>
               </p>
               <textarea
                 rows={3}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 text-[#3F4E40] text-sm resize-none mb-4"
+                className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 text-[#2C3B2D] text-sm resize-none mb-4"
                 placeholder="Reason for rejection (optional)..."
               />
               <div className="flex items-center gap-3 justify-end">
                 <button
                   onClick={() => setRejectModal(null)}
-                  className="px-4 py-2 text-[#546A50] hover:bg-[#F5F3F0] rounded-lg text-sm font-medium transition"
+                  className="px-4 py-2 text-[#3D5A3E] hover:bg-[#F5F2ED] rounded-lg text-sm font-medium transition"
                 >
                   Cancel
                 </button>

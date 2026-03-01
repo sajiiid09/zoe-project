@@ -56,7 +56,7 @@ export default function VendorPaymentPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAF8]">
+    <div className="min-h-screen flex flex-col bg-[#FDFCFA]">
       <Header />
       <PageTransition>
         <div className="flex-1 flex items-center justify-center px-4 py-20">
@@ -64,38 +64,38 @@ export default function VendorPaymentPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-lg bg-white border border-[#E5E0D8] rounded-2xl p-8 shadow-sm"
+            className="w-full max-w-lg bg-white border border-[#E8E3DA] rounded-2xl p-8 shadow-sm"
           >
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-[#546A50]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Storefront size={32} weight="bold" className="text-[#546A50]" />
+              <div className="w-16 h-16 bg-[#3D5A3E]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Storefront size={32} weight="bold" className="text-[#3D5A3E]" />
               </div>
-              <h1 className="text-3xl font-bold text-[#3F4E40] mb-2">Vendor Registration Fee</h1>
-              <p className="text-[#B5B89B] text-sm">
+              <h1 className="font-display text-3xl font-medium text-[#2C3B2D] mb-2">Vendor Registration Fee</h1>
+              <p className="text-[#6B7C5E] text-sm">
                 A one-time fee is required to activate your vendor account
               </p>
             </div>
 
-            <div className="bg-[#F5F3F0] rounded-xl p-6 mb-6">
+            <div className="bg-[#F5F2ED] rounded-xl p-6 mb-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[#546A50] font-medium">Vendor Registration Fee</span>
-                <span className="text-2xl font-bold text-[#3F4E40]">$10.00</span>
+                <span className="text-[#3D5A3E] font-medium">Vendor Registration Fee</span>
+                <span className="text-2xl font-bold text-[#2C3B2D]">$10.00</span>
               </div>
-              <div className="border-t border-[#E5E0D8] pt-4 space-y-2">
-                <div className="flex items-center gap-2 text-sm text-[#546A50]">
-                  <ShieldCheck size={16} weight="bold" className="text-[#7EBAAD]" />
+              <div className="border-t border-[#E8E3DA] pt-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
+                  <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />
                   <span>Create and manage your own store</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-[#546A50]">
-                  <ShieldCheck size={16} weight="bold" className="text-[#7EBAAD]" />
+                <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
+                  <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />
                   <span>List unlimited products on the marketplace</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-[#546A50]">
-                  <ShieldCheck size={16} weight="bold" className="text-[#7EBAAD]" />
+                <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
+                  <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />
                   <span>Access vendor dashboard &amp; analytics</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-[#546A50]">
-                  <ShieldCheck size={16} weight="bold" className="text-[#7EBAAD]" />
+                <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
+                  <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />
                   <span>One-time payment — no recurring charges</span>
                 </div>
               </div>
@@ -116,7 +116,7 @@ export default function VendorPaymentPage() {
               whileTap={{ scale: 0.98 }}
               onClick={handlePayment}
               disabled={isLoading || !isAuthenticated}
-              className="w-full flex items-center justify-center gap-2 bg-[#546A50] text-white py-3.5 rounded-lg font-semibold hover:bg-[#3F4E40] transition-colors disabled:opacity-50"
+              className="w-full btn-primary justify-center disabled:opacity-50 disabled:pointer-events-none"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -128,7 +128,7 @@ export default function VendorPaymentPage() {
               )}
             </motion.button>
 
-            <p className="mt-4 text-center text-xs text-[#B5B89B]">
+            <p className="mt-4 text-center text-xs text-[#6B7C5E]">
               Secure payment powered by Stripe. Your card details are never stored on our servers.
             </p>
 

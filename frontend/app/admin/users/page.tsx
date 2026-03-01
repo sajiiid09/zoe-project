@@ -27,33 +27,33 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-[#546A50]">Users Management</h1>
+      <h1 className="text-3xl font-bold text-[#3D5A3E]">Users Management</h1>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
+        className="bg-white rounded-lg p-6 shadow-sm border border-[#E8E3DA]"
       >
-        <div className="mb-6 flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-          <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
+        <div className="mb-6 flex items-center gap-2 bg-[#F5F2ED] px-4 py-2 rounded-lg">
+          <MagnifyingGlass size={20} weight="bold" className="text-[#6B7C5E]" />
           <input
             type="text"
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent outline-none text-[#546A50] flex-1"
+            className="bg-transparent outline-none text-[#3D5A3E] flex-1"
           />
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#E5E0D8]">
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Name</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Email</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Join Date</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Status</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Actions</th>
+              <tr className="border-b border-[#E8E3DA]">
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Name</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Email</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Join Date</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -63,11 +63,11 @@ export default function UsersPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="border-b border-[#E5E0D8] hover:bg-[#F5F3F0] transition"
+                  className="border-b border-[#E8E3DA] hover:bg-[#F5F2ED] transition"
                 >
-                  <td className="py-3 px-4 font-semibold text-[#546A50]">{user.name}</td>
-                  <td className="py-3 px-4 text-[#B5B89B]">{user.email}</td>
-                  <td className="py-3 px-4 text-[#546A50]">{user.joinDate}</td>
+                  <td className="py-3 px-4 font-semibold text-[#3D5A3E]">{user.name}</td>
+                  <td className="py-3 px-4 text-[#6B7C5E]">{user.email}</td>
+                  <td className="py-3 px-4 text-[#3D5A3E]">{user.joinDate}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${

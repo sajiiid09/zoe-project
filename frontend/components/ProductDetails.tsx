@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
+import Image from "next/image"
 import { motion } from "framer-motion"
-import { Minus, Plus, ShoppingBag, Lightning, Truck, ArrowsClockwise } from "@phosphor-icons/react"
+import { Minus, Plus, ShoppingBag, Heart, Truck, ArrowsClockwise, ShieldCheck } from "@phosphor-icons/react"
 
 interface Product {
   id: number
@@ -22,112 +23,118 @@ export default function ProductDetails({ product, onAddToCart }: ProductDetailsP
   const [quantity, setQuantity] = useState(1)
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      onAddToCart()
-    }
+    for (let i = 0; i < quantity; i++) onAddToCart()
   }
+
+  const perks = [
+    { icon: Truck, text: "Free shipping over $50" },
+    { icon: ArrowsClockwise, text: "30-day returns" },
+    { icon: ShieldCheck, text: "2-year warranty" },
+  ]
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 mb-16"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 mb-20"
     >
       {/* Product Image */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
+        initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="w-full aspect-square bg-[#F5F3F0] rounded-2xl overflow-hidden"
+        transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+        className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-[#F5F2ED]"
       >
-        <img
+        <Image
           src={product.image || "/placeholder.svg"}
           alt={product.name}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          priority
         />
       </motion.div>
 
       {/* Product Info */}
       <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-col justify-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="flex flex-col justify-center py-4"
       >
-        <span className="text-[#D2A880] text-sm uppercase tracking-[0.2em] font-semibold mb-2">
+        <p className="text-[#C7956D] text-[11px] tracking-[0.25em] uppercase font-medium mb-3">
           {product.category}
-        </span>
-        <h1 className="text-3xl md:text-4xl font-bold text-[#3F4E40] mb-4">{product.name}</h1>
+        </p>
+        <h1 className="font-display text-3xl md:text-4xl lg:text-[2.75rem] font-medium text-[#2C3B2D] leading-[1.1] mb-4">
+          {product.name}
+        </h1>
 
+        {/* Rating */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex text-[#D2A880]">
+          <div className="flex gap-0.5 text-[#C7956D]">
             {[...Array(5)].map((_, i) => (
-              <span key={i} className="text-lg">★</span>
+              <span key={i} className="text-sm">★</span>
             ))}
           </div>
-          <span className="text-[#B5B89B] text-sm">(128 reviews)</span>
+          <span className="text-xs text-[#B8BCA0]">128 reviews</span>
         </div>
 
-        <p className="text-3xl font-bold text-[#546A50] mb-6">${product.price}</p>
+        <p className="font-display text-3xl font-semibold text-[#2C3B2D] mb-6">
+          ${product.price}
+        </p>
 
-        <p className="text-[#546A50]/70 text-base mb-8 leading-relaxed">{product.description}</p>
+        <p className="text-[#6B7C5E] text-[0.9375rem] leading-[1.8] mb-8 max-w-lg">
+          {product.description}
+        </p>
 
         {/* Quantity */}
         <div className="mb-6">
-          <p className="text-xs font-semibold text-[#B5B89B] uppercase tracking-wider mb-3">Quantity</p>
-          <div className="flex items-center gap-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#B8BCA0] mb-3">
+            Quantity
+          </p>
+          <div className="inline-flex items-center border border-[#E8E3DA] rounded-lg overflow-hidden">
+            <button
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-10 h-10 border border-[#E5E0D8] rounded-lg flex items-center justify-center hover:bg-[#F5F3F0] transition-colors"
+              className="w-10 h-10 flex items-center justify-center text-[#6B7C5E] hover:bg-[#F5F2ED] transition-colors"
             >
-              <Minus size={16} weight="bold" className="text-[#546A50]" />
-            </motion.button>
-            <span className="text-lg font-semibold w-8 text-center text-[#3F4E40]">{quantity}</span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              <Minus size={14} weight="light" />
+            </button>
+            <span className="w-12 text-center text-sm font-medium text-[#2C3B2D]">{quantity}</span>
+            <button
               onClick={() => setQuantity(quantity + 1)}
-              className="w-10 h-10 border border-[#E5E0D8] rounded-lg flex items-center justify-center hover:bg-[#F5F3F0] transition-colors"
+              className="w-10 h-10 flex items-center justify-center text-[#6B7C5E] hover:bg-[#F5F2ED] transition-colors"
             >
-              <Plus size={16} weight="bold" className="text-[#546A50]" />
-            </motion.button>
+              <Plus size={14} weight="light" />
+            </button>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="space-y-3 mb-8">
+        <div className="flex gap-3 mb-8">
           <motion.button
-            whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleAddToCart}
-            className="w-full flex items-center justify-center gap-2 bg-[#546A50] text-white py-4 rounded-xl hover:bg-[#3F4E40] transition-colors font-semibold"
+            className="btn-primary flex-1"
           >
-            <ShoppingBag size={20} weight="bold" />
+            <ShoppingBag size={16} weight="bold" />
             Add to Cart
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center justify-center gap-2 border-2 border-[#546A50] text-[#546A50] py-4 rounded-xl hover:bg-[#546A50] hover:text-white transition-colors font-semibold"
+            whileTap={{ scale: 0.95 }}
+            className="w-12 h-12 border border-[#E8E3DA] rounded-lg flex items-center justify-center text-[#B8BCA0] hover:text-[#C7956D] hover:border-[#C7956D] transition-colors"
           >
-            <Lightning size={20} weight="bold" />
-            Buy Now
+            <Heart size={18} weight="light" />
           </motion.button>
         </div>
 
         {/* Perks */}
-        <div className="border-t border-[#E5E0D8] pt-6 space-y-3">
-          <div className="flex items-center gap-3 text-sm text-[#546A50]/70">
-            <Truck size={18} weight="duotone" className="text-[#7EBAAD] flex-shrink-0" />
-            Free shipping on orders over $50. Same-day delivery available.
-          </div>
-          <div className="flex items-center gap-3 text-sm text-[#546A50]/70">
-            <ArrowsClockwise size={18} weight="duotone" className="text-[#7EBAAD] flex-shrink-0" />
-            30-day money-back guarantee. Premium packaging included.
-          </div>
+        <div className="border-t border-[#E8E3DA] pt-6 space-y-3">
+          {perks.map((perk) => (
+            <div key={perk.text} className="flex items-center gap-3 text-sm text-[#6B7C5E]">
+              <perk.icon size={16} weight="light" className="text-[#8AADA0] flex-shrink-0" />
+              {perk.text}
+            </div>
+          ))}
         </div>
       </motion.div>
     </motion.div>
