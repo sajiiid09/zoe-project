@@ -132,7 +132,7 @@ export default function AdminVendorsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-3 border-[#546A50] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-[#3D5A3E] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -140,28 +140,28 @@ export default function AdminVendorsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Storefront size={32} weight="duotone" className="text-[#546A50]" />
-        <h1 className="text-3xl font-bold text-[#546A50]">Vendor Management</h1>
+        <Storefront size={32} weight="duotone" className="text-[#3D5A3E]" />
+        <h1 className="text-3xl font-bold text-[#3D5A3E]">Vendor Management</h1>
       </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
+        className="bg-white rounded-lg p-6 shadow-sm border border-[#E8E3DA]"
       >
-        <div className="mb-6 flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-          <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
+        <div className="mb-6 flex items-center gap-2 bg-[#F5F2ED] px-4 py-2 rounded-lg">
+          <MagnifyingGlass size={20} weight="bold" className="text-[#6B7C5E]" />
           <input
             type="text"
             placeholder="Search vendors..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent outline-none text-[#546A50] flex-1 text-sm"
+            className="bg-transparent outline-none text-[#3D5A3E] flex-1 text-sm"
           />
         </div>
 
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-[#B5B89B]">
+          <div className="text-center py-12 text-[#6B7C5E]">
             <Storefront size={48} weight="duotone" className="mx-auto mb-2 opacity-50" />
             <p className="font-medium">No vendors found</p>
           </div>
@@ -169,13 +169,13 @@ export default function AdminVendorsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#E5E0D8]">
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Vendor</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Store</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Products</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Joined</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Actions</th>
+                <tr className="border-b border-[#E8E3DA]">
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Vendor</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Store</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Products</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Joined</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -185,32 +185,32 @@ export default function AdminVendorsPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.04 }}
-                    className="border-b border-[#E5E0D8] hover:bg-[#F5F3F0] transition"
+                    className="border-b border-[#E8E3DA] hover:bg-[#F5F2ED] transition"
                   >
                     <td className="py-3 px-4">
                       <div>
-                        <p className="font-semibold text-[#546A50] text-sm">
+                        <p className="font-semibold text-[#3D5A3E] text-sm">
                           {vendor.firstName || ""} {vendor.lastName || ""}
                         </p>
-                        <p className="text-xs text-[#B5B89B]">{vendor.email}</p>
+                        <p className="text-xs text-[#6B7C5E]">{vendor.email}</p>
                       </div>
                     </td>
                     <td className="py-3 px-4">
                       {vendor.store ? (
-                        <span className="font-medium text-[#546A50] text-sm">{vendor.store.name}</span>
+                        <span className="font-medium text-[#3D5A3E] text-sm">{vendor.store.name}</span>
                       ) : (
-                        <span className="text-xs text-[#B5B89B] italic">No store yet</span>
+                        <span className="text-xs text-[#6B7C5E] italic">No store yet</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-[#546A50] text-sm">
+                    <td className="py-3 px-4 text-[#3D5A3E] text-sm">
                       {vendor.store?._count?.products ?? 0}
                     </td>
                     <td className="py-3 px-4">
                       {vendor.store ? statusBadge(vendor.store.approvalStatus) : (
-                        <span className="text-xs text-[#B5B89B]">—</span>
+                        <span className="text-xs text-[#6B7C5E]">—</span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-[#B5B89B] text-sm">
+                    <td className="py-3 px-4 text-[#6B7C5E] text-sm">
                       {new Date(vendor.createdAt).toLocaleDateString()}
                     </td>
                     <td className="py-3 px-4">
@@ -269,23 +269,23 @@ export default function AdminVendorsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-xl border border-[#E5E0D8]"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md bg-white rounded-lg p-6 shadow-xl border border-[#E8E3DA]"
             >
-              <h3 className="text-lg font-bold text-[#546A50] mb-2">Reject Store</h3>
-              <p className="text-sm text-[#B5B89B] mb-4">
-                Rejecting store for <span className="font-semibold text-[#546A50]">{rejectModal.vendorName}</span>
+              <h3 className="text-lg font-bold text-[#3D5A3E] mb-2">Reject Store</h3>
+              <p className="text-sm text-[#6B7C5E] mb-4">
+                Rejecting store for <span className="font-semibold text-[#3D5A3E]">{rejectModal.vendorName}</span>
               </p>
               <textarea
                 rows={3}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 text-[#3F4E40] text-sm resize-none mb-4"
+                className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-red-300 text-[#2C3B2D] text-sm resize-none mb-4"
                 placeholder="Reason for rejection (optional)..."
               />
               <div className="flex items-center gap-3 justify-end">
                 <button
                   onClick={() => setRejectModal(null)}
-                  className="px-4 py-2 text-[#546A50] hover:bg-[#F5F3F0] rounded-lg text-sm font-medium transition"
+                  className="px-4 py-2 text-[#3D5A3E] hover:bg-[#F5F2ED] rounded-lg text-sm font-medium transition"
                 >
                   Cancel
                 </button>

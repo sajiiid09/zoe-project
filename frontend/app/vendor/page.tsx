@@ -46,7 +46,7 @@ export default function VendorDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-3 border-[#546A50] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-[#3D5A3E] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -55,14 +55,14 @@ export default function VendorDashboard() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Storefront size={64} weight="duotone" className="text-[#546A50] mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-[#546A50] mb-2">Welcome, Vendor!</h2>
-          <p className="text-[#B5B89B] mb-6 max-w-md">
+          <Storefront size={64} weight="duotone" className="text-[#3D5A3E] mx-auto mb-4" />
+          <h2 className="font-display text-2xl font-medium text-[#2C3B2D] mb-2">Welcome, Vendor!</h2>
+          <p className="text-[#6B7C5E] mb-6 max-w-md">
             You haven&apos;t created your store yet. Set up your store to start listing products on Decormade.
           </p>
           <Link
             href="/vendor/store"
-            className="inline-flex items-center gap-2 bg-[#546A50] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#3F4E40] transition"
+            className="inline-flex items-center gap-2 btn-primary transition"
           >
             <Storefront size={20} weight="bold" /> Create Your Store
           </Link>
@@ -81,12 +81,12 @@ export default function VendorDashboard() {
   }
 
   const statCards = [
-    { label: "Total Products", value: stats.totalProducts, icon: Package, color: "#546A50" },
-    { label: "Approved", value: stats.approvedProducts, icon: CheckCircle, color: "#7EBAAD" },
-    { label: "Pending", value: stats.pendingProducts, icon: Clock, color: "#D2A880" },
-    { label: "Rejected", value: stats.rejectedProducts, icon: XCircle, color: "#B5B89B" },
-    { label: "Orders", value: stats.totalOrders, icon: ShoppingCart, color: "#546A50" },
-    { label: "Revenue", value: `$${stats.totalRevenue.toFixed(2)}`, icon: TrendUp, color: "#7EBAAD" },
+    { label: "Total Products", value: stats.totalProducts, icon: Package, color: "#3D5A3E" },
+    { label: "Approved", value: stats.approvedProducts, icon: CheckCircle, color: "#8AADA0" },
+    { label: "Pending", value: stats.pendingProducts, icon: Clock, color: "#C7956D" },
+    { label: "Rejected", value: stats.rejectedProducts, icon: XCircle, color: "#6B7C5E" },
+    { label: "Orders", value: stats.totalOrders, icon: ShoppingCart, color: "#3D5A3E" },
+    { label: "Revenue", value: `$${stats.totalRevenue.toFixed(2)}`, icon: TrendUp, color: "#8AADA0" },
   ]
 
   return (
@@ -112,7 +112,7 @@ export default function VendorDashboard() {
 
       {/* Store name + status */}
       <div className="flex items-center gap-3">
-        <h1 className="text-3xl font-bold text-[#546A50]">{store.name}</h1>
+        <h1 className="text-3xl font-bold text-[#3D5A3E]">{store.name}</h1>
         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${storeStatusColors[store.approvalStatus]}`}>
           {store.approvalStatus}
         </span>
@@ -128,12 +128,12 @@ export default function VendorDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="bg-white rounded-lg p-5 shadow-sm border border-[#E5E0D8]"
+              className="bg-white rounded-lg p-5 shadow-sm border border-[#E8E3DA]"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[#B5B89B] text-sm font-medium">{stat.label}</p>
-                  <p className="text-2xl font-bold text-[#546A50] mt-1">{stat.value}</p>
+                  <p className="text-[#6B7C5E] text-sm font-medium">{stat.label}</p>
+                  <p className="font-display text-2xl font-medium text-[#2C3B2D] mt-1">{stat.value}</p>
                 </div>
                 <Icon size={28} weight="duotone" color={stat.color} className="opacity-40" />
               </div>
@@ -146,22 +146,22 @@ export default function VendorDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Link
           href="/vendor/products/add"
-          className="flex items-center gap-3 bg-white p-5 rounded-lg border border-[#E5E0D8] hover:border-[#546A50] transition group"
+          className="flex items-center gap-3 bg-white p-5 rounded-lg border border-[#E8E3DA] hover:border-[#3D5A3E] transition group"
         >
-          <Package size={24} weight="duotone" className="text-[#546A50]" />
+          <Package size={24} weight="duotone" className="text-[#3D5A3E]" />
           <div>
-            <p className="font-semibold text-[#546A50] group-hover:text-[#3F4E40] transition">Add New Product</p>
-            <p className="text-sm text-[#B5B89B]">List a new product for approval</p>
+            <p className="font-semibold text-[#3D5A3E] group-hover:text-[#2C3B2D] transition">Add New Product</p>
+            <p className="text-sm text-[#6B7C5E]">List a new product for approval</p>
           </div>
         </Link>
         <Link
           href="/vendor/store"
-          className="flex items-center gap-3 bg-white p-5 rounded-lg border border-[#E5E0D8] hover:border-[#546A50] transition group"
+          className="flex items-center gap-3 bg-white p-5 rounded-lg border border-[#E8E3DA] hover:border-[#3D5A3E] transition group"
         >
-          <Storefront size={24} weight="duotone" className="text-[#546A50]" />
+          <Storefront size={24} weight="duotone" className="text-[#3D5A3E]" />
           <div>
-            <p className="font-semibold text-[#546A50] group-hover:text-[#3F4E40] transition">Edit Store Profile</p>
-            <p className="text-sm text-[#B5B89B]">Update your store information</p>
+            <p className="font-semibold text-[#3D5A3E] group-hover:text-[#2C3B2D] transition">Edit Store Profile</p>
+            <p className="text-sm text-[#6B7C5E]">Update your store information</p>
           </div>
         </Link>
       </div>

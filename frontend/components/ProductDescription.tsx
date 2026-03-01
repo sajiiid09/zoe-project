@@ -50,23 +50,26 @@ export default function ProductDescription({ product }: { product: Product }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="border-t border-[#E5E0D8] pt-12"
+      className="border-t border-[#E8E3DA] pt-12"
     >
       {/* Tabs */}
-      <div className="flex gap-8 mb-8 border-b border-[#E5E0D8]">
+      <div className="flex gap-10 mb-10 border-b border-[#E8E3DA]">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`pb-4 font-semibold text-sm transition relative ${
-              activeTab === tab.id ? "text-[#3F4E40]" : "text-[#B5B89B] hover:text-[#546A50]"
+            className={`pb-4 text-[0.8125rem] font-medium tracking-[0.04em] transition-colors relative ${
+              activeTab === tab.id
+                ? "text-[#2C3B2D]"
+                : "text-[#B8BCA0] hover:text-[#6B7C5E]"
             }`}
           >
             {tab.label}
             {activeTab === tab.id && (
               <motion.div
                 layoutId="activeProductTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#546A50]"
+                className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-[#2C3B2D]"
+                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
               />
             )}
           </button>
@@ -84,21 +87,21 @@ export default function ProductDescription({ product }: { product: Product }) {
           className="mb-12"
         >
           {activeTab === "description" && (
-            <div className="space-y-4 max-w-2xl">
-              <p className="text-[#546A50]/80 leading-relaxed">{product.description}</p>
-              <p className="text-[#546A50]/80 leading-relaxed">
+            <div className="space-y-5 max-w-2xl">
+              <p className="text-[#6B7C5E] leading-[1.8] text-[0.9375rem]">{product.description}</p>
+              <p className="text-[#6B7C5E] leading-[1.8] text-[0.9375rem]">
                 Our {product.name.toLowerCase()} is meticulously crafted to bring elegance and functionality to your
-                space. Each piece is carefully designed and inspected to ensure it meets our high quality standards.
+                space. Each piece is carefully designed and inspected to meet our exacting quality standards.
               </p>
-              <p className="text-[#546A50]/80 leading-relaxed">
-                Perfect for those who appreciate fine craftsmanship and modern design. This versatile piece works well
-                in various interior styles and spaces.
+              <p className="text-[#6B7C5E] leading-[1.8] text-[0.9375rem]">
+                Perfect for those who appreciate fine craftsmanship and modern design — a versatile piece that 
+                works beautifully across various interior styles.
               </p>
             </div>
           )}
 
           {activeTab === "details" && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-2xl">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-2xl">
               {[
                 { label: "Category", value: product.category },
                 { label: "Price", value: `$${product.price}` },
@@ -108,10 +111,10 @@ export default function ProductDescription({ product }: { product: Product }) {
                 { label: "Weight", value: "Varies by product" },
               ].map((detail) => (
                 <div key={detail.label}>
-                  <p className="text-xs font-semibold text-[#B5B89B] uppercase tracking-wider mb-1">
+                  <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#B8BCA0] mb-1.5">
                     {detail.label}
                   </p>
-                  <p className="text-[#3F4E40] font-medium capitalize">{detail.value}</p>
+                  <p className="text-[#2C3B2D] text-sm font-medium capitalize">{detail.value}</p>
                 </div>
               ))}
             </div>
@@ -125,20 +128,20 @@ export default function ProductDescription({ product }: { product: Product }) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.08 }}
-                  className="border-b border-[#E5E0D8] pb-6 last:border-b-0"
+                  className="pb-6 border-b border-[#E8E3DA] last:border-b-0"
                 >
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex justify-between items-start mb-3">
                     <div>
-                      <p className="font-semibold text-[#3F4E40]">{review.author}</p>
-                      <p className="text-xs text-[#B5B89B]">{review.date}</p>
+                      <p className="font-medium text-[#2C3B2D] text-sm">{review.author}</p>
+                      <p className="text-xs text-[#B8BCA0] mt-0.5">{review.date}</p>
                     </div>
-                    <div className="flex text-[#D2A880]">
+                    <div className="flex gap-0.5 text-[#C7956D]">
                       {[...Array(review.rating)].map((_, i) => (
-                        <Star key={i} size={14} weight="fill" />
+                        <Star key={i} size={12} weight="fill" />
                       ))}
                     </div>
                   </div>
-                  <p className="text-[#546A50]/80 text-sm leading-relaxed">{review.text}</p>
+                  <p className="text-[#6B7C5E] text-sm leading-relaxed">{review.text}</p>
                 </motion.div>
               ))}
             </div>
