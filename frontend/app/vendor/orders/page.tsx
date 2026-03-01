@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ShoppingCart, Clock } from "@phosphor-icons/react"
+import { ShoppingCart } from "@phosphor-icons/react"
 import { useAuth } from "@/context/AuthContext"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
 
 interface OrderItem {
   orderId: string
@@ -15,7 +13,7 @@ interface OrderItem {
 export default function VendorOrdersPage() {
   const { token } = useAuth()
   const [loading, setLoading] = useState(true)
-  const [orders, setOrders] = useState<OrderItem[]>([])
+  const [orders] = useState<OrderItem[]>([])
 
   useEffect(() => {
     // Orders endpoint would require a dedicated vendor orders API
@@ -43,7 +41,7 @@ export default function VendorOrdersPage() {
         <ShoppingCart size={48} weight="duotone" className="text-[#6B7C5E] mb-4" />
         <h2 className="text-xl font-semibold text-[#3D5A3E] mb-2">Order tracking</h2>
         <p className="text-[#6B7C5E] text-sm text-center max-w-md">
-          Orders containing your products will appear here. You can view aggregate order stats on your
+          Once the catalog checkout is migrated, orders tied to your accepted supplier agreements will appear here. You can view aggregate stats on your
           <a href="/vendor" className="text-[#3D5A3E] font-semibold hover:underline ml-1">dashboard</a>.
         </p>
       </motion.div>

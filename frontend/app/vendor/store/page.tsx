@@ -5,8 +5,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Storefront, FloppyDisk } from "@phosphor-icons/react"
 import { useAuth } from "@/context/AuthContext"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+import { apiUrl } from "@/lib/api"
 
 interface StoreData {
   id?: string
@@ -42,7 +41,7 @@ export default function VendorStorePage() {
   useEffect(() => {
     const fetchStore = async () => {
       try {
-        const res = await fetch(`${API_URL}/vendor/store`, {
+        const res = await fetch(apiUrl("/vendor/store"), {
           headers: { Authorization: `Bearer ${token}` },
         })
         const json = await res.json()
@@ -76,7 +75,7 @@ export default function VendorStorePage() {
     setMessage("")
 
     try {
-      const url = `${API_URL}/vendor/store`
+      const url = apiUrl("/vendor/store")
       const method = hasStore ? "PUT" : "POST"
 
       const res = await fetch(url, {

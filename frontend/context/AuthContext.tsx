@@ -3,7 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect, useCallback } from "react"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+import { apiUrl } from "@/lib/api"
 
 interface Store {
   id: string
@@ -12,6 +12,19 @@ interface Store {
   description: string | null
   logo: string | null
   banner: string | null
+  approvalStatus: string
+  rejectionNote: string | null
+  isActive: boolean
+}
+
+interface AffiliateProfile {
+  id: string
+  displayName: string
+  referralCode: string
+  bio?: string | null
+  website?: string | null
+  payoutEmail?: string | null
+  commissionRate?: number
   approvalStatus: string
   rejectionNote: string | null
   isActive: boolean
@@ -26,8 +39,10 @@ interface User {
   profilePicture: string | null
   role: string
   vendorFeePaid: boolean
+  affiliateFeePaid: boolean
   addresses: unknown[]
   store: Store | null
+  affiliateProfile: AffiliateProfile | null
 }
 
 interface AuthContextType {
@@ -35,8 +50,8 @@ interface AuthContextType {
   token: string | null
   isLoading: boolean
   isAuthenticated: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; message?: string; requiresPayment?: boolean }>
-  register: (data: RegisterData) => Promise<{ success: boolean; message?: string }>
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string; requiresPayment?: boolean; user?: User | null }>
+  register: (data: RegisterData) => Promise<{ success: boolean; message?: string; user?: User | null }>
   logout: () => void
   refreshUser: () => Promise<void>
 }
@@ -75,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = useCallback(async (savedToken: string) => {
     try {
-      const res = await fetch(`${API_URL}/users/profile`, {
+      const res = await fetch(apiUrl("/users/profile"), {
         headers: { Authorization: `Bearer ${savedToken}` },
       })
 
@@ -110,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await fetch(`${API_URL}/users/login`, {
+      const res = await fetch(apiUrl("/users/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -120,13 +135,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.success && data.token) {
         persistSession(data.token, data.user)
-        return { success: true }
+        return { success: true, user: data.user }
       }
 
-      // 402: vendor must pay before full access
       if (data.requiresPayment && data.token) {
         persistSession(data.token, data.user)
-        return { success: false, requiresPayment: true, message: data.message }
+        return {
+          success: false,
+          requiresPayment: true,
+          message: data.message,
+          user: data.user,
+        }
       }
 
       return { success: false, message: data.message || "Login failed" }
@@ -137,7 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (registerData: RegisterData) => {
     try {
-      const res = await fetch(`${API_URL}/users/register`, {
+      const res = await fetch(apiUrl("/users/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(registerData),
@@ -147,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.success && data.token) {
         persistSession(data.token, data.user)
-        return { success: true }
+        return { success: true, user: data.user }
       }
 
       return { success: false, message: data.message || "Registration failed" }

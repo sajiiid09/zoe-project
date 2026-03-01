@@ -11,6 +11,7 @@ import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
 import { useAuth } from "@/context/AuthContext"
+import { getDefaultRouteForUser } from "@/lib/auth"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -20,7 +21,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [role, setRole] = useState<"CUSTOMER" | "VENDOR">("CUSTOMER")
+  const [role, setRole] = useState<"CUSTOMER" | "VENDOR" | "AFFILIATE">("CUSTOMER")
   const [error, setError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -43,11 +44,7 @@ export default function RegisterPage() {
     const result = await register({ email, password, firstName, lastName, role })
 
     if (result.success) {
-      if (role === "VENDOR") {
-        router.push("/vendor-payment")
-      } else {
-        router.push("/")
-      }
+      router.push(getDefaultRouteForUser(result.user))
     } else {
       setError(result.message || "Registration failed")
     }
@@ -191,7 +188,7 @@ export default function RegisterPage() {
                   <label className="text-[11px] tracking-[0.12em] uppercase text-[#6B7C5E] font-medium mb-3 block">
                     I want to
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                     <button
                       type="button"
                       onClick={() => setRole("CUSTOMER")}
@@ -214,16 +211,28 @@ export default function RegisterPage() {
                       }`}
                     >
                       <Storefront size={16} weight={role === "VENDOR" ? "fill" : "light"} />
-                      Sell
+                      Supply
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole("AFFILIATE")}
+                      className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-300 ${
+                        role === "AFFILIATE"
+                          ? "border-[#3D5A3E] bg-[#3D5A3E]/5 text-[#3D5A3E]"
+                          : "border-[#E8E3DA] text-[#B8BCA0] hover:border-[#C7956D]/40 hover:text-[#6B7C5E]"
+                      }`}
+                    >
+                      <ArrowRight size={16} weight={role === "AFFILIATE" ? "fill" : "light"} />
+                      Promote
                     </button>
                   </div>
-                  {role === "VENDOR" && (
+                  {(role === "VENDOR" || role === "AFFILIATE") && (
                     <motion.p
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       className="mt-2 text-xs text-[#C7956D]"
                     >
-                      A one-time $10 registration fee applies. You&apos;ll be redirected to payment after sign-up.
+                      A one-time $10 activation fee applies. You&apos;ll be redirected to the correct payment flow after sign-up.
                     </motion.p>
                   )}
                 </div>

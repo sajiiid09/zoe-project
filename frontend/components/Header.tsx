@@ -13,10 +13,10 @@ import {
   User,
   ShoppingBag,
   List,
-  Storefront,
   ArrowRight,
 } from "@phosphor-icons/react"
 import { useCart } from "@/context/CartContext"
+import { getDashboardRouteForRole, getRoleLabel } from "@/lib/auth"
 
 export default function Header() {
   const { items, subtotal, updateQuantity } = useCart()
@@ -172,22 +172,13 @@ export default function Header() {
                               >
                                 <User size={16} weight="light" /> Profile
                               </Link>
-                              {user?.role === "ADMIN" && (
+                              {user?.role !== "CUSTOMER" && (
                                 <Link
-                                  href="/admin"
+                                  href={getDashboardRouteForRole(user?.role)}
                                   onClick={() => setShowUserMenu(false)}
                                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#2C3B2D]/70 hover:text-[#2C3B2D] hover:bg-[#F5F2ED] transition-colors"
                                 >
-                                  <ArrowRight size={16} weight="light" /> Admin Panel
-                                </Link>
-                              )}
-                              {user?.role === "VENDOR" && (
-                                <Link
-                                  href="/vendor"
-                                  onClick={() => setShowUserMenu(false)}
-                                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#2C3B2D]/70 hover:text-[#2C3B2D] hover:bg-[#F5F2ED] transition-colors"
-                                >
-                                  <Storefront size={16} weight="light" /> Vendor Dashboard
+                                  <ArrowRight size={16} weight="light" /> {getRoleLabel(user?.role)} Dashboard
                                 </Link>
                               )}
                             </div>

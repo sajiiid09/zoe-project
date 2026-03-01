@@ -1,232 +1,278 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { Plus, PencilSimple, Trash, MagnifyingGlass, Clock, CheckCircle, XCircle } from "@phosphor-icons/react"
+import Image from "next/image"
+import { motion } from "framer-motion"
+import {
+  CheckCircle,
+  Clock,
+  MagnifyingGlass,
+  PencilSimple,
+  Plus,
+  Trash,
+  XCircle,
+} from "@phosphor-icons/react"
+
 import { useAuth } from "@/context/AuthContext"
+import { apiUrl } from "@/lib/api"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
-
-interface Product {
+interface Submission {
   id: string
-  name: string
-  price: number
-  stock: number
+  title: string
+  description: string | null
   category: string | null
+  vendorQuotedPrice: number
+  suggestedRetailPrice: number | null
+  stockAvailable: number
   images: string[]
-  approvalStatus: string
-  rejectionNote: string | null
+  status: string
+  rejectionReason: string | null
   createdAt: string
+  catalogProduct?: {
+    id: string
+    retailPrice: number
+    status: string
+  } | null
+}
+
+const statusStyles: Record<string, string> = {
+  SUBMITTED: "bg-amber-100 text-amber-800",
+  UNDER_REVIEW: "bg-sky-100 text-sky-800",
+  ACCEPTED: "bg-emerald-100 text-emerald-800",
+  REJECTED: "bg-rose-100 text-rose-800",
+  DRAFT: "bg-stone-100 text-stone-700",
+}
+
+const getStatusIcon = (status: string) => {
+  if (status === "ACCEPTED") {
+    return <CheckCircle size={14} weight="fill" />
+  }
+
+  if (status === "REJECTED") {
+    return <XCircle size={14} weight="fill" />
+  }
+
+  return <Clock size={14} weight="fill" />
 }
 
 export default function VendorProductsPage() {
   const { token } = useAuth()
-  const [products, setProducts] = useState<Product[]>([])
+  const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
-  const [deleting, setDeleting] = useState<string | null>(null)
-
-  const fetchProducts = async () => {
-    try {
-      const params = new URLSearchParams()
-      if (statusFilter) params.set("status", statusFilter)
-      const res = await fetch(`${API_URL}/vendor/products?${params}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const json = await res.json()
-      if (json.success) setProducts(json.data)
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (token) fetchProducts()
-  }, [token, statusFilter])
+    if (!token) {
+      setLoading(false)
+      return
+    }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) return
-    setDeleting(id)
+    const fetchSubmissions = async () => {
+      try {
+        const response = await fetch(apiUrl("/vendor/submissions"), {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = await response.json()
+
+        if (data.success) {
+          setSubmissions(data.data)
+        }
+      } catch {
+        // keep the current empty state
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSubmissions()
+  }, [token])
+
+  const filteredSubmissions = useMemo(() => {
+    return submissions.filter((submission) => {
+      const matchesStatus = statusFilter ? submission.status === statusFilter : true
+      const haystack = `${submission.title} ${submission.category || ""}`.toLowerCase()
+      const matchesSearch = haystack.includes(searchTerm.toLowerCase())
+      return matchesStatus && matchesSearch
+    })
+  }, [searchTerm, statusFilter, submissions])
+
+  const deleteSubmission = async (submissionId: string) => {
+    if (!token || !window.confirm("Delete this submission?")) {
+      return
+    }
+
+    setDeletingId(submissionId)
+
     try {
-      const res = await fetch(`${API_URL}/vendor/products/${id}`, {
+      const response = await fetch(apiUrl(`/vendor/submissions/${submissionId}`), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       })
-      const json = await res.json()
-      if (json.success) {
-        setProducts((prev) => prev.filter((p) => p.id !== id))
+      const data = await response.json()
+
+      if (data.success) {
+        setSubmissions((current) =>
+          current.filter((submission) => submission.id !== submissionId),
+        )
       }
-    } catch {
-      // ignore
     } finally {
-      setDeleting(null)
+      setDeletingId(null)
     }
-  }
-
-  const filtered = products.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-
-  const statusIcon = (status: string) => {
-    switch (status) {
-      case "APPROVED":
-        return <CheckCircle size={16} weight="fill" className="text-green-600" />
-      case "REJECTED":
-        return <XCircle size={16} weight="fill" className="text-red-600" />
-      default:
-        return <Clock size={16} weight="fill" className="text-yellow-600" />
-    }
-  }
-
-  const statusBadge = (status: string) => {
-    const colors: Record<string, string> = {
-      PENDING: "bg-yellow-100 text-yellow-700",
-      APPROVED: "bg-green-100 text-green-700",
-      REJECTED: "bg-red-100 text-red-700",
-    }
-    return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${colors[status] || "bg-gray-100 text-gray-700"}`}>
-        {statusIcon(status)} {status}
-      </span>
-    )
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-3 border-[#3D5A3E] border-t-transparent rounded-full animate-spin" />
+        <div className="h-9 w-9 rounded-full border-4 border-[#3D5A3E] border-t-transparent animate-spin" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 className="text-3xl font-bold text-[#3D5A3E]">My Products</h1>
-        <Link
-          href="/vendor/products/add"
-          className="flex items-center gap-2 bg-[#3D5A3E] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#2C3B2D] transition"
-        >
-          <Plus size={20} weight="bold" /> Add Product
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-[#8C8E75]">
+            Supplier Flow
+          </p>
+          <h2 className="font-display text-4xl font-medium text-[#2C3B2D]">
+            Product Submissions
+          </h2>
+        </div>
+
+        <Link href="/vendor/products/add" className="btn-primary">
+          <Plus size={16} weight="bold" />
+          New Submission
         </Link>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg p-6 shadow-sm border border-[#E8E3DA]"
-      >
-        <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-[#F5F2ED] px-4 py-2 rounded-lg">
-            <MagnifyingGlass size={20} weight="bold" className="text-[#6B7C5E]" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent outline-none text-[#3D5A3E] flex-1 text-sm"
-            />
-          </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-[#E8E3DA] rounded-lg text-[#3D5A3E] text-sm focus:outline-none focus:ring-2 focus:ring-[#8AADA0]"
-          >
-            <option value="">All Statuses</option>
-            <option value="PENDING">Pending</option>
-            <option value="APPROVED">Approved</option>
-            <option value="REJECTED">Rejected</option>
-          </select>
+      <div className="grid gap-4 rounded-2xl border border-[#E8E3DA] bg-white p-5 shadow-sm lg:grid-cols-[1fr_auto]">
+        <div className="flex items-center gap-3 rounded-xl bg-[#F5F2ED] px-4 py-3">
+          <MagnifyingGlass size={18} weight="duotone" className="text-[#5E7B60]" />
+          <input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search by title or category"
+            className="w-full bg-transparent text-sm text-[#2C3B2D] outline-none placeholder:text-[#8C8E75]"
+          />
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="text-center py-12 text-[#6B7C5E]">
-            <p className="text-lg font-medium">No products found</p>
-            <p className="text-sm mt-1">Add your first product to get started</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#E8E3DA]">
-                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Product</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Price</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Stock</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((product, index) => (
-                  <motion.tr
-                    key={product.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.04 }}
-                    className="border-b border-[#E8E3DA] hover:bg-[#F5F2ED] transition"
-                  >
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={product.images?.[0] || "/placeholder.svg"}
-                          alt={product.name}
-                          className="w-10 h-10 rounded object-cover bg-[#E8E3DA]"
-                        />
-                        <div>
-                          <span className="font-semibold text-[#3D5A3E] text-sm">{product.name}</span>
-                          {product.category && (
-                            <p className="text-xs text-[#6B7C5E]">{product.category}</p>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-[#3D5A3E] font-medium text-sm">${Number(product.price).toFixed(2)}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          product.stock > 20 ? "bg-green-100 text-green-700" : product.stock > 0 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {product.stock}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {statusBadge(product.approvalStatus)}
-                      {product.rejectionNote && (
-                        <p className="text-xs text-red-500 mt-1">{product.rejectionNote}</p>
-                      )}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <Link href={`/vendor/products/${product.id}/edit`}>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="p-2 text-[#8AADA0] hover:bg-[#F5F2ED] rounded transition"
-                          >
-                            <PencilSimple size={18} weight="bold" />
-                          </motion.button>
-                        </Link>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => handleDelete(product.id)}
-                          disabled={deleting === product.id}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded transition disabled:opacity-50"
+        <select
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+          className="rounded-xl border border-[#E8E3DA] px-4 py-3 text-sm text-[#2C3B2D] outline-none"
+        >
+          <option value="">All statuses</option>
+          <option value="SUBMITTED">Submitted</option>
+          <option value="UNDER_REVIEW">Under review</option>
+          <option value="ACCEPTED">Accepted</option>
+          <option value="REJECTED">Rejected</option>
+          <option value="DRAFT">Draft</option>
+        </select>
+      </div>
+
+      {filteredSubmissions.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-[#D3D6CA] bg-[#FCFBF8] px-6 py-14 text-center">
+          <p className="text-lg font-medium text-[#2C3B2D]">No submissions yet</p>
+          <p className="mt-2 text-sm text-[#6C7963]">
+            Submit supplier offers here. Approved offers are converted into admin-owned catalog
+            products.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredSubmissions.map((submission, index) => {
+            const isMutable = submission.status === "SUBMITTED" || submission.status === "DRAFT"
+
+            return (
+              <motion.article
+                key={submission.id}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="rounded-2xl border border-[#E8E3DA] bg-white p-5 shadow-sm"
+              >
+                <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                  <div className="flex gap-4">
+                    <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-[#F5F2ED]">
+                      <Image
+                        src={submission.images[0] || "/placeholder.svg"}
+                        alt={submission.title}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-lg font-semibold text-[#2C3B2D]">
+                          {submission.title}
+                        </h3>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[submission.status] || "bg-stone-100 text-stone-700"}`}
                         >
-                          <Trash size={18} weight="bold" />
-                        </motion.button>
+                          {getStatusIcon(submission.status)}
+                          {submission.status.replace("_", " ")}
+                        </span>
                       </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </motion.div>
+
+                      <div className="flex flex-wrap gap-4 text-sm text-[#526453]">
+                        <span>Quote: ${submission.vendorQuotedPrice.toFixed(2)}</span>
+                        <span>
+                          Suggested: $
+                          {submission.suggestedRetailPrice?.toFixed(2) || "Not set"}
+                        </span>
+                        <span>Stock: {submission.stockAvailable}</span>
+                        <span>{submission.category || "Uncategorized"}</span>
+                      </div>
+
+                      {submission.catalogProduct && (
+                        <p className="text-sm text-[#3D5A3E]">
+                          Published by admin at $
+                          {Number(submission.catalogProduct.retailPrice).toFixed(2)} in the
+                          catalog.
+                        </p>
+                      )}
+
+                      {submission.rejectionReason && (
+                        <p className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                          {submission.rejectionReason}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-start">
+                    {isMutable && (
+                      <Link
+                        href={`/vendor/products/${submission.id}/edit`}
+                        className="rounded-xl border border-[#DDE4D7] p-3 text-[#456047] transition hover:border-[#3D5A3E] hover:bg-[#F5F8F3]"
+                      >
+                        <PencilSimple size={16} weight="bold" />
+                      </Link>
+                    )}
+
+                    {isMutable && (
+                      <button
+                        type="button"
+                        onClick={() => deleteSubmission(submission.id)}
+                        disabled={deletingId === submission.id}
+                        className="rounded-xl border border-rose-200 p-3 text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+                      >
+                        <Trash size={16} weight="bold" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.article>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

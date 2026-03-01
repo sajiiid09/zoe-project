@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { CreditCard, Storefront, ShieldCheck } from "@phosphor-icons/react"
 import Header from "@/components/Header"
@@ -8,8 +8,7 @@ import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
 import { useAuth } from "@/context/AuthContext"
 import { useRouter } from "next/navigation"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+import { apiUrl } from "@/lib/api"
 
 export default function VendorPaymentPage() {
   const { user, token, isAuthenticated } = useAuth()
@@ -17,9 +16,13 @@ export default function VendorPaymentPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  // If already paid, redirect to vendor dashboard
+  useEffect(() => {
+    if (user?.vendorFeePaid) {
+      router.replace("/vendor")
+    }
+  }, [router, user?.vendorFeePaid])
+
   if (user?.vendorFeePaid) {
-    router.push("/vendor")
     return null
   }
 
@@ -33,7 +36,7 @@ export default function VendorPaymentPage() {
     setError("")
 
     try {
-      const res = await fetch(`${API_URL}/payments/vendor-fee`, {
+      const res = await fetch(apiUrl("/payments/vendor-fee"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,15 +87,15 @@ export default function VendorPaymentPage() {
               <div className="border-t border-[#E8E3DA] pt-4 space-y-2">
                 <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
                   <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />
-                  <span>Create and manage your own store</span>
+                  <span>Create and manage your supplier profile</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
                   <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />
-                  <span>List unlimited products on the marketplace</span>
+                  <span>Submit products for admin review and resale</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
                   <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />
-                  <span>Access vendor dashboard &amp; analytics</span>
+                  <span>Access supplier submissions and store tools</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-[#3D5A3E]">
                   <ShieldCheck size={16} weight="bold" className="text-[#8AADA0]" />

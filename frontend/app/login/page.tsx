@@ -11,6 +11,7 @@ import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
 import { useAuth } from "@/context/AuthContext"
+import { getDefaultRouteForUser, getPaymentRouteForRole } from "@/lib/auth"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -28,9 +29,9 @@ export default function LoginPage() {
     const result = await login(email, password)
 
     if (result.success) {
-      router.push("/")
+      router.push(getDefaultRouteForUser(result.user))
     } else if (result.requiresPayment) {
-      router.push("/vendor-payment")
+      router.push(getPaymentRouteForRole(result.user?.role) || "/")
     } else {
       setError(result.message || "Login failed")
     }

@@ -8,6 +8,7 @@ import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
 import { useAuth } from "@/context/AuthContext"
 import { useRouter } from "next/navigation"
+import { getDashboardRouteForRole, getRoleLabel } from "@/lib/auth"
 
 export default function Profile() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -165,9 +166,16 @@ export default function Profile() {
             transition={{ delay: 0.4 }}
             className="mt-12 text-center"
           >
-            <Link href="/shop" className="btn-outline">
-              Continue Shopping <ArrowRight size={14} weight="bold" />
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link href="/shop" className="btn-outline">
+                Continue Shopping <ArrowRight size={14} weight="bold" />
+              </Link>
+              {user?.role !== "CUSTOMER" && (
+                <Link href={getDashboardRouteForRole(user?.role)} className="btn-primary">
+                  Open {getRoleLabel(user?.role)} Dashboard <ArrowRight size={14} weight="bold" />
+                </Link>
+              )}
+            </div>
           </motion.div>
         </div>
       </PageTransition>

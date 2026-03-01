@@ -4,8 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { MagnifyingGlass, CheckCircle, XCircle, Clock, Storefront, CaretDown } from "@phosphor-icons/react"
 import { useAuth } from "@/context/AuthContext"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+import { apiUrl } from "@/lib/api"
 
 interface Vendor {
   id: string
@@ -37,7 +36,7 @@ export default function AdminVendorsPage() {
 
   const fetchVendors = async () => {
     try {
-      const res = await fetch(`${API_URL}/users/admin/vendors`, {
+      const res = await fetch(apiUrl("/users/admin/vendors"), {
         headers: { Authorization: `Bearer ${token}` },
       })
       const json = await res.json()
@@ -56,7 +55,7 @@ export default function AdminVendorsPage() {
   const approveStore = async (storeId: string) => {
     setActionLoading(storeId)
     try {
-      const res = await fetch(`${API_URL}/users/admin/vendors/${storeId}/approve`, {
+      const res = await fetch(apiUrl(`/users/admin/vendors/${storeId}/approve`), {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -81,7 +80,7 @@ export default function AdminVendorsPage() {
     if (!rejectModal) return
     setActionLoading(rejectModal.storeId)
     try {
-      const res = await fetch(`${API_URL}/users/admin/vendors/${rejectModal.storeId}/reject`, {
+      const res = await fetch(apiUrl(`/users/admin/vendors/${rejectModal.storeId}/reject`), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

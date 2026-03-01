@@ -9,8 +9,7 @@ import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
 import { useAuth } from "@/context/AuthContext"
 import Link from "next/link"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+import { apiUrl } from "@/lib/api"
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
@@ -30,7 +29,7 @@ function PaymentSuccessContent() {
 
     const verify = async () => {
       try {
-        const res = await fetch(`${API_URL}/payments/vendor-fee/verify`, {
+        const res = await fetch(apiUrl("/payments/vendor-fee/verify"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -86,7 +85,7 @@ function PaymentSuccessContent() {
           </motion.div>
           <h1 className="font-display text-3xl font-medium text-[#2C3B2D] mb-2">Payment Successful!</h1>
           <p className="text-[#6B7C5E] mb-6">
-            Your vendor account is now active. You can set up your store and start selling.
+            Your vendor account is now active. You can set up your store and start sending supplier offers for review.
           </p>
 
           <div className="bg-[#F5F2ED] rounded-xl p-6 mb-6 text-left">
@@ -96,8 +95,8 @@ function PaymentSuccessContent() {
             </div>
             <ul className="space-y-2 text-sm text-[#3D5A3E]">
               <li>1. Set up your store profile and branding</li>
-              <li>2. Add your first products to the catalog</li>
-              <li>3. Wait for admin approval, then you&apos;re live!</li>
+              <li>2. Submit your first product offer</li>
+              <li>3. Wait for admin approval and catalog pricing</li>
             </ul>
           </div>
 

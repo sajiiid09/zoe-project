@@ -5,8 +5,7 @@ import { motion } from "framer-motion"
 import { Package, ShoppingCart, TrendUp, Clock, CheckCircle, XCircle, Storefront } from "@phosphor-icons/react"
 import Link from "next/link"
 import { useAuth } from "@/context/AuthContext"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+import { apiUrl } from "@/lib/api"
 
 interface DashboardData {
   hasStore: boolean
@@ -29,7 +28,7 @@ export default function VendorDashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch(`${API_URL}/vendor/dashboard`, {
+        const res = await fetch(apiUrl("/vendor/dashboard"), {
           headers: { Authorization: `Bearer ${token}` },
         })
         const json = await res.json()
@@ -58,7 +57,7 @@ export default function VendorDashboard() {
           <Storefront size={64} weight="duotone" className="text-[#3D5A3E] mx-auto mb-4" />
           <h2 className="font-display text-2xl font-medium text-[#2C3B2D] mb-2">Welcome, Vendor!</h2>
           <p className="text-[#6B7C5E] mb-6 max-w-md">
-            You haven&apos;t created your store yet. Set up your store to start listing products on Decormade.
+            You haven&apos;t created your store yet. Set up your supplier profile before you can submit products for admin review.
           </p>
           <Link
             href="/vendor/store"
@@ -104,7 +103,7 @@ export default function VendorDashboard() {
         >
           <p className="font-semibold">
             {store.approvalStatus === "PENDING"
-              ? "Your store is pending admin approval. You can set up your products, but they won't be visible until your store is approved."
+              ? "Your store is pending admin approval. Once approved, you can send supplier offers to the admin for catalog review."
               : "Your store application was rejected. Please contact support for more information."}
           </p>
         </motion.div>
@@ -150,8 +149,8 @@ export default function VendorDashboard() {
         >
           <Package size={24} weight="duotone" className="text-[#3D5A3E]" />
           <div>
-            <p className="font-semibold text-[#3D5A3E] group-hover:text-[#2C3B2D] transition">Add New Product</p>
-            <p className="text-sm text-[#6B7C5E]">List a new product for approval</p>
+            <p className="font-semibold text-[#3D5A3E] group-hover:text-[#2C3B2D] transition">Create Supplier Offer</p>
+            <p className="text-sm text-[#6B7C5E]">Submit a new product quote for admin review</p>
           </div>
         </Link>
         <Link
