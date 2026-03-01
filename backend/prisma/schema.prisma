@@ -11,6 +11,7 @@ enum UserRole {
   ADMIN
   CUSTOMER
   VENDOR
+  AFFILIATE
 }
 
 enum ApprovalStatus {
@@ -19,27 +20,68 @@ enum ApprovalStatus {
   REJECTED
 }
 
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  ARCHIVED
+}
+
+enum CatalogStatus {
+  DRAFT
+  ACTIVE
+  DISCONTINUED
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  SCHEDULED
+  PAID
+  VOIDED
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  EARNED
+  PAID
+  VOIDED
+}
+
 model User {
-  id             String         @id @default(cuid())
-  email          String         @unique
-  password       String
-  firstName      String?
-  lastName       String?
-  phone          String?
-  role           UserRole       @default(CUSTOMER)
-  isActive       Boolean        @default(true)
-  vendorFeePaid  Boolean        @default(false)
-  stripeSessionId String?
-  preferences    Json?
-  profilePicture String?
-  loginCount     Int            @default(0)
-  lastLogin      DateTime?
-  addresses      UserAddress[]
-  reviews        Review[]
-  orders         Order[]
-  store          Store?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id                           String                  @id @default(cuid())
+  email                        String                  @unique
+  password                     String
+  firstName                    String?
+  lastName                     String?
+  phone                        String?
+  role                         UserRole                @default(CUSTOMER)
+  isActive                     Boolean                 @default(true)
+  vendorFeePaid                Boolean                 @default(false)
+  stripeSessionId              String?
+  affiliateFeePaid             Boolean                 @default(false)
+  affiliateStripeSessionId     String?
+  preferences                  Json?
+  profilePicture               String?
+  loginCount                   Int                     @default(0)
+  lastLogin                    DateTime?
+  addresses                    UserAddress[]
+  reviews                      Review[]
+  orders                       Order[]
+  store                        Store?
+  affiliateProfile             AffiliateProfile?
+  vendorSubmissions            VendorSubmission[]      @relation("VendorSubmissionVendor")
+  reviewedSubmissions          VendorSubmission[]      @relation("SubmissionReviewedBy")
+  suppliedCatalogProducts      CatalogProduct[]        @relation("CatalogSupplierVendor")
+  createdCatalogProducts       CatalogProduct[]        @relation("CatalogCreatedBy")
+  vendorSupplyAgreements       VendorSupplyAgreement[] @relation("VendorSupplyAgreementVendor")
+  createdSupplyAgreements      VendorSupplyAgreement[] @relation("VendorSupplyAgreementAdmin")
+  vendorPayouts                VendorPayout[]          @relation("VendorPayoutVendor")
+  createdAt                    DateTime                @default(now())
+  updatedAt                    DateTime                @updatedAt
 }
 
 model UserAddress {
@@ -71,6 +113,7 @@ model Store {
   owner          User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId        String         @unique
   products       Product[]
+  submissions    VendorSubmission[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
@@ -148,4 +191,176 @@ model OrderItem {
   total     Decimal  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model AffiliateProfile {
+  id             String         @id @default(cuid())
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String         @unique
+  displayName    String?
+  referralCode   String         @unique
+  bio            String?
+  website        String?
+  payoutEmail    String?
+  commissionRate Decimal        @default(0.05)
+  approvalStatus ApprovalStatus @default(PENDING)
+  rejectionNote  String?
+  isActive       Boolean        @default(true)
+  links          AffiliateLink[]
+  clicks         AffiliateClick[]
+  commissions    AffiliateCommission[]
+  payouts        AffiliatePayout[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model VendorSubmission {
+  id                  String                 @id @default(cuid())
+  vendor              User                   @relation("VendorSubmissionVendor", fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId            String
+  store               Store                  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  storeId             String
+  title               String
+  description         String?
+  category            String?
+  vendorQuotedPrice   Decimal
+  suggestedRetailPrice Decimal?
+  currency            String                 @default("usd")
+  stockAvailable      Int                    @default(0)
+  images              Json?
+  status              SubmissionStatus       @default(SUBMITTED)
+  rejectionReason     String?
+  submittedAt         DateTime               @default(now())
+  reviewedAt          DateTime?
+  reviewedBy          User?                  @relation("SubmissionReviewedBy", fields: [reviewedById], references: [id])
+  reviewedById        String?
+  catalogProduct      CatalogProduct?
+  supplyAgreement     VendorSupplyAgreement?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+}
+
+model CatalogProduct {
+  id                String                  @id @default(cuid())
+  sourceSubmission  VendorSubmission?       @relation(fields: [sourceSubmissionId], references: [id])
+  sourceSubmissionId String?                @unique
+  supplierVendor    User?                   @relation("CatalogSupplierVendor", fields: [supplierVendorId], references: [id])
+  supplierVendorId  String?
+  title             String
+  description       String?
+  category          String?
+  retailPrice       Decimal
+  currency          String                  @default("usd")
+  stock             Int                     @default(0)
+  images            Json?
+  isFeatured        Boolean                 @default(false)
+  isCommissionable  Boolean                 @default(true)
+  status            CatalogStatus           @default(DRAFT)
+  createdByAdmin    User                    @relation("CatalogCreatedBy", fields: [createdByAdminId], references: [id])
+  createdByAdminId  String
+  supplyAgreements  VendorSupplyAgreement[]
+  affiliateLinks    AffiliateLink[]
+  affiliateClicks   AffiliateClick[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+}
+
+model VendorSupplyAgreement {
+  id                String       @id @default(cuid())
+  submission        VendorSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  submissionId      String       @unique
+  catalogProduct    CatalogProduct @relation(fields: [catalogProductId], references: [id], onDelete: Cascade)
+  catalogProductId  String
+  vendor            User         @relation("VendorSupplyAgreementVendor", fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId          String
+  agreedPayoutAmount Decimal
+  currency          String       @default("usd")
+  effectiveFrom     DateTime     @default(now())
+  effectiveTo       DateTime?
+  status            String       @default("ACTIVE")
+  createdByAdmin    User         @relation("VendorSupplyAgreementAdmin", fields: [createdByAdminId], references: [id])
+  createdByAdminId  String
+  createdAt         DateTime     @default(now())
+}
+
+model AffiliateLink {
+  id              String            @id @default(cuid())
+  affiliate       AffiliateProfile  @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  affiliateId     String
+  catalogProduct  CatalogProduct    @relation(fields: [catalogProductId], references: [id], onDelete: Cascade)
+  catalogProductId String
+  token           String            @unique
+  isActive        Boolean           @default(true)
+  clickCount      Int               @default(0)
+  lastClickedAt   DateTime?
+  clicks          AffiliateClick[]
+  commissions     AffiliateCommission[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model AffiliateClick {
+  id               String           @id @default(cuid())
+  link             AffiliateLink    @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  linkId           String
+  affiliate        AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  affiliateId      String
+  catalogProduct   CatalogProduct   @relation(fields: [catalogProductId], references: [id], onDelete: Cascade)
+  catalogProductId String
+  token            String
+  ipAddress        String?
+  userAgent        String?
+  referrer         String?
+  clickedAt        DateTime         @default(now())
+}
+
+model AffiliateCommission {
+  id               String           @id @default(cuid())
+  affiliate        AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  affiliateId      String
+  link             AffiliateLink?   @relation(fields: [linkId], references: [id])
+  linkId           String?
+  commissionRate   Decimal
+  baseAmount       Decimal
+  amount           Decimal
+  orderId          String?
+  orderItemId      String?
+  status           CommissionStatus @default(PENDING)
+  eligibleAt       DateTime?
+  paidAt           DateTime?
+  voidedAt         DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model VendorPayout {
+  id               String       @id @default(cuid())
+  vendor           User         @relation("VendorPayoutVendor", fields: [vendorId], references: [id], onDelete: Cascade)
+  vendorId         String
+  orderId          String?
+  orderItemId      String?
+  amount           Decimal
+  currency         String       @default("usd")
+  status           PayoutStatus @default(PENDING)
+  eligibleAt       DateTime?
+  paidAt           DateTime?
+  paymentReference String?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model AffiliatePayout {
+  id               String           @id @default(cuid())
+  affiliate        AffiliateProfile @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  affiliateId      String
+  amount           Decimal
+  currency         String           @default("usd")
+  status           PayoutStatus     @default(PENDING)
+  eligibleAt       DateTime?
+  paidAt           DateTime?
+  paymentReference String?
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 }

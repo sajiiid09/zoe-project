@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
 import { asyncHandler } from '../middleware/authMiddleware.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
 const TOKEN_EXPIRY = '7d';
 
 const generateToken = (userId) => {
@@ -19,9 +19,11 @@ const formatUserResponse = (user) => ({
   profilePicture: user.profilePicture,
   role: user.role,
   vendorFeePaid: user.vendorFeePaid || false,
+  affiliateFeePaid: user.affiliateFeePaid || false,
   preferences: user.preferences,
   addresses: user.addresses ?? [],
   store: user.store ?? null,
+  affiliateProfile: user.affiliateProfile ?? null,
   lastLogin: user.lastLogin,
   createdAt: user.createdAt,
 });
@@ -36,8 +38,8 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Allow registering as VENDOR; default to CUSTOMER
-  const validRoles = ['CUSTOMER', 'VENDOR'];
+  // Allow registering as VENDOR or AFFILIATE; default to CUSTOMER
+  const validRoles = ['CUSTOMER', 'VENDOR', 'AFFILIATE'];
   const userRole = validRoles.includes(role) ? role : 'CUSTOMER';
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -59,10 +61,11 @@ export const registerUser = asyncHandler(async (req, res) => {
       lastName: lastName || null,
       role: userRole,
       isActive: true,
+      affiliateFeePaid: userRole === 'AFFILIATE' ? false : undefined,
       loginCount: 1,
       lastLogin: new Date(),
     },
-    include: { addresses: true, store: true },
+    include: { addresses: true, store: true, affiliateProfile: true },
   });
 
   const token = generateToken(user.id);
@@ -87,7 +90,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { addresses: true, store: true },
+    include: { addresses: true, store: true, affiliateProfile: true },
   });
 
   if (!user) {
@@ -121,6 +124,21 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
+  if (user.role === 'AFFILIATE' && !user.affiliateFeePaid) {
+    const isPassValid = await bcrypt.compare(password, user.password);
+    if (!isPassValid) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+    const tempToken = generateToken(user.id);
+    return res.status(402).json({
+      success: false,
+      requiresPayment: true,
+      token: tempToken,
+      user: formatUserResponse(user),
+      message: 'Affiliate registration fee required. Please complete payment to access your account.',
+    });
+  }
+
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
@@ -151,7 +169,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 export const getUserProfile = asyncHandler(async (req, res) => {
   const fullUser = await prisma.user.findUnique({
     where: { id: req.user.id },
-    include: { addresses: true, store: true },
+    include: { addresses: true, store: true, affiliateProfile: true },
   });
 
   res.json({
@@ -181,7 +199,7 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
   const updatedUser = await prisma.user.update({
     where: { id: req.user.id },
     data,
-    include: { addresses: true },
+    include: { addresses: true, affiliateProfile: true },
   });
 
   res.json({
