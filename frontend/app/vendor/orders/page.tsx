@@ -26,25 +26,25 @@ export default function VendorOrdersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-3 border-[#546A50] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-[#3D5A3E] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-[#546A50]">Orders</h1>
+      <h1 className="text-3xl font-bold text-[#3D5A3E]">Orders</h1>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col items-center justify-center py-16 bg-white rounded-lg border border-[#E5E0D8] shadow-sm"
+        className="flex flex-col items-center justify-center py-16 bg-[#FDFCFA] rounded-xl border border-[#E8E3DA] shadow-sm"
       >
-        <ShoppingCart size={48} weight="duotone" className="text-[#B5B89B] mb-4" />
-        <h2 className="text-xl font-semibold text-[#546A50] mb-2">Order tracking</h2>
-        <p className="text-[#B5B89B] text-sm text-center max-w-md">
+        <ShoppingCart size={48} weight="duotone" className="text-[#6B7C5E] mb-4" />
+        <h2 className="text-xl font-semibold text-[#3D5A3E] mb-2">Order tracking</h2>
+        <p className="text-[#6B7C5E] text-sm text-center max-w-md">
           Orders containing your products will appear here. You can view aggregate order stats on your
-          <a href="/vendor" className="text-[#546A50] font-semibold hover:underline ml-1">dashboard</a>.
+          <a href="/vendor" className="text-[#3D5A3E] font-semibold hover:underline ml-1">dashboard</a>.
         </p>
       </motion.div>
     </div>

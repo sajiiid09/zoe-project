@@ -96,7 +96,7 @@ export default function VendorProductsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-3 border-[#546A50] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-[#3D5A3E] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -104,10 +104,10 @@ export default function VendorProductsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <h1 className="text-3xl font-bold text-[#546A50]">My Products</h1>
+        <h1 className="text-3xl font-bold text-[#3D5A3E]">My Products</h1>
         <Link
           href="/vendor/products/add"
-          className="flex items-center gap-2 bg-[#546A50] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#3F4E40] transition"
+          className="flex items-center gap-2 bg-[#3D5A3E] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#2C3B2D] transition"
         >
           <Plus size={20} weight="bold" /> Add Product
         </Link>
@@ -116,23 +116,23 @@ export default function VendorProductsPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
+        className="bg-white rounded-lg p-6 shadow-sm border border-[#E8E3DA]"
       >
         <div className="flex items-center gap-3 mb-6 flex-wrap">
-          <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-            <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
+          <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-[#F5F2ED] px-4 py-2 rounded-lg">
+            <MagnifyingGlass size={20} weight="bold" className="text-[#6B7C5E]" />
             <input
               type="text"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent outline-none text-[#546A50] flex-1 text-sm"
+              className="bg-transparent outline-none text-[#3D5A3E] flex-1 text-sm"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-[#E5E0D8] rounded-lg text-[#546A50] text-sm focus:outline-none focus:ring-2 focus:ring-[#7EBAAD]"
+            className="px-4 py-2 border border-[#E8E3DA] rounded-lg text-[#3D5A3E] text-sm focus:outline-none focus:ring-2 focus:ring-[#8AADA0]"
           >
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -142,7 +142,7 @@ export default function VendorProductsPage() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-[#B5B89B]">
+          <div className="text-center py-12 text-[#6B7C5E]">
             <p className="text-lg font-medium">No products found</p>
             <p className="text-sm mt-1">Add your first product to get started</p>
           </div>
@@ -150,12 +150,12 @@ export default function VendorProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#E5E0D8]">
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Product</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Price</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Stock</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[#546A50] text-sm">Actions</th>
+                <tr className="border-b border-[#E8E3DA]">
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Product</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Price</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Stock</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E] text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -165,24 +165,24 @@ export default function VendorProductsPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.04 }}
-                    className="border-b border-[#E5E0D8] hover:bg-[#F5F3F0] transition"
+                    className="border-b border-[#E8E3DA] hover:bg-[#F5F2ED] transition"
                   >
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <img
                           src={product.images?.[0] || "/placeholder.svg"}
                           alt={product.name}
-                          className="w-10 h-10 rounded object-cover bg-[#E5E0D8]"
+                          className="w-10 h-10 rounded object-cover bg-[#E8E3DA]"
                         />
                         <div>
-                          <span className="font-semibold text-[#546A50] text-sm">{product.name}</span>
+                          <span className="font-semibold text-[#3D5A3E] text-sm">{product.name}</span>
                           {product.category && (
-                            <p className="text-xs text-[#B5B89B]">{product.category}</p>
+                            <p className="text-xs text-[#6B7C5E]">{product.category}</p>
                           )}
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-[#546A50] font-medium text-sm">${Number(product.price).toFixed(2)}</td>
+                    <td className="py-3 px-4 text-[#3D5A3E] font-medium text-sm">${Number(product.price).toFixed(2)}</td>
                     <td className="py-3 px-4">
                       <span
                         className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
@@ -204,7 +204,7 @@ export default function VendorProductsPage() {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-2 text-[#7EBAAD] hover:bg-[#F5F3F0] rounded transition"
+                            className="p-2 text-[#8AADA0] hover:bg-[#F5F2ED] rounded transition"
                           >
                             <PencilSimple size={18} weight="bold" />
                           </motion.button>

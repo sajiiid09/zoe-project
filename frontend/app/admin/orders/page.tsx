@@ -23,34 +23,34 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-[#546A50]">Orders Management</h1>
+      <h1 className="text-3xl font-bold text-[#3D5A3E]">Orders Management</h1>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8]"
+        className="bg-white rounded-lg p-6 shadow-sm border border-[#E8E3DA]"
       >
-        <div className="mb-6 flex items-center gap-2 bg-[#F5F3F0] px-4 py-2 rounded-lg">
-          <MagnifyingGlass size={20} weight="bold" className="text-[#B5B89B]" />
+        <div className="mb-6 flex items-center gap-2 bg-[#F5F2ED] px-4 py-2 rounded-lg">
+          <MagnifyingGlass size={20} weight="bold" className="text-[#6B7C5E]" />
           <input
             type="text"
             placeholder="Search orders..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-transparent outline-none text-[#546A50] flex-1"
+            className="bg-transparent outline-none text-[#3D5A3E] flex-1"
           />
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#E5E0D8]">
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Order ID</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Customer</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Date</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Total</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Status</th>
-                <th className="text-left py-3 px-4 font-semibold text-[#546A50]">Actions</th>
+              <tr className="border-b border-[#E8E3DA]">
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Order ID</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Customer</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Date</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Total</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-[#3D5A3E]">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -60,12 +60,12 @@ export default function OrdersPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="border-b border-[#E5E0D8] hover:bg-[#F5F3F0] transition"
+                  className="border-b border-[#E8E3DA] hover:bg-[#F5F2ED] transition"
                 >
-                  <td className="py-3 px-4 font-semibold text-[#546A50]">{order.id}</td>
-                  <td className="py-3 px-4 text-[#546A50]">{order.customer}</td>
-                  <td className="py-3 px-4 text-[#B5B89B]">{order.date}</td>
-                  <td className="py-3 px-4 font-semibold text-[#546A50]">{order.total}</td>
+                  <td className="py-3 px-4 font-semibold text-[#3D5A3E]">{order.id}</td>
+                  <td className="py-3 px-4 text-[#3D5A3E]">{order.customer}</td>
+                  <td className="py-3 px-4 text-[#6B7C5E]">{order.date}</td>
+                  <td className="py-3 px-4 font-semibold text-[#3D5A3E]">{order.total}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -83,7 +83,7 @@ export default function OrdersPage() {
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
-                      className="p-2 text-[#7EBAAD] hover:bg-[#F5F3F0] rounded transition"
+                      className="p-2 text-[#8AADA0] hover:bg-[#F5F2ED] rounded transition"
                     >
                       <Eye size={18} weight="bold" />
                     </motion.button>

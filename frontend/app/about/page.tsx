@@ -2,108 +2,196 @@
 
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { Leaf, Palette, HandHeart, ShieldCheck } from "@phosphor-icons/react"
+import Link from "next/link"
+import { Leaf, Palette, HandHeart, ShieldCheck, ArrowRight } from "@phosphor-icons/react"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import PageTransition from "@/components/PageTransition"
 
 const values = [
-  { title: "Quality", desc: "We source only the finest materials and work with skilled artisans.", icon: ShieldCheck },
-  { title: "Sustainability", desc: "We are committed to environmentally responsible practices.", icon: Leaf },
-  { title: "Design", desc: "Every piece is carefully curated to complement modern living spaces.", icon: Palette },
-  { title: "Customer Service", desc: "Your satisfaction is our top priority.", icon: HandHeart },
+  { title: "Quality First", desc: "We source only the finest materials and partner with skilled artisans who share our vision.", icon: ShieldCheck },
+  { title: "Sustainably Made", desc: "Every piece is created with minimal environmental impact — from material to packaging.", icon: Leaf },
+  { title: "Thoughtful Design", desc: "Each item is carefully curated to complement modern living spaces with timeless elegance.", icon: Palette },
+  { title: "Human Connection", desc: "Behind every product is a story, a maker, and a commitment to ethical practices.", icon: HandHeart },
 ]
 
+const STATS = [
+  { number: "500+", label: "Artisan Partners" },
+  { number: "12K", label: "Happy Homes" },
+  { number: "98%", label: "Satisfaction Rate" },
+  { number: "6", label: "Years of Craft" },
+]
+
+function stagger(i: number) {
+  return { delay: 0.1 + i * 0.08 }
+}
+
 export default function About() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-  }
-
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAF8]">
+    <div className="min-h-screen flex flex-col bg-[#FDFCFA]">
       <Header />
       <PageTransition>
-        {/* Hero Section */}
-        <section className="relative h-[50vh] min-h-[360px] overflow-hidden">
+        {/* Hero */}
+        <section className="relative h-[55vh] min-h-[400px] overflow-hidden grain-overlay">
           <Image
-            src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1400&h=600&fit=crop&q=80"
-            alt="About Decormade"
+            src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1600&h=800&fit=crop&q=80"
+            alt="Decormade workshop"
             fill
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-[#3F4E40]/60" />
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 bg-[#2C3B2D]/55" />
+          <div className="absolute inset-0 flex items-center justify-center z-20">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="text-center text-white px-4"
+              transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-center text-[#FDFCFA] px-6"
             >
-              <h1 className="text-5xl md:text-6xl font-bold mb-4">About Decormade</h1>
-              <p className="text-lg md:text-xl text-white/80 max-w-xl mx-auto">
+              <p className="text-[11px] tracking-[0.25em] uppercase font-medium text-[#C7956D] mb-4">
+                Our Story
+              </p>
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-medium leading-[1.05] mb-4">
+                About Decormade
+              </h1>
+              <p className="text-[#FDFCFA]/70 text-base md:text-lg max-w-lg mx-auto">
                 Bringing elegance and sophistication to every home since 2018.
               </p>
             </motion.div>
           </div>
         </section>
 
-        {/* Story */}
-        <section className="max-w-4xl mx-auto px-4 py-20">
-          <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-16">
-            <motion.div variants={itemVariants} className="text-center">
-              <h2 className="text-3xl font-bold text-[#3F4E40] mb-4">Our Story</h2>
-              <p className="text-[#546A50] leading-relaxed max-w-2xl mx-auto">
-                Decormade was founded with a simple mission: to bring elegance and sophistication to every home. We
-                believe that beautiful decoration pieces should be accessible to everyone, and that quality
-                craftsmanship should never be compromised.
+        {/* Story Section */}
+        <section className="max-w-[1400px] mx-auto px-6 lg:px-10 py-24 md:py-32">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <p className="text-[#C7956D] text-[11px] tracking-[0.25em] uppercase font-medium mb-4">
+                Founded in 2018
               </p>
-            </motion.div>
-
-            {/* Values */}
-            <motion.div variants={itemVariants}>
-              <h2 className="text-3xl font-bold text-[#3F4E40] mb-8 text-center">Our Values</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {values.map((value, index) => {
-                  const Icon = value.icon
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      className="bg-white border border-[#E5E0D8] rounded-2xl p-6 flex items-start gap-4"
-                    >
-                      <div className="w-11 h-11 rounded-xl bg-[#F5F3F0] flex items-center justify-center flex-shrink-0">
-                        <Icon size={22} weight="bold" className="text-[#546A50]" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-[#3F4E40] mb-1">{value.title}</h3>
-                        <p className="text-sm text-[#B5B89B] leading-relaxed">{value.desc}</p>
-                      </div>
-                    </motion.div>
-                  )
-                })}
+              <h2 className="font-display text-4xl md:text-5xl font-medium text-[#2C3B2D] leading-[1.1] mb-6">
+                A passion for
+                <br />
+                <span className="italic">beautiful living</span>
+              </h2>
+              <div className="space-y-5 text-[#6B7C5E] text-[0.9375rem] leading-[1.8]">
+                <p>
+                  Decormade was born from a simple belief: that the objects we surround ourselves with 
+                  should be as intentional as the way we live. We curate pieces that merge artisan 
+                  craftsmanship with modern design sensibility.
+                </p>
+                <p>
+                  Every item in our collection has been hand-selected — chosen for its quality, 
+                  its story, and its ability to transform a space. We work directly with makers 
+                  around the world who share our commitment to sustainability and excellence.
+                </p>
               </div>
             </motion.div>
 
-            {/* Why Choose Us */}
-            <motion.div variants={itemVariants} className="text-center">
-              <h2 className="text-3xl font-bold text-[#3F4E40] mb-4">Why Choose Us?</h2>
-              <p className="text-[#546A50] leading-relaxed max-w-2xl mx-auto">
-                With over a decade of experience in the home decoration industry, we have built a reputation for
-                excellence. Our curated collection features pieces from talented designers and artisans around the
-                world. We stand behind every product we sell with our satisfaction guarantee.
-              </p>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="img-reveal rounded-2xl overflow-hidden aspect-[4/5]"
+            >
+              <Image
+                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=1000&fit=crop&q=80"
+                alt="Artisan at work"
+                width={800}
+                height={1000}
+                className="w-full h-full object-cover"
+              />
             </motion.div>
-          </motion.div>
+          </div>
+        </section>
+
+        {/* Stats */}
+        <section className="bg-[#2C3B2D] py-20">
+          <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+              {STATS.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, ...stagger(i) }}
+                  className="text-center"
+                >
+                  <p className="font-display text-4xl md:text-5xl font-medium text-[#C7956D] mb-2">
+                    {stat.number}
+                  </p>
+                  <p className="text-xs text-[#FDFCFA]/50 tracking-[0.15em] uppercase">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Values */}
+        <section className="max-w-[1400px] mx-auto px-6 lg:px-10 py-24 md:py-32">
+          <div className="text-center mb-16">
+            <p className="text-[#C7956D] text-[11px] tracking-[0.25em] uppercase font-medium mb-3">
+              What Guides Us
+            </p>
+            <h2 className="font-display text-4xl md:text-5xl font-medium text-[#2C3B2D]">
+              Our Values
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {values.map((value, i) => {
+              const Icon = value.icon
+              return (
+                <motion.div
+                  key={value.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, ...stagger(i) }}
+                  className="bg-[#F5F2ED] rounded-2xl p-8 group hover:bg-[#2C3B2D] transition-colors duration-500"
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#FDFCFA] flex items-center justify-center mb-5 group-hover:bg-[#C7956D]/20 transition-colors duration-500">
+                    <Icon size={20} weight="light" className="text-[#C7956D]" />
+                  </div>
+                  <h3 className="font-display text-xl font-medium text-[#2C3B2D] mb-2 group-hover:text-[#FDFCFA] transition-colors duration-500">
+                    {value.title}
+                  </h3>
+                  <p className="text-sm text-[#6B7C5E] leading-relaxed group-hover:text-[#FDFCFA]/60 transition-colors duration-500">
+                    {value.desc}
+                  </p>
+                </motion.div>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="bg-[#F5F2ED] py-24">
+          <div className="max-w-3xl mx-auto text-center px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="font-display text-4xl md:text-5xl font-medium text-[#2C3B2D] mb-6">
+                Ready to transform
+                <br />
+                <span className="italic">your space?</span>
+              </h2>
+              <p className="text-[#6B7C5E] text-base max-w-md mx-auto mb-8 leading-relaxed">
+                Explore our curated collection and find pieces that speak to your style.
+              </p>
+              <Link href="/shop" className="btn-primary">
+                Shop Now <ArrowRight size={14} weight="bold" />
+              </Link>
+            </motion.div>
+          </div>
         </section>
       </PageTransition>
       <Footer />

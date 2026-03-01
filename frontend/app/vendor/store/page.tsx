@@ -112,7 +112,7 @@ export default function VendorStorePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-3 border-[#546A50] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-3 border-[#3D5A3E] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -120,8 +120,8 @@ export default function VendorStorePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Storefront size={32} weight="duotone" className="text-[#546A50]" />
-        <h1 className="text-3xl font-bold text-[#546A50]">{hasStore ? "Edit Store" : "Create Your Store"}</h1>
+        <Storefront size={32} weight="duotone" className="text-[#3D5A3E]" />
+        <h1 className="text-3xl font-bold text-[#3D5A3E]">{hasStore ? "Edit Store" : "Create Your Store"}</h1>
       </div>
 
       {form.approvalStatus === "REJECTED" && form.rejectionNote && (
@@ -151,83 +151,83 @@ export default function VendorStorePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         onSubmit={handleSubmit}
-        className="bg-white rounded-lg p-6 shadow-sm border border-[#E5E0D8] space-y-5"
+        className="bg-white rounded-lg p-6 shadow-sm border border-[#E8E3DA] space-y-5"
       >
         <div>
-          <label className="block text-sm font-medium text-[#3F4E40] mb-1.5">Store Name *</label>
+          <label className="block text-sm font-medium text-[#2C3B2D] mb-1.5">Store Name *</label>
           <input
             type="text"
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7EBAAD] text-[#3F4E40] text-sm"
+            className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8AADA0] text-[#2C3B2D] text-sm"
             placeholder="My Awesome Store"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#3F4E40] mb-1.5">Description</label>
+          <label className="block text-sm font-medium text-[#2C3B2D] mb-1.5">Description</label>
           <textarea
             rows={4}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7EBAAD] text-[#3F4E40] text-sm resize-none"
+            className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8AADA0] text-[#2C3B2D] text-sm resize-none"
             placeholder="Tell customers about your store..."
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium text-[#3F4E40] mb-1.5">Logo URL</label>
+            <label className="block text-sm font-medium text-[#2C3B2D] mb-1.5">Logo URL</label>
             <input
               type="url"
               value={form.logo}
               onChange={(e) => setForm({ ...form, logo: e.target.value })}
-              className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7EBAAD] text-[#3F4E40] text-sm"
+              className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8AADA0] text-[#2C3B2D] text-sm"
               placeholder="https://..."
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#3F4E40] mb-1.5">Banner URL</label>
+            <label className="block text-sm font-medium text-[#2C3B2D] mb-1.5">Banner URL</label>
             <input
               type="url"
               value={form.banner}
               onChange={(e) => setForm({ ...form, banner: e.target.value })}
-              className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7EBAAD] text-[#3F4E40] text-sm"
+              className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8AADA0] text-[#2C3B2D] text-sm"
               placeholder="https://..."
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#3F4E40] mb-1.5">Address</label>
+          <label className="block text-sm font-medium text-[#2C3B2D] mb-1.5">Address</label>
           <input
             type="text"
             value={form.address}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
-            className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7EBAAD] text-[#3F4E40] text-sm"
+            className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8AADA0] text-[#2C3B2D] text-sm"
             placeholder="123 Main St, City"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-sm font-medium text-[#3F4E40] mb-1.5">Phone</label>
+            <label className="block text-sm font-medium text-[#2C3B2D] mb-1.5">Phone</label>
             <input
               type="tel"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7EBAAD] text-[#3F4E40] text-sm"
+              className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8AADA0] text-[#2C3B2D] text-sm"
               placeholder="+1-555-0123"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-[#3F4E40] mb-1.5">Contact Email</label>
+            <label className="block text-sm font-medium text-[#2C3B2D] mb-1.5">Contact Email</label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full px-4 py-2.5 border border-[#E5E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7EBAAD] text-[#3F4E40] text-sm"
+              className="w-full px-4 py-2.5 border border-[#E8E3DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8AADA0] text-[#2C3B2D] text-sm"
               placeholder="store@example.com"
             />
           </div>
@@ -238,7 +238,7 @@ export default function VendorStorePage() {
           whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={saving}
-          className="w-full flex items-center justify-center gap-2 bg-[#546A50] text-white py-3 rounded-lg font-semibold hover:bg-[#3F4E40] transition disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 bg-[#3D5A3E] text-white py-3 rounded-lg font-semibold hover:bg-[#2C3B2D] transition disabled:opacity-50"
         >
           {saving ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
