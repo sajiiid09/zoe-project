@@ -17,6 +17,11 @@ import {
   approveVendorStore,
   rejectVendorStore,
 } from '../controllers/userController.js';
+import {
+  getAffiliates,
+  approveAffiliateProfile,
+  rejectAffiliateProfile,
+} from '../controllers/adminAffiliateController.js';
 import { requireAuth, requireAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -41,6 +46,9 @@ router.get('/admin/stats', requireAuth, requireAdmin, getUserStats);
 router.get('/admin/vendors', requireAuth, requireAdmin, getVendors);
 router.put('/admin/vendors/:storeId/approve', requireAuth, requireAdmin, approveVendorStore);
 router.put('/admin/vendors/:storeId/reject', requireAuth, requireAdmin, rejectVendorStore);
+router.get('/admin/affiliates', requireAuth, requireAdmin, getAffiliates);
+router.put('/admin/affiliates/:affiliateProfileId/approve', requireAuth, requireAdmin, approveAffiliateProfile);
+router.put('/admin/affiliates/:affiliateProfileId/reject', requireAuth, requireAdmin, rejectAffiliateProfile);
 router.get('/admin/:id', requireAuth, requireAdmin, getUserById);
 router.put('/admin/:id', requireAuth, requireAdmin, updateUser);
 router.delete('/admin/:id', requireAuth, requireAdmin, deleteUser);

@@ -1,15 +1,8 @@
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
+import { ForbiddenError, UnauthorizedError } from '../utils/errors.js';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-const respondUnauthorized = (res, message = 'Authentication required') => {
-  return res.status(401).json({ success: false, message });
-};
-
-const respondForbidden = (res, message = 'Access denied') => {
-  return res.status(403).json({ success: false, message });
-};
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
 
 /**
  * Verify JWT token and attach the authenticated user to `req.user`.
@@ -20,7 +13,7 @@ export const requireAuth = async (req, res, next) => {
     const header = req.headers.authorization;
 
     if (!header || !header.startsWith('Bearer ')) {
-      return respondUnauthorized(res, 'Missing or malformed token');
+      return next(new UnauthorizedError('Missing or malformed token'));
     }
 
     const token = header.split(' ')[1];
@@ -32,28 +25,25 @@ export const requireAuth = async (req, res, next) => {
     });
 
     if (!user) {
-      return respondUnauthorized(res, 'User not found');
+      return next(new UnauthorizedError('User not found'));
     }
 
     if (!user.isActive) {
-      return respondUnauthorized(res, 'Account is deactivated');
+      return next(new UnauthorizedError('Account is deactivated'));
     }
 
     req.user = user;
-    next();
+    return next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return respondUnauthorized(res, 'Token expired');
+      return next(new UnauthorizedError('Token expired'));
     }
     if (error.name === 'JsonWebTokenError') {
-      return respondUnauthorized(res, 'Invalid token');
+      return next(new UnauthorizedError('Invalid token'));
     }
 
     console.error('Auth middleware error:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Authentication error',
-    });
+    return next(error);
   }
 };
 
@@ -90,14 +80,14 @@ export const optionalAuth = async (req, res, next) => {
  */
 export const requireAdmin = (req, res, next) => {
   if (!req.user) {
-    return respondUnauthorized(res);
+    return next(new UnauthorizedError());
   }
 
   if (req.user.role !== 'ADMIN') {
-    return respondForbidden(res, 'Admin access required');
+    return next(new ForbiddenError('Admin access required'));
   }
 
-  next();
+  return next();
 };
 
 /**
@@ -105,14 +95,14 @@ export const requireAdmin = (req, res, next) => {
  */
 export const requireVendor = (req, res, next) => {
   if (!req.user) {
-    return respondUnauthorized(res);
+    return next(new UnauthorizedError());
   }
 
   if (req.user.role !== 'VENDOR') {
-    return respondForbidden(res, 'Vendor access required');
+    return next(new ForbiddenError('Vendor access required'));
   }
 
-  next();
+  return next();
 };
 
 /**
@@ -120,14 +110,29 @@ export const requireVendor = (req, res, next) => {
  */
 export const requireAdminOrVendor = (req, res, next) => {
   if (!req.user) {
-    return respondUnauthorized(res);
+    return next(new UnauthorizedError());
   }
 
   if (req.user.role !== 'ADMIN' && req.user.role !== 'VENDOR') {
-    return respondForbidden(res, 'Admin or Vendor access required');
+    return next(new ForbiddenError('Admin or Vendor access required'));
   }
 
-  next();
+  return next();
+};
+
+/**
+ * Require affiliate role — must run after `requireAuth`.
+ */
+export const requireAffiliate = (req, res, next) => {
+  if (!req.user) {
+    return next(new UnauthorizedError());
+  }
+
+  if (req.user.role !== 'AFFILIATE') {
+    return next(new ForbiddenError('Affiliate access required'));
+  }
+
+  return next();
 };
 
 /**
@@ -175,6 +180,6 @@ export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
  */
 export const asyncHandler = (fn) => {
   return (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
+    return Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
