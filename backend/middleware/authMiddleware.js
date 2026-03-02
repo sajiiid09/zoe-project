@@ -139,6 +139,28 @@ export const requireAffiliate = (req, res, next) => {
  * Simple in-memory rate limiter.
  */
 const rateLimitStore = new Map();
+const RATE_LIMIT_CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+const RATE_LIMIT_CLEANUP_KEY = '__zoeRateLimitCleanupInterval__';
+
+const cleanupRateLimitStore = (now = Date.now()) => {
+  for (const [ip, data] of rateLimitStore.entries()) {
+    if (data.windowStart + data.windowMs < now) {
+      rateLimitStore.delete(ip);
+    }
+  }
+};
+
+if (!globalThis[RATE_LIMIT_CLEANUP_KEY]) {
+  const interval = setInterval(() => {
+    cleanupRateLimitStore();
+  }, RATE_LIMIT_CLEANUP_INTERVAL_MS);
+
+  if (typeof interval.unref === 'function') {
+    interval.unref();
+  }
+
+  globalThis[RATE_LIMIT_CLEANUP_KEY] = interval;
+}
 
 export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
   return (req, res, next) => {
@@ -146,19 +168,21 @@ export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
     const now = Date.now();
     const windowStart = now - windowMs;
 
-    for (const [ip, data] of rateLimitStore.entries()) {
-      if (data.windowStart < windowStart) {
-        rateLimitStore.delete(ip);
-      }
-    }
+    cleanupRateLimitStore(now);
 
-    const entry = rateLimitStore.get(key) || { count: 0, windowStart: now };
+    const entry = rateLimitStore.get(key) || {
+      count: 0,
+      windowStart: now,
+      windowMs,
+    };
 
-    if (entry.windowStart < windowStart) {
+    if (entry.windowStart + entry.windowMs < now) {
       entry.count = 1;
       entry.windowStart = now;
+      entry.windowMs = windowMs;
     } else {
       entry.count++;
+      entry.windowMs = windowMs;
     }
 
     rateLimitStore.set(key, entry);
@@ -167,7 +191,7 @@ export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
       return res.status(429).json({
         success: false,
         message: 'Too many requests, please try again later',
-        retryAfter: Math.ceil((entry.windowStart + windowMs - now) / 1000),
+        retryAfter: Math.ceil((entry.windowStart + entry.windowMs - now) / 1000),
       });
     }
 

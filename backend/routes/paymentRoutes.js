@@ -223,7 +223,11 @@ router.post(
 
     let event;
 
-    if (endpointSecret && sig) {
+    if (endpointSecret) {
+      if (!sig) {
+        return res.status(400).send('Webhook Error: Missing Stripe signature');
+      }
+
       try {
         event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
       } catch (err) {
@@ -231,6 +235,10 @@ router.post(
         return res.status(400).send(`Webhook Error: ${err.message}`);
       }
     } else {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(400).send('Webhook Error: Missing webhook signing secret');
+      }
+
       event = JSON.parse(req.body.toString());
     }
 

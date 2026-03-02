@@ -37,6 +37,8 @@ const mapSortField = (sort) => {
   }
 };
 
+const MAX_PAGINATION_LIMIT = 100;
+
 const refreshProductRating = async (productId) => {
   const stats = await prisma.review.aggregate({
     where: { productId },
@@ -94,7 +96,13 @@ export const getProducts = asyncHandler(async (req, res) => {
     ];
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const pageNumber = Math.max(Number(page) || 1, 1);
+  const parsedLimit = Number(limit);
+  const safeLimit = Math.min(
+    Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 12, 1),
+    MAX_PAGINATION_LIMIT
+  );
+  const skip = (pageNumber - 1) * safeLimit;
   const orderBy = {
     [mapSortField(sort)]: order === 'asc' ? 'asc' : 'desc',
   };
@@ -104,7 +112,7 @@ export const getProducts = asyncHandler(async (req, res) => {
       where,
       orderBy,
       skip,
-      take: Number(limit),
+      take: safeLimit,
       include: productInclude,
     }),
     prisma.product.count({ where }),
@@ -114,11 +122,11 @@ export const getProducts = asyncHandler(async (req, res) => {
     success: true,
     data: products,
     pagination: {
-      currentPage: Number(page),
-      totalPages: Math.ceil(total / Number(limit)) || 1,
+      currentPage: pageNumber,
+      totalPages: Math.ceil(total / safeLimit) || 1,
       totalProducts: total,
       hasNext: skip + products.length < total,
-      hasPrev: Number(page) > 1,
+      hasPrev: pageNumber > 1,
     },
   });
 });
