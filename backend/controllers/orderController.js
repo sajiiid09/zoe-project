@@ -71,6 +71,14 @@ export const createOrder = asyncHandler(async (req, res) => {
   const orderItemsData = [];
 
   for (const item of items) {
+    const quantity = Number(item.quantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid quantity',
+      });
+    }
+
     const product = productMap.get(item.product);
     if (!product) {
       return res.status(400).json({
@@ -79,19 +87,19 @@ export const createOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    if (product.stock < item.quantity) {
+    if (product.stock < quantity) {
       return res.status(400).json({
         success: false,
         message: `Insufficient stock for ${product.name}. Available: ${product.stock}`,
       });
     }
 
-    const itemTotal = Number(product.price) * Number(item.quantity);
+    const itemTotal = Number(product.price) * quantity;
     subtotal += itemTotal;
 
     orderItemsData.push({
       productId: product.id,
-      quantity: Number(item.quantity),
+      quantity,
       price: decimal(product.price),
       total: decimal(itemTotal),
     });
@@ -444,4 +452,3 @@ export const getOrderStats = asyncHandler(async (req, res) => {
     },
   });
 });
-
