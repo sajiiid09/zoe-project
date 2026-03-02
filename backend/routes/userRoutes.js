@@ -27,8 +27,8 @@ import { requireAuth, requireAdmin, rateLimit } from '../middleware/authMiddlewa
 const router = express.Router();
 
 // Public routes
-router.post('/register', rateLimit(10, 15 * 60 * 1000), registerUser);
-router.post('/login', rateLimit(10, 15 * 60 * 1000), loginUser);
+router.post('/register', rateLimit(10, 15 * 60 * 1000, 'auth:register'), registerUser);
+router.post('/login', rateLimit(10, 15 * 60 * 1000, 'auth:login'), loginUser);
 
 // User profile routes (require authentication)
 router.get('/profile', requireAuth, getUserProfile);
