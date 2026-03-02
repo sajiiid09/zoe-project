@@ -327,9 +327,6 @@ export const cancelOrder = asyncHandler(async (req, res) => {
 
   const order = await prisma.order.findUnique({
     where: { id: req.params.id },
-    include: {
-      items: true,
-    },
   });
 
   if (!order) {
@@ -346,36 +343,70 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  if (['delivered', 'cancelled'].includes(order.status)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Order cannot be cancelled',
-    });
-  }
+  let updated;
 
-  const updated = await prisma.$transaction(async tx => {
-    const cancelledOrder = await tx.order.update({
-      where: { id: req.params.id },
-      data: {
-        status: 'cancelled',
-        paymentStatus: 'refunded',
-        cancelledAt: new Date(),
-        cancellationReason: reason || '',
-      },
-      include: orderInclude,
-    });
-
-    for (const item of order.items) {
-      await tx.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: { increment: item.quantity },
+  try {
+    updated = await prisma.$transaction(async tx => {
+      const orderInTransaction = await tx.order.findUnique({
+        where: { id: req.params.id },
+        include: {
+          items: true,
         },
+      });
+
+      if (!orderInTransaction || ['delivered', 'cancelled'].includes(orderInTransaction.status)) {
+        const error = new Error('Order cannot be cancelled');
+        error.code = 'ORDER_CANNOT_BE_CANCELLED';
+        throw error;
+      }
+
+      const updateResult = await tx.order.updateMany({
+        where: {
+          id: req.params.id,
+          NOT: {
+            status: {
+              in: ['delivered', 'cancelled'],
+            },
+          },
+        },
+        data: {
+          status: 'cancelled',
+          paymentStatus: 'refunded',
+          cancelledAt: new Date(),
+          cancellationReason: reason || '',
+        },
+      });
+
+      if (updateResult.count === 0) {
+        const error = new Error('Order cannot be cancelled');
+        error.code = 'ORDER_CANNOT_BE_CANCELLED';
+        throw error;
+      }
+
+      for (const item of orderInTransaction.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { increment: item.quantity },
+          },
+        });
+      }
+
+      return tx.order.findUnique({
+        where: { id: req.params.id },
+        include: orderInclude,
+      });
+    });
+  } catch (error) {
+    if (error.code === 'ORDER_CANNOT_BE_CANCELLED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Order cannot be cancelled',
       });
     }
 
-    return cancelledOrder;
-  });
+    throw error;
+  }
 
   res.json({
     success: true,
