@@ -22,13 +22,13 @@ import {
   approveAffiliateProfile,
   rejectAffiliateProfile,
 } from '../controllers/adminAffiliateController.js';
-import { requireAuth, requireAdmin } from '../middleware/authMiddleware.js';
+import { requireAuth, requireAdmin, rateLimit } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Public routes
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+router.post('/register', rateLimit(10, 15 * 60 * 1000), registerUser);
+router.post('/login', rateLimit(10, 15 * 60 * 1000), loginUser);
 
 // User profile routes (require authentication)
 router.get('/profile', requireAuth, getUserProfile);
