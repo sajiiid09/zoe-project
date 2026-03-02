@@ -5,6 +5,7 @@ import { asyncHandler } from '../middleware/authMiddleware.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
 const TOKEN_EXPIRY = '7d';
+const MAX_PAGINATION_LIMIT = 100;
 
 const generateToken = (userId) => {
   return jwt.sign({ userId }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
@@ -35,6 +36,13 @@ export const registerUser = asyncHandler(async (req, res) => {
     return res.status(400).json({
       success: false,
       message: 'Email and password are required',
+    });
+  }
+
+  if (String(password).length < 8) {
+    return res.status(400).json({
+      success: false,
+      message: 'Password must be at least 8 characters long',
     });
   }
 
@@ -354,14 +362,20 @@ export const getAllUsers = asyncHandler(async (req, res) => {
     ];
   }
 
-  const skip = (Number(page) - 1) * Number(limit);
+  const pageNumber = Math.max(Number(page) || 1, 1);
+  const parsedLimit = Number(limit);
+  const safeLimit = Math.min(
+    Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 20, 1),
+    MAX_PAGINATION_LIMIT
+  );
+  const skip = (pageNumber - 1) * safeLimit;
 
   const [users, total] = await prisma.$transaction([
     prisma.user.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       skip,
-      take: Number(limit),
+      take: safeLimit,
       include: { addresses: true, store: true },
     }),
     prisma.user.count({ where }),
@@ -371,11 +385,11 @@ export const getAllUsers = asyncHandler(async (req, res) => {
     success: true,
     data: users.map(formatUserResponse),
     pagination: {
-      currentPage: Number(page),
-      totalPages: Math.ceil(total / Number(limit)) || 1,
+      currentPage: pageNumber,
+      totalPages: Math.ceil(total / safeLimit) || 1,
       totalUsers: total,
       hasNext: skip + users.length < total,
-      hasPrev: Number(page) > 1,
+      hasPrev: pageNumber > 1,
     },
   });
 });
@@ -506,7 +520,13 @@ export const getUserStats = asyncHandler(async (req, res) => {
  */
 export const getVendors = asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, status } = req.query;
-  const skip = (Number(page) - 1) * Number(limit);
+  const pageNumber = Math.max(Number(page) || 1, 1);
+  const parsedLimit = Number(limit);
+  const safeLimit = Math.min(
+    Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 20, 1),
+    MAX_PAGINATION_LIMIT
+  );
+  const skip = (pageNumber - 1) * safeLimit;
 
   const where = { role: 'VENDOR' };
 
@@ -518,7 +538,7 @@ export const getVendors = asyncHandler(async (req, res) => {
       where,
       orderBy: { createdAt: 'desc' },
       skip,
-      take: Number(limit),
+      take: safeLimit,
       select: {
         id: true,
         email: true,
@@ -547,11 +567,11 @@ export const getVendors = asyncHandler(async (req, res) => {
     success: true,
     data: vendors,
     pagination: {
-      currentPage: Number(page),
-      totalPages: Math.ceil(total / Number(limit)) || 1,
+      currentPage: pageNumber,
+      totalPages: Math.ceil(total / safeLimit) || 1,
       total,
       hasNext: skip + vendors.length < total,
-      hasPrev: Number(page) > 1,
+      hasPrev: pageNumber > 1,
     },
   });
 });

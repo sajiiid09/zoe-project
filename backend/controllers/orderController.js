@@ -69,8 +69,17 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   let subtotal = 0;
   const orderItemsData = [];
+  const stockReservations = [];
 
   for (const item of items) {
+    const quantity = Number(item.quantity);
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid quantity',
+      });
+    }
+
     const product = productMap.get(item.product);
     if (!product) {
       return res.status(400).json({
@@ -79,19 +88,18 @@ export const createOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    if (product.stock < item.quantity) {
-      return res.status(400).json({
-        success: false,
-        message: `Insufficient stock for ${product.name}. Available: ${product.stock}`,
-      });
-    }
-
-    const itemTotal = Number(product.price) * Number(item.quantity);
+    const itemTotal = Number(product.price) * quantity;
     subtotal += itemTotal;
+
+    stockReservations.push({
+      productId: product.id,
+      quantity,
+      productName: product.name,
+    });
 
     orderItemsData.push({
       productId: product.id,
-      quantity: Number(item.quantity),
+      quantity,
       price: decimal(product.price),
       total: decimal(itemTotal),
     });
@@ -101,39 +109,59 @@ export const createOrder = asyncHandler(async (req, res) => {
   const tax = subtotal * 0.05;
   const total = subtotal + shippingCost + tax;
 
-  const order = await prisma.$transaction(async tx => {
-    const createdOrder = await tx.order.create({
-      data: {
-        orderNumber: generateOrderNumber(),
-        userId: req.user.id,
-        shippingAddress: shippingAddress || {},
-        billingAddress: billingAddress || shippingAddress || {},
-        paymentMethod,
-        paymentStatus: 'pending',
-        customerNote: notes?.customer || '',
-        adminNote: notes?.admin || '',
-        subtotal: decimal(subtotal),
-        shippingCost: decimal(shippingCost),
-        tax: decimal(tax),
-        total: decimal(total),
-        items: {
-          create: orderItemsData,
-        },
-      },
-      include: orderInclude,
-    });
+  let order;
 
-    for (const item of orderItemsData) {
-      await tx.product.update({
-        where: { id: item.productId },
+  try {
+    order = await prisma.$transaction(async tx => {
+      for (const reservation of stockReservations) {
+        const result = await tx.product.updateMany({
+          where: {
+            id: reservation.productId,
+            stock: { gte: reservation.quantity },
+          },
+          data: {
+            stock: { decrement: reservation.quantity },
+          },
+        });
+
+        if (result.count === 0) {
+          const error = new Error(`Insufficient stock for ${reservation.productName}`);
+          error.code = 'INSUFFICIENT_STOCK';
+          throw error;
+        }
+      }
+
+      return tx.order.create({
         data: {
-          stock: { decrement: item.quantity },
+          orderNumber: generateOrderNumber(),
+          userId: req.user.id,
+          shippingAddress: shippingAddress || {},
+          billingAddress: billingAddress || shippingAddress || {},
+          paymentMethod,
+          paymentStatus: 'pending',
+          customerNote: notes?.customer || '',
+          adminNote: notes?.admin || '',
+          subtotal: decimal(subtotal),
+          shippingCost: decimal(shippingCost),
+          tax: decimal(tax),
+          total: decimal(total),
+          items: {
+            create: orderItemsData,
+          },
         },
+        include: orderInclude,
+      });
+    });
+  } catch (error) {
+    if (error.code === 'INSUFFICIENT_STOCK') {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
       });
     }
 
-    return createdOrder;
-  });
+    throw error;
+  }
 
   res.status(201).json({
     success: true,
@@ -299,9 +327,6 @@ export const cancelOrder = asyncHandler(async (req, res) => {
 
   const order = await prisma.order.findUnique({
     where: { id: req.params.id },
-    include: {
-      items: true,
-    },
   });
 
   if (!order) {
@@ -318,36 +343,70 @@ export const cancelOrder = asyncHandler(async (req, res) => {
     });
   }
 
-  if (['delivered', 'cancelled'].includes(order.status)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Order cannot be cancelled',
-    });
-  }
+  let updated;
 
-  const updated = await prisma.$transaction(async tx => {
-    const cancelledOrder = await tx.order.update({
-      where: { id: req.params.id },
-      data: {
-        status: 'cancelled',
-        paymentStatus: 'refunded',
-        cancelledAt: new Date(),
-        cancellationReason: reason || '',
-      },
-      include: orderInclude,
-    });
-
-    for (const item of order.items) {
-      await tx.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: { increment: item.quantity },
+  try {
+    updated = await prisma.$transaction(async tx => {
+      const orderInTransaction = await tx.order.findUnique({
+        where: { id: req.params.id },
+        include: {
+          items: true,
         },
+      });
+
+      if (!orderInTransaction || ['delivered', 'cancelled'].includes(orderInTransaction.status)) {
+        const error = new Error('Order cannot be cancelled');
+        error.code = 'ORDER_CANNOT_BE_CANCELLED';
+        throw error;
+      }
+
+      const updateResult = await tx.order.updateMany({
+        where: {
+          id: req.params.id,
+          NOT: {
+            status: {
+              in: ['delivered', 'cancelled'],
+            },
+          },
+        },
+        data: {
+          status: 'cancelled',
+          paymentStatus: 'refunded',
+          cancelledAt: new Date(),
+          cancellationReason: reason || '',
+        },
+      });
+
+      if (updateResult.count === 0) {
+        const error = new Error('Order cannot be cancelled');
+        error.code = 'ORDER_CANNOT_BE_CANCELLED';
+        throw error;
+      }
+
+      for (const item of orderInTransaction.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { increment: item.quantity },
+          },
+        });
+      }
+
+      return tx.order.findUnique({
+        where: { id: req.params.id },
+        include: orderInclude,
+      });
+    });
+  } catch (error) {
+    if (error.code === 'ORDER_CANNOT_BE_CANCELLED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Order cannot be cancelled',
       });
     }
 
-    return cancelledOrder;
-  });
+    throw error;
+  }
 
   res.json({
     success: true,
@@ -444,4 +503,3 @@ export const getOrderStats = asyncHandler(async (req, res) => {
     },
   });
 });
-
