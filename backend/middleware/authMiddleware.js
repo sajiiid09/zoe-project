@@ -162,15 +162,16 @@ if (!globalThis[RATE_LIMIT_CLEANUP_KEY]) {
   globalThis[RATE_LIMIT_CLEANUP_KEY] = interval;
 }
 
-export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
+export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000, scope = 'global') => {
   return (req, res, next) => {
-    const key = req.ip || req.connection.remoteAddress;
+    const clientIp = req.ip || req.connection.remoteAddress;
+    const bucketKey = `${scope}:${clientIp}`;
     const now = Date.now();
     const windowStart = now - windowMs;
 
     cleanupRateLimitStore(now);
 
-    const entry = rateLimitStore.get(key) || {
+    const entry = rateLimitStore.get(bucketKey) || {
       count: 0,
       windowStart: now,
       windowMs,
@@ -185,7 +186,7 @@ export const rateLimit = (maxRequests = 100, windowMs = 15 * 60 * 1000) => {
       entry.windowMs = windowMs;
     }
 
-    rateLimitStore.set(key, entry);
+    rateLimitStore.set(bucketKey, entry);
 
     if (entry.count > maxRequests) {
       return res.status(429).json({
