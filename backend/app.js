@@ -11,6 +11,7 @@ import affiliateRoutes from './routes/affiliateRoutes.js';
 import vendorSubmissionRoutes from './routes/vendorSubmissionRoutes.js';
 import adminSubmissionRoutes from './routes/adminSubmissionRoutes.js';
 import adminCatalogRoutes from './routes/adminCatalogRoutes.js';
+import catalogRoutes from './routes/catalogRoutes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -54,6 +55,7 @@ export const createApp = () => {
   app.use('/api/vendor/submissions', vendorSubmissionRoutes);
   app.use('/api/admin/submissions', adminSubmissionRoutes);
   app.use('/api/admin/catalog', adminCatalogRoutes);
+  app.use('/api/catalog', catalogRoutes);
 
   app.get('/api/health', healthHandler);
 

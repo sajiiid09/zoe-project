@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Header from "@/components/Header"
@@ -9,21 +9,7 @@ import ProductCard from "@/components/ProductCard"
 import PageTransition from "@/components/PageTransition"
 import { useCart } from "@/context/CartContext"
 import { Funnel, MagnifyingGlass, X, SlidersHorizontal } from "@phosphor-icons/react"
-
-const ALL_PRODUCTS = [
-  { id: 1, name: "Minimalist Vase", price: 45, image: "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=500&h=600&fit=crop&q=80", category: "vases" },
-  { id: 2, name: "Wall Mirror", price: 89, image: "https://images.unsplash.com/photo-1618220179428-22790b461013?w=500&h=600&fit=crop&q=80", category: "mirrors" },
-  { id: 3, name: "Plant Pot", price: 32, image: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500&h=600&fit=crop&q=80", category: "pots" },
-  { id: 4, name: "Candle Set", price: 28, image: "https://images.unsplash.com/photo-1602028915047-37269d1a73f7?w=500&h=600&fit=crop&q=80", category: "candles" },
-  { id: 5, name: "Decorative Bowl", price: 55, image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=500&h=600&fit=crop&q=80", category: "bowls" },
-  { id: 6, name: "Table Lamp", price: 75, image: "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=500&h=600&fit=crop&q=80", category: "lamps" },
-  { id: 7, name: "Wall Art", price: 95, image: "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=500&h=600&fit=crop&q=80", category: "art" },
-  { id: 8, name: "Throw Pillow", price: 38, image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=500&h=600&fit=crop&q=80", category: "pillows" },
-  { id: 9, name: "Wooden Shelf", price: 120, image: "https://images.unsplash.com/photo-1532372576444-dda954194ad0?w=500&h=600&fit=crop&q=80", category: "shelves" },
-  { id: 10, name: "Glass Vase", price: 52, image: "https://images.unsplash.com/photo-1581783898377-1c85bf937427?w=500&h=600&fit=crop&q=80", category: "vases" },
-  { id: 11, name: "Ceramic Planter", price: 42, image: "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=500&h=600&fit=crop&q=80", category: "pots" },
-  { id: 12, name: "Scented Candle", price: 35, image: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=500&h=600&fit=crop&q=80", category: "candles" },
-]
+import { fetchCatalogProducts } from "@/lib/api"
 
 const CATEGORIES = ["vases", "mirrors", "pots", "candles", "bowls", "lamps", "art", "pillows", "shelves"]
 
@@ -31,24 +17,61 @@ export default function Shop() {
   const searchParams = useSearchParams()
   const { addToCart } = useCart()
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "")
-  const [priceRange, setPriceRange] = useState([0, 150])
+  const [priceRange, setPriceRange] = useState([0, 500]) // Increased max price for real data
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("featured")
   const [showFilters, setShowFilters] = useState(false)
+  
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setLoading(true)
+        const data = await fetchCatalogProducts()
+        // Map backend CatalogProduct to frontend Product structure
+        const mappedProducts = data.map((p: any) => ({
+          id: p.id,
+          name: p.title,
+          price: Number(p.retailPrice),
+          image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+          category: p.category || "uncategorized",
+          description: p.description
+        }))
+        setProducts(mappedProducts)
+      } catch (err) {
+        console.error("Error loading products:", err)
+        setError("Failed to load products. Please make sure the backend is running.")
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProducts()
+  }, [])
 
   const filteredProducts = useMemo(() => {
-    let filtered = [...ALL_PRODUCTS]
+    let filtered = [...products]
     if (selectedCategory) filtered = filtered.filter((p) => p.category === selectedCategory)
     if (searchTerm) filtered = filtered.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
     filtered = filtered.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1])
+    
     if (sortBy === "price-low") filtered.sort((a, b) => a.price - b.price)
     else if (sortBy === "price-high") filtered.sort((a, b) => b.price - a.price)
     else if (sortBy === "name") filtered.sort((a, b) => a.name.localeCompare(b.name))
+    
     return filtered
-  }, [selectedCategory, priceRange, searchTerm, sortBy])
+  }, [products, selectedCategory, priceRange, searchTerm, sortBy])
 
   const handleAddToCart = (product: any) => {
-    addToCart({ id: product.id, name: product.name, price: product.price, image: product.image, category: product.category })
+    addToCart({ 
+      id: product.id, 
+      name: product.name, 
+      price: product.price, 
+      image: product.image, 
+      category: product.category 
+    })
   }
 
   return (
@@ -175,7 +198,7 @@ export default function Shop() {
                 <input
                   type="range"
                   min="0"
-                  max="150"
+                  max="500"
                   value={priceRange[1]}
                   onChange={(e) => setPriceRange([0, Number.parseInt(e.target.value)])}
                   className="w-full accent-[#3D5A3E] h-0.5"
@@ -204,45 +227,67 @@ export default function Shop() {
 
             {/* Product Grid */}
             <div className="flex-1">
-              <AnimatePresence mode="wait">
-                {filteredProducts.length > 0 ? (
-                  <motion.div
-                    key={`grid-${selectedCategory}-${sortBy}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6"
+              {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="aspect-[3/4] bg-[#F5F2ED] rounded-xl mb-3" />
+                      <div className="h-4 bg-[#F5F2ED] rounded w-3/4 mb-2" />
+                      <div className="h-4 bg-[#F5F2ED] rounded w-1/4" />
+                    </div>
+                  ))}
+                </div>
+              ) : error ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <p className="text-red-500 text-sm mb-4">{error}</p>
+                  <button 
+                    onClick={() => window.location.reload()}
+                    className="text-[#C7956D] text-sm font-medium link-underline"
                   >
-                    {filteredProducts.map((product, i) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        onAddToCart={handleAddToCart}
-                        index={i}
-                      />
-                    ))}
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-col items-center justify-center py-20 text-center"
-                  >
-                    <Funnel size={40} weight="thin" className="text-[#E8E3DA] mb-4" />
-                    <p className="text-[#6B7C5E] text-sm mb-2">No products match your filters</p>
-                    <button
-                      onClick={() => {
-                        setSelectedCategory("")
-                        setSearchTerm("")
-                        setPriceRange([0, 150])
-                      }}
-                      className="text-[#C7956D] text-sm font-medium link-underline"
+                    Try again
+                  </button>
+                </div>
+              ) : (
+                <AnimatePresence mode="wait">
+                  {filteredProducts.length > 0 ? (
+                    <motion.div
+                      key={`grid-${selectedCategory}-${sortBy}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="grid grid-cols-2 md:grid-cols-3 gap-5 md:gap-6"
                     >
-                      Clear all filters
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      {filteredProducts.map((product, i) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onAddToCart={handleAddToCart}
+                          index={i}
+                        />
+                      ))}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex flex-col items-center justify-center py-20 text-center"
+                    >
+                      <Funnel size={40} weight="thin" className="text-[#E8E3DA] mb-4" />
+                      <p className="text-[#6B7C5E] text-sm mb-2">No products match your filters</p>
+                      <button
+                        onClick={() => {
+                          setSelectedCategory("")
+                          setSearchTerm("")
+                          setPriceRange([0, 500])
+                        }}
+                        className="text-[#C7956D] text-sm font-medium link-underline"
+                      >
+                        Clear all filters
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
             </div>
           </div>
         </div>

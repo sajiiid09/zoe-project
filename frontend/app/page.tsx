@@ -6,8 +6,9 @@ import NoticeBanner from "@/components/NoticeBanner"
 import Link from "next/link"
 import Image from "next/image"
 import { motion, useScroll, useTransform } from "framer-motion"
-import { useRef } from "react"
+import { useRef, useState, useEffect } from "react"
 import { ArrowRight, Leaf, Truck, ArrowsClockwise, Star } from "@phosphor-icons/react"
+import { fetchCatalogProducts } from "@/lib/api"
 
 const COLLECTIONS = [
   {
@@ -30,33 +31,6 @@ const COLLECTIONS = [
   },
 ]
 
-const FEATURED_PRODUCTS = [
-  {
-    id: 1,
-    name: "Minimalist Vase",
-    price: 45,
-    image: "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=500&h=600&fit=crop&q=80",
-  },
-  {
-    id: 6,
-    name: "Table Lamp",
-    price: 75,
-    image: "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=500&h=600&fit=crop&q=80",
-  },
-  {
-    id: 5,
-    name: "Decorative Bowl",
-    price: 55,
-    image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=500&h=600&fit=crop&q=80",
-  },
-  {
-    id: 9,
-    name: "Wooden Shelf",
-    price: 120,
-    image: "https://images.unsplash.com/photo-1532372576444-dda954194ad0?w=500&h=600&fit=crop&q=80",
-  },
-]
-
 const MARQUEE_TEXT = "Artisan Crafted  ·  Sustainably Sourced  ·  Modern Design  ·  Premium Quality  ·  Earth Friendly  ·  Hand Selected  ·  "
 
 function stagger(i: number, base = 0.1) {
@@ -72,14 +46,32 @@ export default function Home() {
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([])
+
+  useEffect(() => {
+    async function loadFeatured() {
+      try {
+        const data = await fetchCatalogProducts()
+        const mapped = data.slice(0, 4).map((p: any) => ({
+          id: p.id,
+          name: p.title,
+          price: Number(p.retailPrice),
+          image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+        }))
+        setFeaturedProducts(mapped)
+      } catch (err) {
+        console.error("Error loading featured products:", err)
+      }
+    }
+    loadFeatured()
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FDFCFA]">
       <NoticeBanner />
       <Header />
 
-      {/* ═══════════════════════════════════════
-          HERO — Full Editorial
-          ═══════════════════════════════════════ */}
+      {/* Hero */}
       <section
         ref={heroRef}
         className="relative h-[100svh] min-h-[600px] flex items-end overflow-hidden grain-overlay"
@@ -143,9 +135,7 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          MARQUEE TICKER
-          ═══════════════════════════════════════ */}
+      {/* MARQUEE */}
       <div className="py-5 border-y border-[#E8E3DA] overflow-hidden bg-[#FDFCFA]">
         <div className="animate-marquee whitespace-nowrap flex">
           {[...Array(3)].map((_, i) => (
@@ -159,9 +149,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════
-          EDITORIAL SECTION — Crafted with Purpose
-          ═══════════════════════════════════════ */}
+      {/* PHILOSOPHY */}
       <section className="max-w-[1400px] mx-auto px-6 lg:px-10 py-24 md:py-32">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div
@@ -211,9 +199,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          COLLECTIONS — Horizontal Cards
-          ═══════════════════════════════════════ */}
+      {/* COLLECTIONS */}
       <section className="bg-[#F5F2ED] py-24 md:py-32">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-4">
@@ -268,9 +254,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          FEATURED PRODUCTS
-          ═══════════════════════════════════════ */}
+      {/* FEATURED PIECES */}
       <section className="max-w-[1400px] mx-auto px-6 lg:px-10 py-24 md:py-32">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-4">
           <div>
@@ -290,36 +274,43 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
-          {FEATURED_PRODUCTS.map((product, i) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, ...stagger(i) }}
-            >
-              <Link href={`/shop/${product.id}`} className="group block">
-                <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#F5F2ED] mb-3">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                </div>
-                <h3 className="font-medium text-sm text-[#2C3B2D] group-hover:text-[#C7956D] transition-colors duration-300">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-[#6B7C5E] mt-0.5">${product.price}</p>
-              </Link>
-            </motion.div>
-          ))}
+          {featuredProducts.length > 0 ? (
+            featuredProducts.map((product, i) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ...stagger(i) }}
+              >
+                <Link href={`/shop/${product.id}`} className="group block">
+                  <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#F5F2ED] mb-3">
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                  </div>
+                  <h3 className="font-medium text-sm text-[#2C3B2D] group-hover:text-[#C7956D] transition-colors duration-300">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-[#6B7C5E] mt-0.5">${product.price}</p>
+                </Link>
+              </motion.div>
+            ))
+          ) : (
+            [...Array(4)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[3/4] bg-[#F5F2ED] rounded-xl mb-3" />
+                <div className="h-4 bg-[#F5F2ED] rounded w-3/4" />
+              </div>
+            ))
+          )}
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          FULL-BLEED PARALLAX — Join the Movement
-          ═══════════════════════════════════════ */}
+      {/* PARALLAX */}
       <section className="relative py-36 md:py-44 overflow-hidden grain-overlay">
         <Image
           src="https://images.unsplash.com/photo-1616046229478-9901c5536a45?w=1800&h=900&fit=crop&q=80"
@@ -355,9 +346,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════
-          TRUST BADGES
-          ═══════════════════════════════════════ */}
+      {/* BADGES */}
       <section className="max-w-[1400px] mx-auto px-6 lg:px-10 py-20 md:py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
           {[
@@ -392,34 +381,6 @@ export default function Home() {
               <p className="text-sm text-[#6B7C5E] max-w-xs mx-auto leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════
-          TESTIMONIAL
-          ═══════════════════════════════════════ */}
-      <section className="bg-[#F5F2ED] py-24 md:py-28">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
-            <div className="flex justify-center gap-1 mb-6">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={16} weight="fill" className="text-[#C7956D]" />
-              ))}
-            </div>
-            <blockquote className="font-display text-2xl md:text-3xl font-medium text-[#2C3B2D] leading-relaxed italic mb-8">
-              &ldquo;Every piece from Decormade tells a story. The quality is unmatched, 
-              and I love knowing that my home décor was made with care for the planet.&rdquo;
-            </blockquote>
-            <div>
-              <p className="text-sm font-medium text-[#2C3B2D]">Sarah Mitchell</p>
-              <p className="text-xs text-[#B8BCA0] mt-1">Interior Designer, Portland</p>
-            </div>
-          </motion.div>
         </div>
       </section>
 
