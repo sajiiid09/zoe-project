@@ -1,15 +1,24 @@
-# Frontend Development Log
+# Frontend Development Phases (Concise)
 
-## Initialization
-- App initialized using `npx create-next-app` with Tailwind CSS, TypeScript. Total package size ~360 packages audited.
-- Added `lucide-react`. 
+## Phase 1 — Foundation (completed)
+- Standardized architecture, route groups, shell, and data abstractions.
+- Established reusable design tokens and base UI primitives.
 
-## Core Structure
-- Setting up the component directory for Header, Hero, and Category banners.
-- Colors: Utilizing a dominant yellow (`#fceb00`) for top navigation based on standard Noon.com UI.
-- `page.tsx` now loads a fully responsive Header, Navbar, HeroSlider and Category Icons list.
-- Syntax issue with `@theme` initialization in global.css was fixed.
+## Phase 2 — Storefront Discovery (completed)
+- Built conversion-oriented homepage with campaign, category shortcuts, trust strip, and reusable product rails.
+- Implemented search/listing/category browsing with sort/filter UX, mobile filter drawer, and no-results handling.
+- Upgraded product card system with deal badges, wishlist affordance, delivery cues, and dense marketplace layout.
+- Wired browsing surfaces to backend-aware product queries with resilient fallback shaping.
 
-## Next Steps
-- Implement logic for the Search Dropdown.
-- Setup product API integrations or hardcoded grids.
+## Phase 3 — Auth + Customer Depth
+- Session lifecycle, address book, order history, wishlist persistence.
+- Better resilience states, telemetry, and analytics hooks.
+
+## Phase 4 — Seller/Affiliate/Admin Workflows
+- Vendor product management, submissions, and store controls.
+- Affiliate tracking/payout surfaces.
+- Admin approvals, catalog governance, and operational dashboards.
+
+## Phase 5 — Hardening + Scale
+- Performance budgets, test expansion, accessibility audits.
+- Internationalization/localization and production observability.
