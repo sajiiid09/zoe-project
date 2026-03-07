@@ -42,6 +42,13 @@ export type ProductCardModel = {
   badge?: string;
   stockStatus: "in_stock" | "low_stock" | "out_of_stock";
   deliveryLabel?: string;
+  source: "legacy" | "catalog";
+};
+
+export type ProductViewModel = ProductCardModel & {
+  description?: string;
+  features?: string[];
+  vendorName?: string;
 };
 
 export type ProductQuery = {

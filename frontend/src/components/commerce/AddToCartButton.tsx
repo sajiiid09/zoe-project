@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { useCart } from "@/components/commerce/CartProvider";
 import type { ProductCardModel } from "@/types/catalog";
 
-export const AddToCartButton = ({ product }: { product: ProductCardModel }) => {
+export const AddToCartButton = ({ product }: { product: ProductCardModel & { source: "legacy" } }) => {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
 

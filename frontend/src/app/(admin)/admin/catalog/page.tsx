@@ -27,7 +27,7 @@ export default function AdminCatalogPage() {
               <tr key={row.id}>
                 <td>{row.title}</td>
                 <td>{row.category}</td>
-                <td>{row.status}</td>
+                <td><span className={`order-status ${row.status === "active" ? "delivered" : row.status === "archived" ? "cancelled" : "processing"}`}>{row.status}</span></td>
                 <td>
                   <Button size="sm" onClick={async () => { await setCatalogStatus(row.id, "active"); refresh(); }}>Activate</Button>
                   <Button size="sm" variant="ghost" onClick={async () => { await setCatalogStatus(row.id, "draft"); refresh(); }}>Draft</Button>

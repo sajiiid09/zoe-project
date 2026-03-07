@@ -30,7 +30,7 @@ export default function AdminSubmissionsPage() {
                 <td>{row.notes}</td>
                 <td><span className={`order-status ${row.status === "accepted" ? "delivered" : row.status === "rejected" ? "cancelled" : "processing"}`}>{row.status}</span></td>
                 <td>
-                  <Button size="sm" onClick={async () => { await setAdminSubmissionStatus(row.id, "accepted"); refresh(); }}>Accept</Button>
+                  <Button size="sm" onClick={async () => { await setAdminSubmissionStatus(row.id, "accepted"); refresh(); }}>Accept to Catalog</Button>
                   <Button size="sm" variant="ghost" onClick={async () => { await setAdminSubmissionStatus(row.id, "rejected"); refresh(); }}>Reject</Button>
                 </td>
               </tr>
