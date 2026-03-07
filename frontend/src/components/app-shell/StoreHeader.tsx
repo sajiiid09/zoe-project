@@ -47,13 +47,17 @@ export const StoreHeader = () => {
                 <User size={18} />
               </button>
               {accountMenuOpen ? (
-                <div className="account-menu">
-                  <p>Hello, {session.user.fullName.split(" ")[0]}</p>
-                  <Link href={roleHome[session.user.role]} onClick={() => setAccountMenuOpen(false)}>My account</Link>
-                  {isCustomer ? <Link href="/account/orders" onClick={() => setAccountMenuOpen(false)}>Orders</Link> : null}
-                  {isCustomer ? <Link href="/wishlist" onClick={() => setAccountMenuOpen(false)}>Wishlist</Link> : null}
-                  <button type="button" onClick={async () => { await logout(); setAccountMenuOpen(false); }}><LogOut size={14} /> Sign out</button>
-                </div>
+                <>
+                  <div style={{ position: "fixed", inset: 0, zIndex: 10 }} onClick={() => setAccountMenuOpen(false)} />
+                  <div className="account-menu" style={{ zIndex: 20 }}>
+                    <p>Hello, {session.user.fullName.split(" ")[0]}</p>
+                    <Link href={roleHome[session.user.role]} onClick={() => setAccountMenuOpen(false)}>My account</Link>
+                    {isCustomer ? <Link href="/account/orders" onClick={() => setAccountMenuOpen(false)}>Orders</Link> : null}
+                    {isCustomer ? <Link href="/wishlist" onClick={() => setAccountMenuOpen(false)}>Wishlist</Link> : null}
+                    <Link href="/help" onClick={() => setAccountMenuOpen(false)}>Help & Support</Link>
+                    <button type="button" onClick={async () => { await logout(); setAccountMenuOpen(false); }}><LogOut size={14} /> Sign out</button>
+                  </div>
+                </>
               ) : null}
             </div>
           ) : (

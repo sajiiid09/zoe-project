@@ -26,6 +26,8 @@
 - Added `/catalog/[id]` public browsing route for catalog entities with no false purchase flows.
 - Improved the vendor submission to catalog bridge in admin UX utilizing status badges.
 
-## Phase 7 — Hardening + Scale
-- Performance budgets, test expansion, accessibility audits.
-- Internationalization/localization and production observability.
+## Phase 7 — Hardening & Scale (completed)
+- Hardened Affiliate Dashboard with practical next-step placeholders for upcoming modules.
+- Refined cross-role layouts (`RoleLayout`, `StoreHeader`) with active state logic and dropdown click-away management.
+- Hardened global CSS with focus-visible accessibility rings, smooth button transitions, and robust responsive table overflows.
+- Added global `.empty-view` styling and header utility links for consistent edge-case handling.

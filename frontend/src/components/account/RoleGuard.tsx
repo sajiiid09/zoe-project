@@ -23,7 +23,14 @@ export const RoleGuard = ({ role, children }: { role: Exclude<UserRole, "guest">
   }, [session, role, pathname, router]);
 
   if (!session || session.user.role !== role) {
-    return <section className="state-box"><p>Checking access...</p></section>;
+    return (
+      <div className="container page-space">
+        <section className="state-box" style={{ padding: "4rem 2rem", opacity: 0.7 }}>
+          <div style={{ width: 24, height: 24, border: "3px solid var(--border)", borderTopColor: "var(--accent)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 1rem" }} />
+          <p className="muted">Checking access...</p>
+        </section>
+      </div>
+    );
   }
 
   return <>{children}</>;
