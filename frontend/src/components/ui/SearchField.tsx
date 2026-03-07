@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
@@ -23,7 +23,7 @@ export const SearchField = ({ initialQuery = "" }: { initialQuery?: string }) =>
 
   return (
     <form className="search-wrap" role="search" onSubmit={onSubmit}>
-      <Search size={18} aria-hidden="true" />
+      <MagnifyingGlass size={18} aria-hidden="true" weight="bold" />
       <div className="search-control">
         <input
           aria-label="Search products"

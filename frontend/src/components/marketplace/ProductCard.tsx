@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart } from "lucide-react";
+import { Heart } from "@phosphor-icons/react";
 
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
 import { useWishlist } from "@/components/commerce/WishlistProvider";
@@ -36,7 +36,7 @@ export const ProductCard = ({ product }: { product: ProductCardModel }) => {
               toggleWishlist(product);
             }}
           >
-            <Heart size={16} />
+            <Heart size={16} weight="bold" />
           </button>
           {discount ? <span className="deal-tag">-{discount}%</span> : null}
         </div>

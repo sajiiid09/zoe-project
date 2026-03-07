@@ -1,6 +1,6 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import { FadersHorizontal } from "@phosphor-icons/react";
 import { useState } from "react";
 
 import { Drawer } from "@/components/ui/Drawer";
@@ -12,7 +12,7 @@ export const MobileFilterDrawer = ({ q }: { q?: string }) => {
   return (
     <>
       <button type="button" className="mobile-filter-btn" onClick={() => setOpen(true)}>
-        <SlidersHorizontal size={16} /> Filters
+        <FadersHorizontal size={16} weight="bold" /> Filters
       </button>
       <Drawer title="Filters" open={open} onClose={() => setOpen(false)}>
         <FilterSidebar q={q} />

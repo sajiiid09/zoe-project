@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, LogOut, MapPin, Menu, ShoppingCart, User } from "lucide-react";
+import { Heart, SignOut, MapPin, List, ShoppingCart, User } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -34,17 +34,25 @@ export const StoreHeader = () => {
     <header className="store-header">
       <div className="top-bar container">
         <button className="icon-btn mobile-only" onClick={() => setOpen(true)} aria-label="Open navigation menu">
-          <Menu size={20} />
+          <List size={20} weight="bold" />
         </button>
-        <Link href="/" className="brand">Zoe Market</Link>
+        <Link href="/" className="brand" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Using text for now, could be an SVG logo */}
+          <span style={{ fontSize: '1.6rem', letterSpacing: '-0.04em' }}>zoe</span>
+        </Link>
+        <div className="desktop-only border-l border-zinc-900/10 pl-4 ml-2 mr-2">
+          <button className="deliver-to-btn">
+            <span style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', display: 'block', textAlign: 'left' }}>Deliver to</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>Riyadh <MapPin size={14} weight="bold" /></span>
+          </button>
+        </div>
         <div className="desktop-search"><SearchField initialQuery={initialQuery} /></div>
         <div className="header-actions">
-          <button className="header-pill"><MapPin size={16} /> Deliver to</button>
-
           {session ? (
             <div className="account-menu-wrap">
-              <button className="icon-btn" aria-label="Account" onClick={() => setAccountMenuOpen((v) => !v)}>
-                <User size={18} />
+              <button className="header-action-btn" aria-label="Account" onClick={() => setAccountMenuOpen((v) => !v)}>
+                <span className="font-bold text-sm">My Account</span>
+                <User size={18} weight="bold" />
               </button>
               {accountMenuOpen ? (
                 <>
@@ -55,17 +63,26 @@ export const StoreHeader = () => {
                     {isCustomer ? <Link href="/account/orders" onClick={() => setAccountMenuOpen(false)}>Orders</Link> : null}
                     {isCustomer ? <Link href="/wishlist" onClick={() => setAccountMenuOpen(false)}>Wishlist</Link> : null}
                     <Link href="/help" onClick={() => setAccountMenuOpen(false)}>Help & Support</Link>
-                    <button type="button" onClick={async () => { await logout(); setAccountMenuOpen(false); }}><LogOut size={14} /> Sign out</button>
+                    <button type="button" onClick={async () => { await logout(); setAccountMenuOpen(false); }}><SignOut size={14} weight="bold" /> Sign out</button>
                   </div>
                 </>
               ) : null}
             </div>
           ) : (
-            <Link href="/auth/login" className="header-signin">Sign in</Link>
+            <Link href="/auth/login" className="header-action-btn border-r pr-4 mr-2 border-black/10">
+              <span className="font-bold text-sm">Sign In</span>
+              <User size={18} weight="bold" />
+            </Link>
           )}
 
-          <Link href="/wishlist" className="icon-btn cart-btn" aria-label="Wishlist"><Heart size={18} />{wishlistItems.length ? <span>{wishlistItems.length}</span> : null}</Link>
-          <Link href="/cart" className="icon-btn cart-btn" aria-label="Cart"><ShoppingCart size={18} />{itemCount ? <span>{itemCount}</span> : null}</Link>
+          <Link href="/wishlist" className="header-action-btn border-r pr-4 mr-2 border-black/10" aria-label="Wishlist">
+            <span className="font-bold text-sm">Wishlist</span>
+            <div className="cart-badge-wrap"><Heart size={20} weight="bold" />{wishlistItems.length ? <span className="cart-badge">{wishlistItems.length}</span> : null}</div>
+          </Link>
+          <Link href="/cart" className="header-action-btn" aria-label="Cart">
+            <span className="font-bold text-sm">Cart</span>
+            <div className="cart-badge-wrap"><ShoppingCart size={20} weight="bold" />{itemCount ? <span className="cart-badge">{itemCount}</span> : null}</div>
+          </Link>
         </div>
       </div>
       {!session ? <div className="auth-banner container"><span>New here?</span> <Link href="/auth/register">Create account for faster checkout</Link></div> : null}
