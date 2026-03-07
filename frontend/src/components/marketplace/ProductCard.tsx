@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
+import { AddToCartButton } from "@/components/commerce/AddToCartButton";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import type { ProductCardModel } from "@/types/catalog";
@@ -41,6 +42,9 @@ export const ProductCard = ({ product }: { product: ProductCardModel }) => {
           {product.badge ? <Badge>{product.badge}</Badge> : null}
         </div>
       </Link>
+      <div className="product-card-footer">
+        <AddToCartButton product={product} />
+      </div>
     </Card>
   );
 };

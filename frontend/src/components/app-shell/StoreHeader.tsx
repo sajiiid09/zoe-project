@@ -5,6 +5,7 @@ import { Heart, MapPin, Menu, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 
+import { useCart } from "@/components/commerce/CartProvider";
 import { Drawer } from "@/components/ui/Drawer";
 import { SearchField } from "@/components/ui/SearchField";
 import { categoryItems, storefrontNav } from "@/lib/config/site";
@@ -13,6 +14,7 @@ export const StoreHeader = () => {
   const [open, setOpen] = useState(false);
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
+  const { itemCount } = useCart();
 
   return (
     <header className="store-header">
@@ -26,7 +28,7 @@ export const StoreHeader = () => {
           <button className="header-pill"><MapPin size={16} /> Deliver to</button>
           <Link href="/account/profile" className="icon-btn" aria-label="Account"><User size={18} /></Link>
           <Link href="/wishlist" className="icon-btn" aria-label="Wishlist"><Heart size={18} /></Link>
-          <Link href="/cart" className="icon-btn" aria-label="Cart"><ShoppingCart size={18} /></Link>
+          <Link href="/cart" className="icon-btn cart-btn" aria-label="Cart"><ShoppingCart size={18} />{itemCount ? <span>{itemCount}</span> : null}</Link>
         </div>
       </div>
       <div className="mobile-search container"><SearchField initialQuery={initialQuery} /></div>

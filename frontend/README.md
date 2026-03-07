@@ -1,10 +1,11 @@
 # Zoe Market Frontend
 
-A scalable Next.js marketplace frontend with role-aware architecture and a production-ready customer browsing storefront.
+A scalable Next.js marketplace frontend with role-aware architecture, browsing surfaces, and a customer purchase flow.
 
 ## Current status
 - **Phase 1 complete:** app foundation, shell, route groups, API/data shaping.
-- **Phase 2 complete:** homepage merchandising, search/listing/category browsing, filter/sort UX, and improved product cards.
+- **Phase 2 complete:** homepage merchandising, search/listing/category browsing.
+- **Phase 3 complete:** cart, checkout, address handling, order confirmation, and customer orders management.
 
 ## Stack
 - Next.js 16 + React 19 + TypeScript
@@ -13,9 +14,9 @@ A scalable Next.js marketplace frontend with role-aware architecture and a produ
 
 ## Project structure
 - `src/app`: Route scaffolding + role/layout composition
-- `src/components`: App shell, UI primitives, marketplace merchandising + listing components
-- `src/lib`: Config, auth/session strategy, API client + adapters
-- `src/types`: Frontend models for legacy and future catalog flows
+- `src/components`: App shell, UI primitives, commerce + marketplace components
+- `src/lib`: Config, auth/session strategy, API client/adapters, purchase API wrappers
+- `src/types`: Frontend models for catalog, roles, and purchase lifecycle
 
 ## Commands
 ```bash
@@ -25,6 +26,5 @@ npm run build
 ```
 
 ## Data direction
-- Customer browsing currently prioritizes the **legacy product flow**.
-- `src/lib/api/adapters.ts` keeps UI decoupled from backend payload shape.
-- `src/lib/api/products.ts` supports backend calls with safe local fallback for resilient development.
+- Customer purchase flow currently targets the **legacy order engine**.
+- Browsing and purchase layers remain UI-model driven to ease future backend migration.
