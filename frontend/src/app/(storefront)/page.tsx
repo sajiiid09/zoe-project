@@ -16,11 +16,10 @@ export default async function HomePage() {
     <AppContainer>
       <section className="hero-grid">
         <article className="hero-main">
-          <p>Fast delivery • Trusted sellers • Daily deals</p>
-          <h1>Discover millions of products across electronics, fashion, home, and daily essentials.</h1>
-          <a href="/search?sort=deals" className="hero-cta">Explore today&apos;s deals</a>
+          <p>15% cashback + Free delivery on your first order</p>
+          <h1>BIG DEAL SALE<br />UP TO 60% OFF</h1>
+          <a href="/search?sort=deals" className="hero-cta">Shop All Deals Now</a>
         </article>
-        <article className="hero-side">Free shipping over $50 • Limited-time vouchers live now</article>
       </section>
 
       <CategoryShortcutRail />

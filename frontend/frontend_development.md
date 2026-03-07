@@ -31,3 +31,9 @@
 - Refined cross-role layouts (`RoleLayout`, `StoreHeader`) with active state logic and dropdown click-away management.
 - Hardened global CSS with focus-visible accessibility rings, smooth button transitions, and robust responsive table overflows.
 - Added global `.empty-view` styling and header utility links for consistent edge-case handling.
+
+## Phase 8 — Public Storefront UI Polish (completed)
+- Redesigned visual design tokens (`globals.css`) for softer `16px/20px` borders and deeper, modern cubic-bezier shadows (`--shadow-hover`).
+- Transformed `.store-header` into a premium glassmorphic nav bar (`backdrop-filter: blur(12px)`).
+- Upgraded the Homepage Hero with vibrant gradients, glowing CTA buttons, and ambient background blooms.
+- Added interactive micro-animations (Y-axis lift, scaling deal tags, and color-transitioning wishlist buttons) across all primary interactive surfaces (Product Cards, Cart Lines, Summary Boxes).

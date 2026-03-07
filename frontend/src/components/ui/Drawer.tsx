@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { X } from "@phosphor-icons/react";
 import type { PropsWithChildren } from "react";
 
 export const Drawer = ({
@@ -17,7 +17,7 @@ export const Drawer = ({
         <header className="drawer-header">
           <h2>{title}</h2>
           <button type="button" onClick={onClose} aria-label="Close panel" className="icon-btn">
-            <X size={20} />
+            <X size={20} weight="bold" />
           </button>
         </header>
         <div className="drawer-content">{children}</div>
