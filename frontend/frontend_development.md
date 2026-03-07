@@ -1,15 +1,30 @@
-# Frontend Development Log
+# Frontend Development Phases (Concise)
 
-## Initialization
-- App initialized using `npx create-next-app` with Tailwind CSS, TypeScript. Total package size ~360 packages audited.
-- Added `lucide-react`. 
+## Phase 1 — Foundation (completed)
+- Standardized architecture, route groups, shell, and data abstractions.
+- Established reusable design tokens and base UI primitives.
 
-## Core Structure
-- Setting up the component directory for Header, Hero, and Category banners.
-- Colors: Utilizing a dominant yellow (`#fceb00`) for top navigation based on standard Noon.com UI.
-- `page.tsx` now loads a fully responsive Header, Navbar, HeroSlider and Category Icons list.
-- Syntax issue with `@theme` initialization in global.css was fixed.
+## Phase 2 — Storefront Discovery (completed)
+- Built conversion-oriented homepage with campaign, category shortcuts, trust strip, and reusable product rails.
+- Implemented search/listing/category browsing with sort/filter UX and mobile filter drawer.
+- Upgraded product card system and backend-aware browsing queries.
 
-## Next Steps
-- Implement logic for the Search Dropdown.
-- Setup product API integrations or hardcoded grids.
+## Phase 3 — Purchase Flow (completed)
+- Implemented cart lifecycle, checkout, address flow, order confirmation, and order management.
+- Added resilient purchase API wrappers with backend-first + local fallback behavior.
+
+## Phase 4 — Auth + Account Layer (completed)
+- Added login/register flows, session persistence, and role-aware login outcomes.
+- Implemented signed-in/signed-out header behavior with account menu and personalized shortcuts.
+- Built customer profile editing, improved addresses/account pages, and route guarding for account access.
+- Implemented wishlist persistence with add/remove from product surfaces and dedicated wishlist page.
+- Added support/trust utility links across account and checkout surfaces.
+
+## Phase 5 — Seller/Affiliate/Admin Workflows
+- Vendor product management, submissions, and store controls.
+- Affiliate tracking/payout surfaces.
+- Admin approvals, catalog governance, and operational dashboards.
+
+## Phase 6 — Hardening + Scale
+- Performance budgets, test expansion, accessibility audits.
+- Internationalization/localization and production observability.
