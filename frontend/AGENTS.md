@@ -1,15 +1,14 @@
-# Frontend Development Tracker
+# Frontend Agent Notes
 
-## Initial Setup
-- Initialized Next.js 15 app with React 19, TypeScript, and Tailwind CSS.
-- Defined project structure for components (layout, home) and pages.
-- Configured globals.css with Tailwind 4.
+## Working Rules
+- Keep architecture modular and role-aware.
+- Prefer reusable primitives over one-off page styling.
+- UI must remain practical, dense, and marketplace-oriented.
 
-## Implication & Strategy
-- Using Tailwind CSS for rapid styling following Reference images (Noon.com clone).
-- Needed to use `lucide-react` for standard ecommerce icons.
-- Navbar, Header, Hero Slider, and Category Icons implemented to match visual fidelity of Noon UI.
-- Layout assembled. 
-- *A minor CSS syntax parsing error occurred initially due to legacy Next template vs Tailwind 4 standard, resolved.*
-
-*Track progress and iterations here.*
+## Development Tracker
+- Phase 1 complete: foundation + shell + route grouping.
+- Phase 2 complete: storefront discovery + merchandising + listing/search UX.
+- Phase 3 complete: cart, checkout, addresses, confirmation, and customer orders flow.
+- Phase 4 complete: auth flows, role-aware session UX, account area, and wishlist persistence.
+- Phase 5 complete: vendor, affiliate, and admin operational management surfaces.
+- Keep updates to `frontend_development.md` concise per phase.
