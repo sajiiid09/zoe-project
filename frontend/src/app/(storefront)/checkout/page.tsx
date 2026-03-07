@@ -9,6 +9,7 @@ import { useCart } from "@/components/commerce/CartProvider";
 import { OrderSummary } from "@/components/commerce/OrderSummary";
 import { AppContainer } from "@/components/layout/AppContainer";
 import { PageIntro } from "@/components/layout/PageIntro";
+import { SupportLinks } from "@/components/support/SupportLinks";
 import { Button } from "@/components/ui/Button";
 import { listAddresses, saveAddress } from "@/lib/api/addresses";
 import { placeOrder } from "@/lib/api/orders";
@@ -137,6 +138,7 @@ export default function CheckoutPage() {
           />
         </section>
       )}
+          <SupportLinks />
     </AppContainer>
   );
 }

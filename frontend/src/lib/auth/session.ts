@@ -7,7 +7,16 @@ export type Session = {
 };
 
 export const getSession = async (): Promise<Session> => {
-  return { role: "guest" };
+  if (typeof window === "undefined") return { role: "guest" };
+  const raw = window.localStorage.getItem("zoe_market_session");
+  if (!raw) return { role: "guest" };
+
+  try {
+    const parsed = JSON.parse(raw) as { token: string; user: { id: string; role: Exclude<UserRole, "guest"> } };
+    return { userId: parsed.user.id, role: parsed.user.role, token: parsed.token };
+  } catch {
+    return { role: "guest" };
+  }
 };
 
 export const canAccessRoleArea = (sessionRole: UserRole, requiredRole: UserRole) => {

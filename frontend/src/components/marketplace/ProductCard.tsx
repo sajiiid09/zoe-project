@@ -1,8 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Heart } from "lucide-react";
 
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
+import { useWishlist } from "@/components/commerce/WishlistProvider";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import type { ProductCardModel } from "@/types/catalog";
@@ -17,13 +20,22 @@ const discountPct = (price: number, compareAt?: number) => {
 
 export const ProductCard = ({ product }: { product: ProductCardModel }) => {
   const discount = discountPct(product.price.amount, product.compareAtPrice?.amount);
+  const { toggleWishlist, isWishlisted } = useWishlist();
 
   return (
     <Card className="product-card">
       <Link href={`/product/${product.slug}`} className="product-link">
         <div className="product-image-wrap">
           <Image src={product.image} alt={product.title} fill sizes="(max-width:768px) 45vw, (max-width:1200px) 30vw, 220px" />
-          <button type="button" aria-label="Add to wishlist" className="wishlist-btn">
+          <button
+            type="button"
+            aria-label="Add to wishlist"
+            className={`wishlist-btn ${isWishlisted(product.id) ? "active" : ""}`}
+            onClick={(event) => {
+              event.preventDefault();
+              toggleWishlist(product);
+            }}
+          >
             <Heart size={16} />
           </button>
           {discount ? <span className="deal-tag">-{discount}%</span> : null}

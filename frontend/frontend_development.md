@@ -10,16 +10,21 @@
 - Upgraded product card system and backend-aware browsing queries.
 
 ## Phase 3 — Purchase Flow (completed)
-- Implemented cart lifecycle: add, quantity update, remove, summary pricing, and empty states.
-- Built checkout flow with address selection/creation, item review, validation, loading/error handling, and order placement.
-- Added order confirmation route, account orders history/detail pages, and cancellation actions.
-- Added resilient address/order API wrappers with local fallback for stable development.
+- Implemented cart lifecycle, checkout, address flow, order confirmation, and order management.
+- Added resilient purchase API wrappers with backend-first + local fallback behavior.
 
-## Phase 4 — Seller/Affiliate/Admin Workflows
+## Phase 4 — Auth + Account Layer (completed)
+- Added login/register flows, session persistence, and role-aware login outcomes.
+- Implemented signed-in/signed-out header behavior with account menu and personalized shortcuts.
+- Built customer profile editing, improved addresses/account pages, and route guarding for account access.
+- Implemented wishlist persistence with add/remove from product surfaces and dedicated wishlist page.
+- Added support/trust utility links across account and checkout surfaces.
+
+## Phase 5 — Seller/Affiliate/Admin Workflows
 - Vendor product management, submissions, and store controls.
 - Affiliate tracking/payout surfaces.
 - Admin approvals, catalog governance, and operational dashboards.
 
-## Phase 5 — Hardening + Scale
+## Phase 6 — Hardening + Scale
 - Performance budgets, test expansion, accessibility audits.
 - Internationalization/localization and production observability.
