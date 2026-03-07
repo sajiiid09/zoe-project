@@ -46,8 +46,12 @@ export default function AffiliateProfilePage() {
           <input value={form.audienceRegion} onChange={(e) => setForm((p) => ({ ...p, audienceRegion: e.target.value }))} placeholder="Audience region" />
           <input value={form.status} disabled />
         </div>
-        {message ? <p className="muted">{message}</p> : null}
-        <Button>Save affiliate profile</Button>
+        {message && (
+          <div style={{ padding: "0.75rem", borderRadius: "8px", fontSize: "0.85rem", backgroundColor: message.includes("saved") ? "#f0fdf4" : "#fef2f2", color: message.includes("saved") ? "#166534" : "#991b1b", border: `1px solid ${message.includes("saved") ? "#bbf7d0" : "#fecaca"}`, marginTop: "0.4rem" }}>
+            {message}
+          </div>
+        )}
+        <Button style={{ marginTop: "0.25rem" }}>Save affiliate profile</Button>
       </form>
     </>
   );
