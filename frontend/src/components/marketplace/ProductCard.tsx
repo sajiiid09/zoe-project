@@ -55,7 +55,13 @@ export const ProductCard = ({ product }: { product: ProductCardModel }) => {
         </div>
       </Link>
       <div className="product-card-footer">
-        <AddToCartButton product={product} />
+        {product.source === "legacy" ? (
+          <AddToCartButton product={product as ProductCardModel & { source: "legacy" }} />
+        ) : (
+          <Link href={`/catalog/${product.id}`} className="btn btn-secondary btn-sm" style={{width: "100%", justifyContent: "center", display: "flex"}}>
+            View Details
+          </Link>
+        )}
       </div>
     </Card>
   );

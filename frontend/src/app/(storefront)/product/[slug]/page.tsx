@@ -33,7 +33,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <p className="product-rating">★ {current.rating.toFixed(1)} ({current.reviewCount}) reviews</p>
             <p className="pdp-price">${current.price.amount}</p>
             <p className="delivery-line">{current.deliveryLabel}</p>
-            <div className="pdp-actions"><AddToCartButton product={current} /><Link href="/checkout" className="checkout-link-btn">Buy now</Link></div>
+            <div className="pdp-actions"><AddToCartButton product={current as any} /><Link href="/checkout" className="checkout-link-btn">Buy now</Link></div>
           </div>
         </section>
       ) : null}

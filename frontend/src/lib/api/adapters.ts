@@ -13,6 +13,7 @@ export const shapeLegacyProduct = (item: LegacyProduct): ProductCardModel => ({
   badge: item.stockStatus === "low_stock" ? "Limited stock" : undefined,
   stockStatus: item.stockStatus,
   deliveryLabel: item.stockStatus === "in_stock" ? "Delivery by tomorrow" : "Delivery in 2-4 days",
+  source: "legacy",
 });
 
 export const shapeCatalogProduct = (item: CatalogProduct): ProductCardModel => ({
@@ -28,4 +29,5 @@ export const shapeCatalogProduct = (item: CatalogProduct): ProductCardModel => (
   badge: item.fulfillment === "platform" ? "Fulfilled by Zoe" : "Vendor shipped",
   stockStatus: "in_stock",
   deliveryLabel: item.fulfillment === "platform" ? "Delivery by tomorrow" : "Delivery in 2-4 days",
+  source: "catalog",
 });

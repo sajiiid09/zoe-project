@@ -20,6 +20,12 @@
 - Added affiliate status and profile management with explicit deferred commission/payout scope.
 - Added admin operations surfaces for approvals, users, products, submissions, catalog, and orders.
 
-## Phase 6 — Hardening + Scale
+## Phase 6 — Catalog Transition Layer (completed)
+- Created a normalized product-domain strategy separating live legacy commerce from the newer marketplace catalog.
+- Decoupled UI components from raw backend responses using a unified view model.
+- Added `/catalog/[id]` public browsing route for catalog entities with no false purchase flows.
+- Improved the vendor submission to catalog bridge in admin UX utilizing status badges.
+
+## Phase 7 — Hardening + Scale
 - Performance budgets, test expansion, accessibility audits.
 - Internationalization/localization and production observability.
