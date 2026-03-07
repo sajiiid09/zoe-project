@@ -1,15 +1,22 @@
 import type { PropsWithChildren } from "react";
 
+import { RoleGuard } from "@/components/account/RoleGuard";
 import { RoleLayout } from "@/components/app-shell/RoleLayout";
 
 const links = [
   { label: "Dashboard", href: "/admin/dashboard" },
   { label: "Approvals", href: "/admin/approvals" },
-  { label: "Catalog", href: "/admin/catalog" },
   { label: "Users", href: "/admin/users" },
+  { label: "Products", href: "/admin/products" },
+  { label: "Submissions", href: "/admin/submissions" },
+  { label: "Catalog", href: "/admin/catalog" },
   { label: "Orders", href: "/admin/orders" },
 ];
 
 export default function AdminLayout({ children }: PropsWithChildren) {
-  return <RoleLayout title="Admin Control" links={links}>{children}</RoleLayout>;
+  return (
+    <RoleGuard role="admin">
+      <RoleLayout title="Admin Operations" links={links}>{children}</RoleLayout>
+    </RoleGuard>
+  );
 }

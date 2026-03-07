@@ -84,7 +84,7 @@ export const AuthForm = ({ mode }: { mode: Mode }) => {
             <p>Already have an account? <Link href="/auth/login">Sign in</Link></p>
           )}
         </div>
-        <p className="auth-hint">Demo users: customer@zoe.test / Password123!, vendor@zoe.test / Password123! (payment-required), admin@zoe.test / Password123!</p>
+        <p className="auth-hint">Demo users: customer@zoe.test / Password123!, vendor@zoe.test / Password123! (payment-required), affiliate@zoe.test / Password123! (payment-required), admin@zoe.test / Password123!</p>
       </form>
     </section>
   );

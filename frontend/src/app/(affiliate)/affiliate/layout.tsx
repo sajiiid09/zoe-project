@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from "react";
 
+import { RoleGuard } from "@/components/account/RoleGuard";
 import { RoleLayout } from "@/components/app-shell/RoleLayout";
 
 const links = [
@@ -8,5 +9,9 @@ const links = [
 ];
 
 export default function AffiliateLayout({ children }: PropsWithChildren) {
-  return <RoleLayout title="Affiliate Workspace" links={links}>{children}</RoleLayout>;
+  return (
+    <RoleGuard role="affiliate">
+      <RoleLayout title="Affiliate Workspace" links={links}>{children}</RoleLayout>
+    </RoleGuard>
+  );
 }
