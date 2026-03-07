@@ -6,6 +6,6 @@
 - UI must remain practical, dense, and marketplace-oriented.
 
 ## Development Tracker
-- Phase 1 foundation completed (shell, routes, design system, API scaffolding).
-- For future phases, update `frontend_development.md` with concise deltas only.
-- Avoid logging verbose history; keep notes actionable and brief.
+- Phase 1 complete: shell, route groups, design system, API scaffolding.
+- Phase 2 complete: homepage merchandising, search/listing/category browsing, stronger product cards.
+- Update `frontend_development.md` with concise phase deltas only.

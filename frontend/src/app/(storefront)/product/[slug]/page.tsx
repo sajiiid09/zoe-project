@@ -1,23 +1,46 @@
+import Image from "next/image";
+
 import { AppContainer } from "@/components/layout/AppContainer";
+import { ProductCard } from "@/components/marketplace/ProductCard";
 import { PageIntro } from "@/components/layout/PageIntro";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { listLegacyProducts } from "@/lib/api/products";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const all = await listLegacyProducts({ pageSize: 30 });
+  const current = all.items.find((item) => item.slug === slug);
+  const related = all.items.filter((item) => item.slug !== slug).slice(0, 4);
 
   return (
     <AppContainer>
       <PageIntro
-        title="Product Detail Scaffold"
-        description={`PDP route initialized for ${slug.replaceAll("-", " ")}. Business data wiring is intentionally deferred.`}
+        title={current?.title ?? "Product Detail"}
+        description={current ? "Preview route with related products and retail layout hooks." : "Product detail route scaffold."}
         crumbs={[{ label: "Home", href: "/" }, { label: "Product" }]}
       />
-      <section className="pdp-shell">
-        <Skeleton className="pdp-image" />
-        <div className="pdp-info">
-          <Skeleton className="line-lg" />
-          <Skeleton className="line-md" />
-          <Skeleton className="line-sm" />
+
+      {current ? (
+        <section className="pdp-preview">
+          <div className="pdp-image-box">
+            <Image src={current.image} alt={current.title} fill sizes="(max-width: 768px) 95vw, 520px" />
+          </div>
+          <div className="pdp-meta-box">
+            <p className="product-category">{current.category}</p>
+            <h2>{current.title}</h2>
+            <p className="product-rating">★ {current.rating.toFixed(1)} ({current.reviewCount}) reviews</p>
+            <p className="pdp-price">${current.price.amount}</p>
+            <p className="delivery-line">{current.deliveryLabel}</p>
+          </div>
+        </section>
+      ) : null}
+
+      <section>
+        <SectionHeader title="Similar picks" subtitle="Customers also viewed" cta={{ label: "View more", href: "/search" }} />
+        <div className="listing-grid">
+          {related.map((item) => (
+            <ProductCard key={item.id} product={item} />
+          ))}
         </div>
       </section>
     </AppContainer>

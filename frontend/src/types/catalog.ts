@@ -40,4 +40,15 @@ export type ProductCardModel = {
   price: Money;
   compareAtPrice?: Money;
   badge?: string;
+  stockStatus: "in_stock" | "low_stock" | "out_of_stock";
+  deliveryLabel?: string;
+};
+
+export type ProductQuery = {
+  q?: string;
+  category?: string;
+  sort?: "relevance" | "deals" | "rating" | "price_asc" | "price_desc" | "new";
+  minRating?: number;
+  page?: number;
+  pageSize?: number;
 };

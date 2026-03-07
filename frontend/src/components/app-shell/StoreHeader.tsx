@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { Heart, MapPin, Menu, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { Drawer } from "@/components/ui/Drawer";
 import { SearchField } from "@/components/ui/SearchField";
-import { categories, storefrontNav } from "@/lib/config/site";
+import { categoryItems, storefrontNav } from "@/lib/config/site";
 
 export const StoreHeader = () => {
   const [open, setOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") ?? "";
 
   return (
     <header className="store-header">
@@ -18,7 +21,7 @@ export const StoreHeader = () => {
           <Menu size={20} />
         </button>
         <Link href="/" className="brand">Zoe Market</Link>
-        <div className="desktop-search"><SearchField /></div>
+        <div className="desktop-search"><SearchField initialQuery={initialQuery} /></div>
         <div className="header-actions">
           <button className="header-pill"><MapPin size={16} /> Deliver to</button>
           <Link href="/account/profile" className="icon-btn" aria-label="Account"><User size={18} /></Link>
@@ -26,7 +29,7 @@ export const StoreHeader = () => {
           <Link href="/cart" className="icon-btn" aria-label="Cart"><ShoppingCart size={18} /></Link>
         </div>
       </div>
-      <div className="mobile-search container"><SearchField /></div>
+      <div className="mobile-search container"><SearchField initialQuery={initialQuery} /></div>
       <nav className="category-nav">
         <div className="container nav-scroll" aria-label="Main categories">
           {storefrontNav.map((item) => (
@@ -36,9 +39,9 @@ export const StoreHeader = () => {
       </nav>
       <Drawer open={open} onClose={() => setOpen(false)} title="Browse categories">
         <nav className="drawer-links">
-          {categories.map((item) => (
-            <Link key={item} href={`/search?category=${item.toLowerCase()}`} onClick={() => setOpen(false)}>
-              {item}
+          {categoryItems.map((item) => (
+            <Link key={item.slug} href={`/categories/${item.slug}`} onClick={() => setOpen(false)}>
+              {item.label}
             </Link>
           ))}
         </nav>

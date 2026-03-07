@@ -1,15 +1,19 @@
 # Zoe Market Frontend
 
-Phase 1 establishes a production-ready marketplace foundation using Next.js App Router.
+A scalable Next.js marketplace frontend with role-aware architecture and a production-ready customer browsing storefront.
 
-## Tech
+## Current status
+- **Phase 1 complete:** app foundation, shell, route groups, API/data shaping.
+- **Phase 2 complete:** homepage merchandising, search/listing/category browsing, filter/sort UX, and improved product cards.
+
+## Stack
 - Next.js 16 + React 19 + TypeScript
-- CSS token system in `src/app/globals.css`
+- Reusable CSS token system in `src/app/globals.css`
 - Route groups for storefront, account, vendor, affiliate, and admin surfaces
 
-## Structure
+## Project structure
 - `src/app`: Route scaffolding + role/layout composition
-- `src/components`: App shell, UI primitives, marketplace cards, state blocks
+- `src/components`: App shell, UI primitives, marketplace merchandising + listing components
 - `src/lib`: Config, auth/session strategy, API client + adapters
 - `src/types`: Frontend models for legacy and future catalog flows
 
@@ -20,6 +24,7 @@ npm run lint
 npm run build
 ```
 
-## Notes
-- Customer buying flow currently targets legacy product/order model.
-- Adapters in `src/lib/api/adapters.ts` isolate UI from backend payload shape and keep catalog migration flexible.
+## Data direction
+- Customer browsing currently prioritizes the **legacy product flow**.
+- `src/lib/api/adapters.ts` keeps UI decoupled from backend payload shape.
+- `src/lib/api/products.ts` supports backend calls with safe local fallback for resilient development.

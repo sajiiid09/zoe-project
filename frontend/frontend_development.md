@@ -1,15 +1,14 @@
 # Frontend Development Phases (Concise)
 
 ## Phase 1 — Foundation (completed)
-- Standardized app architecture, route groups, and shared shell.
-- Added reusable design tokens + UI primitives.
-- Introduced API client, adapters, pagination, and model typing.
-- Scaffolded role-aware surfaces (customer/account, vendor, affiliate, admin).
+- Standardized architecture, route groups, shell, and data abstractions.
+- Established reusable design tokens and base UI primitives.
 
-## Phase 2 — Core Commerce Modules
-- Listing pages, filters, sorting, and pagination.
-- Product detail modules and recommendation rails.
-- Cart + checkout step containers with backend integration.
+## Phase 2 — Storefront Discovery (completed)
+- Built conversion-oriented homepage with campaign, category shortcuts, trust strip, and reusable product rails.
+- Implemented search/listing/category browsing with sort/filter UX, mobile filter drawer, and no-results handling.
+- Upgraded product card system with deal badges, wishlist affordance, delivery cues, and dense marketplace layout.
+- Wired browsing surfaces to backend-aware product queries with resilient fallback shaping.
 
 ## Phase 3 — Auth + Customer Depth
 - Session lifecycle, address book, order history, wishlist persistence.
