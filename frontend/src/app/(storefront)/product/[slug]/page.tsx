@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 
 import { AddToCartButton } from "@/components/commerce/AddToCartButton";
 import { AppContainer } from "@/components/layout/AppContainer";
@@ -24,9 +23,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       />
 
       {current ? (
-        <section className="pdp-preview">
+        <section className="pdp-preview polished-pdp">
           {/* Column 1: Image */}
-          <div className="pdp-image-box">
+          <div className="pdp-image-box polish-card">
             <Image src={current.image} alt={current.title} fill sizes="(max-width: 768px) 95vw, 400px" />
           </div>
 
@@ -46,7 +45,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </div>
 
           {/* Column 3: Action Sidebar */}
-          <div className="pdp-action-box">
+          <div className="pdp-action-box polish-card">
             <div className="trust-signal">
               <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-sm">🚚</div>
               <div>
