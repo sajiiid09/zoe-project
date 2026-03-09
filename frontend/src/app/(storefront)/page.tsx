@@ -5,6 +5,7 @@ import { PromoBannerGrid } from "@/components/marketplace/PromoBannerGrid";
 import { SearchAssist } from "@/components/marketplace/SearchAssist";
 import { TrustStrip } from "@/components/marketplace/TrustStrip";
 import { getHomepageRails, listLegacyProducts } from "@/lib/api/products";
+import { HeroSection } from "@/components/storefront/HeroSection";
 
 export default async function HomePage() {
   const [homepageRails, picks] = await Promise.all([
@@ -14,13 +15,7 @@ export default async function HomePage() {
 
   return (
     <AppContainer>
-      <section className="hero-grid">
-        <article className="hero-main">
-          <p>15% cashback + Free delivery on your first order</p>
-          <h1>BIG DEAL SALE<br />UP TO 60% OFF</h1>
-          <a href="/search?sort=deals" className="hero-cta">Shop All Deals Now</a>
-        </article>
-      </section>
+      <HeroSection />
 
       <CategoryShortcutRail />
       <PromoBannerGrid />
