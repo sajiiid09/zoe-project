@@ -11,6 +11,8 @@ const links = [
   { label: "Submissions", href: "/admin/submissions" },
   { label: "Catalog", href: "/admin/catalog" },
   { label: "Orders", href: "/admin/orders" },
+  { label: "Transactions", href: "/admin/transactions" },
+  { label: "Revenue", href: "/admin/revenue" },
 ];
 
 export default function AdminLayout({ children }: PropsWithChildren) {

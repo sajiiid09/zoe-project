@@ -49,7 +49,7 @@ export const StoreFooter = () => (
     {/* Help Section */}
     <div className="container footer-top-help">
       <div>
-        <h3 className="footer-top-help-title">We're Always Here To Help</h3>
+        <h3 className="footer-top-help-title">We&apos;re Always Here To Help</h3>
         <p className="footer-top-help-desc">Reach out to us through any of these support channels</p>
       </div>
       <div className="footer-help-channels">

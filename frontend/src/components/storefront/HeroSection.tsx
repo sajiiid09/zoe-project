@@ -1,23 +1,24 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { motion, useReducedMotion } from "framer-motion";
+
 import {
   topBannerConfig,
   heroSliderConfig,
   sideBannersConfig,
 } from "@/data/hero-banners";
-import { CaretLeft, CaretRight } from "@phosphor-icons/react";
 
 export function HeroSection() {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    Autoplay({ delay: 3000, stopOnInteraction: false }),
-  ]);
-
+  const autoplayRef = useRef(Autoplay({ delay: 3600, stopOnInteraction: false }));
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" }, [autoplayRef.current]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -44,45 +45,53 @@ export function HeroSection() {
     onSelect();
     emblaApi.on("select", onSelect);
     emblaApi.on("reInit", onSelect);
+
+    return () => {
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
+    };
   }, [emblaApi, onSelect]);
 
   return (
-    <section className="w-full mb-8 pt-4">
-      {/* Top Banner */}
-      <div className="w-full mb-4">
-        <Link href={topBannerConfig.href} className="block w-full">
-          {/* Using img tag with full width to preserve aspect ratio like reference */}
-          <img
+    <section className="hero-shell" aria-label="Featured offers">
+      <motion.div
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: prefersReducedMotion ? 0 : 0.5, ease: [0.2, 0.8, 0.2, 1] }}
+        className="hero-top-banner"
+      >
+        <Link href={topBannerConfig.href} className="hero-banner-link" aria-label={topBannerConfig.alt}>
+          <Image
             src={topBannerConfig.imageDesktop}
             alt={topBannerConfig.alt}
-            className="w-full h-auto object-cover rounded-md block"
+            width={2400}
+            height={400}
+            priority
+            className="hero-banner-image"
+            sizes="(max-width: 768px) 100vw, 1200px"
           />
         </Link>
-      </div>
+      </motion.div>
 
-      {/* Hero Carousel + Side Banners */}
-      <div
-        className="w-full max-w-full flex md:flex-row flex-col gap-4"
-        style={{ display: 'flex', boxSizing: 'border-box' }}
-      >
-        {/* Left: Auto Banner Slider */}
-        <div
-          className="relative group min-w-0"
-          style={{ flexGrow: 7, flexShrink: 0, flexBasis: 'calc(70% - 8px)' }}
+      <div className="hero-stage">
+        <motion.div
+          className="hero-carousel"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.52, delay: 0.04, ease: [0.2, 0.8, 0.2, 1] }}
         >
-          <div className="overflow-hidden rounded-md w-full h-full" style={{ overflow: 'hidden' }} ref={emblaRef}>
-            <div style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
+          <div className="hero-track-wrap" ref={emblaRef}>
+            <div className="hero-track">
               {heroSliderConfig.map((slide) => (
-                <div
-                  key={slide.id}
-                  style={{ flex: '0 0 100%', minWidth: 0, position: 'relative' }}
-                >
-                  <Link href={slide.href} className="block w-full h-full">
-                    <img
+                <div key={slide.id} className="hero-slide">
+                  <Link href={slide.href} className="hero-slide-link" aria-label={slide.alt}>
+                    <Image
                       src={slide.image}
                       alt={slide.alt}
-                      className="w-full h-auto object-cover rounded-md"
-                      style={{ display: 'block' }}
+                      width={1800}
+                      height={760}
+                      className="hero-slide-image"
+                      sizes="(max-width: 980px) 100vw, 70vw"
                     />
                   </Link>
                 </div>
@@ -90,58 +99,77 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* Navigation Arrows */}
-          <button
-            onClick={scrollPrev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            aria-label="Previous slide"
-          >
-            <CaretLeft weight="bold" className="text-gray-800" size={24} />
-          </button>
-          <button
-            onClick={scrollNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            aria-label="Next slide"
-          >
-            <CaretRight weight="bold" className="text-gray-800" size={24} />
-          </button>
-
-          {/* Pagination Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {heroSliderConfig.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => scrollTo(index)}
-                className={`w-2 h-2 rounded-full transition-all ${index === selectedIndex
-                  ? "bg-white w-4"
-                  : "bg-white/50 hover:bg-white/80"
-                  }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
+          <div className="hero-controls" aria-hidden={heroSliderConfig.length <= 1}>
+            <button
+              onClick={scrollPrev}
+              className="hero-nav-btn"
+              aria-label="Previous slide"
+              type="button"
+            >
+              <CaretLeft weight="bold" size={22} />
+            </button>
+            <button
+              onClick={scrollNext}
+              className="hero-nav-btn"
+              aria-label="Next slide"
+              type="button"
+            >
+              <CaretRight weight="bold" size={22} />
+            </button>
           </div>
-        </div>
 
-        {/* Right: Side Banners */}
-        <div
-          className="min-w-0 h-full"
-          style={{ flexGrow: 3, flexShrink: 0, flexBasis: 'calc(30% - 8px)', display: 'flex', flexDirection: 'column', gap: '16px' }}
+          <div className="hero-dots" role="tablist" aria-label="Hero slides">
+            {heroSliderConfig.map((slide, index) => {
+              const active = index === selectedIndex;
+              return (
+                <button
+                  key={slide.id}
+                  onClick={() => scrollTo(index)}
+                  className={`hero-dot ${active ? "is-active" : ""}`}
+                  aria-label={`Go to ${slide.alt}`}
+                  aria-current={active}
+                  type="button"
+                >
+                  <span className="hero-dot-track" />
+                  {active ? (
+                    <motion.span
+                      key={`${slide.id}-progress`}
+                      className="hero-dot-progress"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ duration: prefersReducedMotion ? 0 : 3.3, ease: "linear" }}
+                    />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="hero-side-stack"
+          initial={prefersReducedMotion ? false : { opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.5, delay: 0.1, ease: [0.2, 0.8, 0.2, 1] }}
         >
           {sideBannersConfig.map((banner) => (
             <Link
               key={banner.id}
               href={banner.href}
-              className="block rounded-md overflow-hidden relative"
-              style={{ flex: 1 }}
+              className="hero-side-banner"
+              aria-label={banner.alt}
             >
-              <img
+              <Image
                 src={banner.image}
                 alt={banner.alt}
-                className="w-full h-auto object-cover rounded-md block"
+                width={1000}
+                height={500}
+                className="hero-side-image"
+                sizes="(max-width: 980px) 100vw, 30vw"
               />
             </Link>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

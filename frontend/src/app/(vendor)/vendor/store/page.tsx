@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 
 import { PageIntro } from "@/components/layout/PageIntro";
+import { MotionSection } from "@/components/ops/Motion";
 import { Button } from "@/components/ui/Button";
 import { getVendorStore, saveVendorStore } from "@/lib/api/vendor";
 import type { VendorStore } from "@/types/operations";
@@ -36,17 +37,19 @@ export default function VendorStorePage() {
   return (
     <>
       <PageIntro title="Store Management" description="Create and maintain your vendor storefront details." />
-      <form className="address-form" onSubmit={submit}>
-        <div className="form-grid">
-          <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Store name" />
-          <input type="email" value={form.supportEmail} onChange={(e) => setForm((p) => ({ ...p, supportEmail: e.target.value }))} placeholder="Support email" />
-          <input value={form.id} disabled placeholder="Store ID" />
-          <input value="Marketplace vendor" disabled />
-        </div>
-        <textarea className="ops-textarea" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Store description" />
-        {message ? <p className="muted">{message}</p> : null}
-        <Button disabled={saving}>{saving ? "Saving..." : "Save store details"}</Button>
-      </form>
+      <MotionSection className="ops-panel" delay={0.03}>
+        <form className="address-form" onSubmit={submit}>
+          <div className="form-grid">
+            <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="Store name" />
+            <input type="email" value={form.supportEmail} onChange={(e) => setForm((p) => ({ ...p, supportEmail: e.target.value }))} placeholder="Support email" />
+            <input value={form.id} disabled placeholder="Store ID" />
+            <input value="Marketplace vendor" disabled />
+          </div>
+          <textarea className="ops-textarea" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Store description" />
+          {message ? <p className="muted">{message}</p> : null}
+          <Button disabled={saving}>{saving ? "Saving..." : "Save store details"}</Button>
+        </form>
+      </MotionSection>
     </>
   );
 }
