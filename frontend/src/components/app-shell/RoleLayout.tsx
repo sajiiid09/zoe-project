@@ -1,44 +1,25 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { PropsWithChildren } from "react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils/cn";
+import { DashboardSidebar, type DashboardLink } from "./DashboardSidebar";
+import { DashboardNavbar } from "./DashboardNavbar";
 
 export const RoleLayout = ({
   title,
   links,
   children,
-}: PropsWithChildren<{ title: string; links: { label: string; href: string }[] }>) => {
-  const pathname = usePathname();
-
+}: PropsWithChildren<{ title: string; links: DashboardLink[] }>) => {
   return (
-    <div className="role-layout container">
-      <aside className="role-sidebar glass-card">
-        <h1 className="role-title">{title}</h1>
-        <nav className="role-nav">
-          {links.map((link, index) => {
-            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
-            return (
-              <motion.div
-                key={link.href}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.26, delay: index * 0.02 }}
-              >
-                <Link
-                  href={link.href}
-                  className={cn("role-link", isActive && "role-link-active")}
-                >
-                  <span>{link.label}</span>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </nav>
-      </aside>
-      <main className="role-main glass-card">{children}</main>
+    <div className="flex h-screen w-full overflow-hidden text-slate-800 bg-[#f4f7fa]">
+      <DashboardSidebar title={title} links={links} />
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
+        <DashboardNavbar />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 relative z-0">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
