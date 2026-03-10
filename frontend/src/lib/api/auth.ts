@@ -1,138 +1,261 @@
-import { apiClient } from "@/lib/api/client";
+import { ApiError, apiClient } from "@/lib/api/client";
 import type { AuthResult, AuthSession, UserProfile } from "@/types/auth";
 
-type StoredUser = {
+type BackendUserRole = "ADMIN" | "CUSTOMER" | "VENDOR" | "AFFILIATE";
+
+type BackendUser = {
   id: string;
-  fullName: string;
   email: string;
-  password: string;
-  role: UserProfile["role"];
-  phone?: string;
-  isPaid?: boolean;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  role: BackendUserRole;
 };
 
-const USERS_KEY = "zoe_market_users";
-const SESSION_KEY = "zoe_market_session";
-
-const readUsers = (): StoredUser[] => {
-  if (typeof window === "undefined") return [];
-  const raw = window.localStorage.getItem(USERS_KEY);
-  if (!raw) {
-    const seeded: StoredUser[] = [
-      { id: "u1", fullName: "Alex Customer", email: "customer@zoe.test", password: "Password123!", role: "customer", isPaid: true },
-      { id: "u2", fullName: "Vendor Demo", email: "vendor@zoe.test", password: "Password123!", role: "vendor", isPaid: false },
-      { id: "u3", fullName: "Admin Demo", email: "admin@zoe.test", password: "Password123!", role: "admin", isPaid: true },
-    ];
-    window.localStorage.setItem(USERS_KEY, JSON.stringify(seeded));
-    return seeded;
-  }
-  try {
-    return JSON.parse(raw) as StoredUser[];
-  } catch {
-    return [];
-  }
+type BackendAuthPayload = {
+  success: boolean;
+  message?: string;
+  requiresPayment?: boolean;
+  user?: BackendUser;
+  data?: BackendUser;
 };
 
-const writeUsers = (users: StoredUser[]) => {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(USERS_KEY, JSON.stringify(users));
+let sessionCache: AuthSession | null = null;
+
+const roleMap: Record<BackendUserRole, UserProfile["role"]> = {
+  ADMIN: "admin",
+  CUSTOMER: "customer",
+  VENDOR: "vendor",
+  AFFILIATE: "affiliate",
 };
 
-const storeSession = (session: AuthSession | null) => {
-  if (typeof window === "undefined") return;
-  if (!session) {
-    window.localStorage.removeItem(SESSION_KEY);
-    return;
+const splitFullName = (fullName: string) => {
+  const normalized = fullName.trim().replace(/\s+/g, " ");
+  if (!normalized) {
+    return {
+      firstName: "",
+      lastName: "",
+    };
   }
-  window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+
+  const [firstName, ...lastNameParts] = normalized.split(" ");
+  return {
+    firstName,
+    lastName: lastNameParts.join(" "),
+  };
+};
+
+const formatFullName = (user: BackendUser) => {
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+  if (fullName) {
+    return fullName;
+  }
+
+  return user.email;
+};
+
+const mapUser = (user: BackendUser): UserProfile => ({
+  id: user.id,
+  email: user.email,
+  fullName: formatFullName(user),
+  phone: user.phone ?? undefined,
+  role: roleMap[user.role],
+});
+
+const extractUser = (payload: BackendAuthPayload): BackendUser | null => {
+  if (payload.user) {
+    return payload.user;
+  }
+
+  if (payload.data) {
+    return payload.data;
+  }
+
+  return null;
+};
+
+const toSession = (user: BackendUser): AuthSession => ({
+  user: mapUser(user),
+});
+
+const setSessionCache = (session: AuthSession | null) => {
+  sessionCache = session;
+};
+
+const readApiErrorDetails = (
+  error: unknown
+): { message?: string; requiresPayment?: boolean } | null => {
+  if (!(error instanceof ApiError)) {
+    return null;
+  }
+
+  const details = error.details;
+  if (!details || typeof details !== "object") {
+    return null;
+  }
+  const detailsRecord = details as Record<string, unknown>;
+
+  const result: { message?: string; requiresPayment?: boolean } = {};
+
+  if (typeof detailsRecord.message === "string") {
+    result.message = detailsRecord.message;
+  }
+
+  if (typeof detailsRecord.requiresPayment === "boolean") {
+    result.requiresPayment = detailsRecord.requiresPayment;
+  }
+
+  return result;
+};
+
+const readApiErrorMessage = (error: unknown, fallback: string) => {
+  const details = readApiErrorDetails(error);
+  if (details?.message) {
+    return details.message;
+  }
+
+  return fallback;
 };
 
 export const readStoredSession = (): AuthSession | null => {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(SESSION_KEY);
-  if (!raw) return null;
+  return sessionCache;
+};
+
+export const bootstrapSession = async (): Promise<AuthSession | null> => {
   try {
-    return JSON.parse(raw) as AuthSession;
-  } catch {
+    const response = await apiClient<BackendAuthPayload>("/users/profile");
+    const backendUser = extractUser(response);
+
+    if (!backendUser) {
+      setSessionCache(null);
+      return null;
+    }
+
+    const session = toSession(backendUser);
+    setSessionCache(session);
+    return session;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      setSessionCache(null);
+      return null;
+    }
+
+    setSessionCache(null);
     return null;
   }
 };
 
 export const login = async (email: string, password: string): Promise<AuthResult> => {
   try {
-    const session = await apiClient<AuthSession>("/auth/login/", { method: "POST", body: JSON.stringify({ email, password }) });
-    storeSession(session);
-    return { session };
-  } catch {
-    const user = readUsers().find((item) => item.email.toLowerCase() === email.toLowerCase() && item.password === password);
-    if (!user) return { error: "Invalid email or password." };
-    if ((user.role === "vendor" || user.role === "affiliate") && !user.isPaid) {
-      return { error: "Your account requires payment activation before login.", paymentRequired: true };
+    const response = await apiClient<BackendAuthPayload>("/users/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+
+    const backendUser = extractUser(response);
+    if (!backendUser) {
+      return { error: "Could not sign in." };
     }
 
-    const session: AuthSession = {
-      token: `local-${user.id}`,
-      user: { id: user.id, fullName: user.fullName, email: user.email, role: user.role, phone: user.phone },
-    };
-    storeSession(session);
+    const session = toSession(backendUser);
+    setSessionCache(session);
     return { session };
+  } catch (error) {
+    const details = readApiErrorDetails(error);
+    if (error instanceof ApiError && error.status === 402 && details?.requiresPayment) {
+      return {
+        error: readApiErrorMessage(
+          error,
+          "Your account requires payment activation before login."
+        ),
+        paymentRequired: true,
+      };
+    }
+
+    return { error: readApiErrorMessage(error, "Could not sign in.") };
   }
 };
 
-export const register = async (payload: { fullName: string; email: string; password: string; role?: UserProfile["role"] }): Promise<AuthResult> => {
+export const register = async (payload: {
+  fullName: string;
+  email: string;
+  password: string;
+  role?: UserProfile["role"];
+}): Promise<AuthResult> => {
+  const { firstName, lastName } = splitFullName(payload.fullName);
+  const backendRole = payload.role ? payload.role.toUpperCase() : undefined;
+
   try {
-    const session = await apiClient<AuthSession>("/auth/register/", { method: "POST", body: JSON.stringify(payload) });
-    storeSession(session);
-    return { session };
-  } catch {
-    const users = readUsers();
-    if (users.some((item) => item.email.toLowerCase() === payload.email.toLowerCase())) {
-      return { error: "Email is already registered." };
+    const response = await apiClient<BackendAuthPayload>("/users/register", {
+      method: "POST",
+      body: JSON.stringify({
+        email: payload.email,
+        password: payload.password,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        role: backendRole,
+      }),
+    });
+
+    const backendUser = extractUser(response);
+    if (!backendUser) {
+      return { error: "Could not create account." };
     }
-    const user: StoredUser = {
-      id: `u${Date.now()}`,
-      fullName: payload.fullName,
-      email: payload.email,
-      password: payload.password,
-      role: payload.role ?? "customer",
-      isPaid: true,
-    };
-    writeUsers([user, ...users]);
-    const session: AuthSession = {
-      token: `local-${user.id}`,
-      user: { id: user.id, fullName: user.fullName, email: user.email, role: user.role, phone: user.phone },
-    };
-    storeSession(session);
+
+    const session = toSession(backendUser);
+    setSessionCache(session);
     return { session };
+  } catch (error) {
+    return { error: readApiErrorMessage(error, "Could not create account.") };
   }
 };
 
 export const logout = async () => {
-  storeSession(null);
+  try {
+    await apiClient<{ success: boolean; message: string }>("/users/logout", {
+      method: "POST",
+    });
+  } catch {
+    // Ignore logout transport errors and always clear local session cache.
+  }
+
+  setSessionCache(null);
 };
 
-export const updateProfile = async (input: Partial<UserProfile>): Promise<UserProfile | null> => {
-  const current = readStoredSession();
-  if (!current) return null;
+export const updateProfile = async (
+  input: Partial<UserProfile>
+): Promise<UserProfile | null> => {
+  const body: {
+    name?: { firstName?: string; lastName?: string };
+    phone?: string;
+  } = {};
+
+  if (input.fullName !== undefined) {
+    const { firstName, lastName } = splitFullName(input.fullName);
+    body.name = {
+      firstName: firstName || undefined,
+      lastName: lastName || undefined,
+    };
+  }
+
+  if (input.phone !== undefined) {
+    body.phone = input.phone;
+  }
 
   try {
-    return await apiClient<UserProfile>("/profile/", { method: "PATCH", body: JSON.stringify(input), token: current.token });
-  } catch {
-    const users = readUsers();
-    const idx = users.findIndex((item) => item.id === current.user.id);
-    if (idx < 0) return null;
-    users[idx] = { ...users[idx], fullName: input.fullName ?? users[idx].fullName, phone: input.phone ?? users[idx].phone };
-    writeUsers(users);
+    const response = await apiClient<BackendAuthPayload>("/users/profile", {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+    const backendUser = extractUser(response);
+    if (!backendUser) {
+      return null;
+    }
 
-    const updated: AuthSession = {
-      ...current,
-      user: {
-        ...current.user,
-        fullName: input.fullName ?? current.user.fullName,
-        phone: input.phone ?? current.user.phone,
-      },
-    };
-    storeSession(updated);
-    return updated.user;
+    const updatedUser = mapUser(backendUser);
+    setSessionCache({ user: updatedUser });
+    return updatedUser;
+  } catch {
+    return null;
   }
 };

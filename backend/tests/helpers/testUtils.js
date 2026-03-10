@@ -2,10 +2,16 @@ import jwt from 'jsonwebtoken';
 
 import { errorHandler } from '../../middleware/errorHandler.js';
 
-const TEST_JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
+const resolveTestJwtSecret = () => {
+  const secret = process.env.JWT_SECRET?.trim();
+  if (!secret) {
+    throw new Error('JWT_SECRET must be set while running tests');
+  }
+  return secret;
+};
 
 export const createAuthToken = (userId = 'test-user-id') =>
-  jwt.sign({ userId }, TEST_JWT_SECRET, { expiresIn: '1h' });
+  jwt.sign({ userId }, resolveTestJwtSecret(), { expiresIn: '1h' });
 
 export const createMockRequest = ({
   body = {},
@@ -48,6 +54,10 @@ export const createMockResponse = () => {
     },
     cookie(name, value, options = {}) {
       this.cookies.push({ name, value, options });
+      return this;
+    },
+    clearCookie(name, options = {}) {
+      this.cookies.push({ name, value: null, options, cleared: true });
       return this;
     },
     set(name, value) {

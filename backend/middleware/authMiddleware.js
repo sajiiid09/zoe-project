@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
 import { ForbiddenError, UnauthorizedError } from '../utils/errors.js';
+import { getJwtSecret, readAuthTokenFromRequest } from '../utils/auth.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
+const verifyAuthToken = (token) => jwt.verify(token, getJwtSecret());
 
 /**
  * Verify JWT token and attach the authenticated user to `req.user`.
@@ -10,14 +11,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
  */
 export const requireAuth = async (req, res, next) => {
   try {
-    const header = req.headers.authorization;
-
-    if (!header || !header.startsWith('Bearer ')) {
+    const token = readAuthTokenFromRequest(req);
+    if (!token) {
       return next(new UnauthorizedError('Missing or malformed token'));
     }
 
-    const token = header.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = verifyAuthToken(token);
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
@@ -53,15 +52,13 @@ export const requireAuth = async (req, res, next) => {
  */
 export const optionalAuth = async (req, res, next) => {
   try {
-    const header = req.headers.authorization;
-
-    if (!header || !header.startsWith('Bearer ')) {
+    const token = readAuthTokenFromRequest(req);
+    if (!token) {
       req.user = null;
       return next();
     }
 
-    const token = header.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = verifyAuthToken(token);
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },

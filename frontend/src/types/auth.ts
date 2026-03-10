@@ -9,7 +9,6 @@ export type UserProfile = {
 };
 
 export type AuthSession = {
-  token: string;
   user: UserProfile;
 };
 
