@@ -7,11 +7,15 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import type { UserRole } from "@/types/roles";
 
 export const RoleGuard = ({ role, children }: { role: Exclude<UserRole, "guest">; children: React.ReactNode }) => {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
+    if (loading) {
+      return;
+    }
+
     if (!session) {
       router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`);
       return;
@@ -20,9 +24,9 @@ export const RoleGuard = ({ role, children }: { role: Exclude<UserRole, "guest">
     if (session.user.role !== role) {
       router.replace("/");
     }
-  }, [session, role, pathname, router]);
+  }, [loading, session, role, pathname, router]);
 
-  if (!session || session.user.role !== role) {
+  if (loading || !session || session.user.role !== role) {
     return (
       <div className="container page-space">
         <section className="state-box" style={{ padding: "4rem 2rem", opacity: 0.7 }}>

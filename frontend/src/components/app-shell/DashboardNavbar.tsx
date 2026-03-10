@@ -3,19 +3,21 @@
 import { usePathname, useRouter } from "next/navigation";
 import { SignOut, Bell, UserCircle, List } from "@phosphor-icons/react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export const DashboardNavbar = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout } = useAuth();
 
   // Create simple breadcrumbs from pathname
   const paths = pathname.split('/').filter(Boolean);
   
   const handleSignOut = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("zoe_market_session");
+    void (async () => {
+      await logout();
       router.push("/");
-    }
+    })();
   };
 
   return (

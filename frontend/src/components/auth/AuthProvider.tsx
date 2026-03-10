@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from "react";
 
 import * as authApi from "@/lib/api/auth";
 import type { AuthSession, UserProfile } from "@/types/auth";
@@ -19,7 +26,25 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [session, setSession] = useState<AuthSession | null>(authApi.readStoredSession);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const hydrateSession = async () => {
+      const currentSession = await authApi.bootstrapSession();
+      if (!mounted) return;
+
+      setSession(currentSession);
+      setLoading(false);
+    };
+
+    hydrateSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const login: AuthContextValue["login"] = async (email, password) => {
     setLoading(true);
@@ -44,8 +69,10 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   };
 
   const logout = async () => {
+    setLoading(true);
     await authApi.logout();
     setSession(null);
+    setLoading(false);
   };
 
   const updateProfile: AuthContextValue["updateProfile"] = async (input) => {

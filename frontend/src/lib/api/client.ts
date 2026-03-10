@@ -11,16 +11,16 @@ export class ApiError extends Error {
   }
 }
 
-type RequestOptions = RequestInit & {
-  token?: string;
-};
+type RequestOptions = RequestInit;
 
 export const apiClient = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
+  const shouldSetJsonHeader = options.body !== undefined && !(options.body instanceof FormData);
+
   const response = await fetch(`${env.apiBaseUrl}${path}`, {
     ...options,
+    credentials: "include",
     headers: {
-      "Content-Type": "application/json",
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+      ...(shouldSetJsonHeader ? { "Content-Type": "application/json" } : {}),
       ...options.headers,
     },
     cache: "no-store",

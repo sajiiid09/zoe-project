@@ -2,13 +2,23 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
 import { asyncHandler } from '../middleware/authMiddleware.js';
+import { clearAuthCookie, getJwtSecret, setAuthCookie } from '../utils/auth.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
 const TOKEN_EXPIRY = '7d';
 const MAX_PAGINATION_LIMIT = 100;
+const ADDRESS_DATA_FIELDS = ['fullName', 'line1', 'line2', 'city', 'state', 'zipCode', 'country', 'phone'];
 
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+  return jwt.sign({ userId }, getJwtSecret(), { expiresIn: TOKEN_EXPIRY });
+};
+
+const toSafeAddressData = (payload = {}) => {
+  return ADDRESS_DATA_FIELDS.reduce((data, field) => {
+    if (payload[field] !== undefined) {
+      data[field] = payload[field];
+    }
+    return data;
+  }, {});
 };
 
 const formatUserResponse = (user) => ({
@@ -77,10 +87,10 @@ export const registerUser = asyncHandler(async (req, res) => {
   });
 
   const token = generateToken(user.id);
+  setAuthCookie(res, token);
 
   res.status(201).json({
     success: true,
-    token,
     user: formatUserResponse(user),
     message: 'Account created successfully',
   });
@@ -123,10 +133,10 @@ export const loginUser = asyncHandler(async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
     const tempToken = generateToken(user.id);
+    setAuthCookie(res, tempToken);
     return res.status(402).json({
       success: false,
       requiresPayment: true,
-      token: tempToken,
       user: formatUserResponse(user),
       message: 'Vendor registration fee required. Please complete payment to access your account.',
     });
@@ -138,10 +148,10 @@ export const loginUser = asyncHandler(async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
     const tempToken = generateToken(user.id);
+    setAuthCookie(res, tempToken);
     return res.status(402).json({
       success: false,
       requiresPayment: true,
-      token: tempToken,
       user: formatUserResponse(user),
       message: 'Affiliate registration fee required. Please complete payment to access your account.',
     });
@@ -165,12 +175,20 @@ export const loginUser = asyncHandler(async (req, res) => {
   });
 
   const token = generateToken(user.id);
+  setAuthCookie(res, token);
 
   res.json({
     success: true,
-    token,
     user: formatUserResponse(user),
     message: 'Login successful',
+  });
+});
+
+export const logoutUser = asyncHandler(async (req, res) => {
+  clearAuthCookie(res);
+  res.json({
+    success: true,
+    message: 'Logout successful',
   });
 });
 
@@ -218,6 +236,8 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
 });
 
 export const addUserAddress = asyncHandler(async (req, res) => {
+  const safeAddressData = toSafeAddressData(req.body);
+
   await prisma.userAddress.create({
     data: {
       userId: req.user.id,
@@ -225,7 +245,7 @@ export const addUserAddress = asyncHandler(async (req, res) => {
       type: req.body.type || 'shipping',
       phone: req.body.phone || null,
       isDefault: req.body.isDefault ?? false,
-      data: req.body,
+      data: safeAddressData,
     },
   });
 
@@ -253,6 +273,12 @@ export const updateUserAddress = asyncHandler(async (req, res) => {
     });
   }
 
+  const existingAddressData =
+    address.data && typeof address.data === 'object' && !Array.isArray(address.data)
+      ? address.data
+      : {};
+  const safeAddressData = toSafeAddressData(req.body);
+
   await prisma.userAddress.update({
     where: { id: req.params.addressId },
     data: {
@@ -260,7 +286,10 @@ export const updateUserAddress = asyncHandler(async (req, res) => {
       type: req.body.type ?? address.type,
       phone: req.body.phone ?? address.phone,
       isDefault: req.body.isDefault ?? address.isDefault,
-      data: req.body,
+      data: {
+        ...existingAddressData,
+        ...safeAddressData,
+      },
     },
   });
 
