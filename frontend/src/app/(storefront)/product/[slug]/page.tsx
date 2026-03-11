@@ -4,18 +4,21 @@ import { AddToCartButton } from "@/components/commerce/AddToCartButton";
 import { AppContainer } from "@/components/layout/AppContainer";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { PageIntro } from "@/components/layout/PageIntro";
+import { EmptyState } from "@/components/state/EmptyState";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { getLegacyProductBySlug, listLegacyProducts } from "@/lib/api/products";
 import type { ProductCardModel } from "@/types/catalog";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const current = await getLegacyProductBySlug(slug);
+  const currentResult = await getLegacyProductBySlug(slug);
+  const current = currentResult.product;
   const relatedList = await listLegacyProducts({
     category: current?.category,
     sort: "rating",
     pageSize: 12,
   });
+  const productApiError = currentResult.error || relatedList.error;
   const related = relatedList.items.filter((item) => item.slug !== slug).slice(0, 4);
 
   return (
@@ -26,7 +29,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         crumbs={[{ label: "Home", href: "/" }, { label: "Product" }]}
       />
 
-      {current ? (
+      {productApiError ? (
+        <EmptyState
+          title="Product service unavailable"
+          description={productApiError.message}
+        />
+      ) : current ? (
         <section className="pdp-preview polished-pdp">
           {/* Column 1: Image */}
           <div className="pdp-image-box polish-card">
@@ -71,7 +79,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             </div>
           </div>
         </section>
-      ) : null}
+      ) : (
+        <EmptyState
+          title="Product not found"
+          description="The requested product is not available."
+        />
+      )}
 
       <section>
         <SectionHeader title="Similar picks" subtitle="Customers also viewed" cta={{ label: "View more", href: "/search" }} />

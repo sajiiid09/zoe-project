@@ -27,6 +27,12 @@ npm run lint
 npm run build
 ```
 
+## Environment
+- `NEXT_PUBLIC_API_BASE_URL` must point to your backend API base URL.
+- Local example: `http://localhost:5000/api`
+- Hostinger production example: `https://api.your-domain.com/api`
+- Do not use localhost for `NEXT_PUBLIC_API_BASE_URL` in production deployments.
+
 ## Data direction
 - Customer purchasing remains on the legacy live commerce flow.
-- Operational role UIs are backend-first with local fallback to support robust development while integrations mature.
+- Business/catalog/order data is API-only (no local business-data fallback).
