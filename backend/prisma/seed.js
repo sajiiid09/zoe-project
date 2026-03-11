@@ -17,6 +17,20 @@ const SEED_IDS = {
     approved: "seed_product_vendor_approved",
     pending: "seed_product_vendor_pending",
     featured: "seed_product_admin_featured",
+    electronicsA: "seed_product_electronics_a",
+    electronicsB: "seed_product_electronics_b",
+    fashionA: "seed_product_fashion_a",
+    fashionB: "seed_product_fashion_b",
+    groceriesA: "seed_product_groceries_a",
+    groceriesB: "seed_product_groceries_b",
+    beautyA: "seed_product_beauty_a",
+    beautyB: "seed_product_beauty_b",
+    sportsA: "seed_product_sports_a",
+    sportsB: "seed_product_sports_b",
+    babyA: "seed_product_baby_a",
+    babyB: "seed_product_baby_b",
+    automotiveA: "seed_product_automotive_a",
+    automotiveB: "seed_product_automotive_b",
   },
   affiliateProfile: "seed_affiliate_profile_primary",
   submission: "seed_submission_vendor_primary",
@@ -36,6 +50,201 @@ const SEED_IDS = {
 };
 
 const decimal = (value) => new Prisma.Decimal(value);
+
+const PRODUCT_SEED_MATRIX = [
+  {
+    id: SEED_IDS.products.approved,
+    name: "Nordic Ceramic Vase",
+    description: "Minimal handcrafted vase for modern interiors.",
+    category: "home",
+    price: 59.99,
+    stock: 45,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.featured,
+    name: "Signature Table Lamp",
+    description: "Admin-curated featured product.",
+    category: "home",
+    price: 89.5,
+    stock: 35,
+    isFeatured: true,
+    attachToStore: false,
+    image:
+      "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.electronicsA,
+    name: "Wireless Earbuds Pro",
+    description: "Noise-isolating earbuds with compact charging case.",
+    category: "electronics",
+    price: 79.99,
+    stock: 60,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.electronicsB,
+    name: "Smart LED Desk Lamp",
+    description: "Adjustable brightness desk lamp with touch controls.",
+    category: "electronics",
+    price: 49.0,
+    stock: 50,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.fashionA,
+    name: "Cotton Everyday Hoodie",
+    description: "Lightweight hoodie for daily wear.",
+    category: "fashion",
+    price: 39.5,
+    stock: 70,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.fashionB,
+    name: "Urban Denim Jacket",
+    description: "Classic fit denim jacket with soft lining.",
+    category: "fashion",
+    price: 64.0,
+    stock: 42,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.groceriesA,
+    name: "Organic Basmati Rice 5kg",
+    description: "Long-grain aromatic rice, premium quality.",
+    category: "groceries",
+    price: 18.99,
+    stock: 120,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.groceriesB,
+    name: "Cold Pressed Olive Oil",
+    description: "Extra virgin olive oil for healthy cooking.",
+    category: "groceries",
+    price: 15.75,
+    stock: 90,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.beautyA,
+    name: "Vitamin C Brightening Serum",
+    description: "Daily serum for brighter, even-looking skin.",
+    category: "beauty",
+    price: 24.99,
+    stock: 80,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.beautyB,
+    name: "Hydrating Face Moisturizer",
+    description: "Non-greasy moisturizer for all skin types.",
+    category: "beauty",
+    price: 19.5,
+    stock: 85,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.sportsA,
+    name: "Yoga Mat Pro",
+    description: "Anti-slip yoga mat for home and studio workouts.",
+    category: "sports",
+    price: 29.99,
+    stock: 65,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1599447421416-3414500d18a5?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.sportsB,
+    name: "Adjustable Dumbbell Pair",
+    description: "Space-saving dumbbells with quick weight switching.",
+    category: "sports",
+    price: 129.0,
+    stock: 28,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.babyA,
+    name: "Gentle Baby Diaper Pack",
+    description: "Soft absorbent diapers for day and night use.",
+    category: "baby",
+    price: 22.99,
+    stock: 110,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.babyB,
+    name: "Baby Feeding Bottle Set",
+    description: "BPA-free bottle set with anti-colic design.",
+    category: "baby",
+    price: 17.25,
+    stock: 95,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1604917869287-3ae73c77e227?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.automotiveA,
+    name: "Portable Tire Inflator",
+    description: "12V portable inflator with digital pressure gauge.",
+    category: "automotive",
+    price: 42.0,
+    stock: 48,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1486754735734-325b5831c3ad?w=800&h=1000&fit=crop&q=80",
+  },
+  {
+    id: SEED_IDS.products.automotiveB,
+    name: "Car Interior Cleaning Kit",
+    description: "Complete interior cleaning kit for dashboard and seats.",
+    category: "automotive",
+    price: 27.49,
+    stock: 57,
+    isFeatured: false,
+    attachToStore: true,
+    image:
+      "https://images.unsplash.com/photo-1607861716497-e65ab29fc7ac?w=800&h=1000&fit=crop&q=80",
+  },
+];
 
 const seedUsers = async (hashedPassword) => {
   const admin = await prisma.user.upsert({
@@ -183,39 +392,42 @@ const seedAffiliateProfile = async (affiliateUserId) =>
   });
 
 const seedProducts = async ({ storeId }) => {
-  const approvedProduct = await prisma.product.upsert({
-    where: { id: SEED_IDS.products.approved },
-    update: {
-      name: "Nordic Ceramic Vase",
-      description: "Minimal handcrafted vase for modern interiors.",
-      category: "home",
-      price: decimal(59.99),
-      stock: 45,
-      images: [
-        "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=800&h=1000&fit=crop&q=80",
-      ],
-      isActive: true,
-      isFeatured: false,
-      approvalStatus: "APPROVED",
-      rejectionNote: null,
-      storeId,
-    },
-    create: {
-      id: SEED_IDS.products.approved,
-      name: "Nordic Ceramic Vase",
-      description: "Minimal handcrafted vase for modern interiors.",
-      category: "home",
-      price: decimal(59.99),
-      stock: 45,
-      images: [
-        "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?w=800&h=1000&fit=crop&q=80",
-      ],
-      isActive: true,
-      isFeatured: false,
-      approvalStatus: "APPROVED",
-      storeId,
-    },
-  });
+  const approvedProducts = {};
+
+  for (const productDefinition of PRODUCT_SEED_MATRIX) {
+    const shouldAttachStore = productDefinition.attachToStore !== false;
+    const seededProduct = await prisma.product.upsert({
+      where: { id: productDefinition.id },
+      update: {
+        name: productDefinition.name,
+        description: productDefinition.description,
+        category: productDefinition.category,
+        price: decimal(productDefinition.price),
+        stock: productDefinition.stock,
+        images: [productDefinition.image],
+        isActive: true,
+        isFeatured: productDefinition.isFeatured,
+        approvalStatus: "APPROVED",
+        rejectionNote: null,
+        storeId: shouldAttachStore ? storeId : null,
+      },
+      create: {
+        id: productDefinition.id,
+        name: productDefinition.name,
+        description: productDefinition.description,
+        category: productDefinition.category,
+        price: decimal(productDefinition.price),
+        stock: productDefinition.stock,
+        images: [productDefinition.image],
+        isActive: true,
+        isFeatured: productDefinition.isFeatured,
+        approvalStatus: "APPROVED",
+        storeId: shouldAttachStore ? storeId : null,
+      },
+    });
+
+    approvedProducts[productDefinition.id] = seededProduct;
+  }
 
   const pendingProduct = await prisma.product.upsert({
     where: { id: SEED_IDS.products.pending },
@@ -251,40 +463,12 @@ const seedProducts = async ({ storeId }) => {
     },
   });
 
-  const featuredProduct = await prisma.product.upsert({
-    where: { id: SEED_IDS.products.featured },
-    update: {
-      name: "Signature Table Lamp",
-      description: "Admin-curated featured product.",
-      category: "home",
-      price: decimal(89.5),
-      stock: 35,
-      images: [
-        "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=800&h=1000&fit=crop&q=80",
-      ],
-      isActive: true,
-      isFeatured: true,
-      approvalStatus: "APPROVED",
-      rejectionNote: null,
-      storeId: null,
-    },
-    create: {
-      id: SEED_IDS.products.featured,
-      name: "Signature Table Lamp",
-      description: "Admin-curated featured product.",
-      category: "home",
-      price: decimal(89.5),
-      stock: 35,
-      images: [
-        "https://images.unsplash.com/photo-1507473885765-e6ed057ab6fe?w=800&h=1000&fit=crop&q=80",
-      ],
-      isActive: true,
-      isFeatured: true,
-      approvalStatus: "APPROVED",
-    },
-  });
-
-  return { approvedProduct, pendingProduct, featuredProduct };
+  return {
+    approvedProducts,
+    approvedProduct: approvedProducts[SEED_IDS.products.approved],
+    featuredProduct: approvedProducts[SEED_IDS.products.featured],
+    pendingProduct,
+  };
 };
 
 const seedSubmissionAndCatalog = async ({
@@ -569,10 +753,21 @@ async function main() {
   );
 
   const products = await seedProducts({ storeId: store.id });
+  const approvedCategoryCoverage = Object.values(products.approvedProducts).reduce(
+    (coverage, product) => {
+      const category = product.category || "uncategorized";
+      coverage[category] = (coverage[category] || 0) + 1;
+      return coverage;
+    },
+    {}
+  );
+
   console.log("Products seeded:", {
     approved: products.approvedProduct.id,
     pending: products.pendingProduct.id,
     featured: products.featuredProduct.id,
+    approvedCount: Object.keys(products.approvedProducts).length,
+    categoryCoverage: approvedCategoryCoverage,
   });
 
   await seedSubmissionAndCatalog({

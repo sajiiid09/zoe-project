@@ -39,7 +39,12 @@ export default async function SearchPage({
             <ListingToolbar total={products.total} query={params.q} category={params.category} isSearch />
           </div>
 
-          {products.items.length ? (
+          {products.error ? (
+            <EmptyState
+              title="Product service unavailable"
+              description={products.error.message}
+            />
+          ) : products.items.length ? (
             <div className="listing-grid">
               {products.items.map((product) => (
                 <ProductCard key={product.id} product={product} />

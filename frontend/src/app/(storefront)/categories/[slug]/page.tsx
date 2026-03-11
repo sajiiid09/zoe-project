@@ -44,7 +44,12 @@ export default async function CategoryListingPage({
             <MobileFilterDrawer q={query.q} />
             <ListingToolbar total={products.total} category={slug} query={query.q} />
           </div>
-          {products.items.length ? (
+          {products.error ? (
+            <EmptyState
+              title="Product service unavailable"
+              description={products.error.message}
+            />
+          ) : products.items.length ? (
             <div className="listing-grid">
               {products.items.map((product) => (
                 <ProductCard key={product.id} product={product} />

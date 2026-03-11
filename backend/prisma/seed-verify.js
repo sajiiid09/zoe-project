@@ -20,8 +20,24 @@ const REQUIRED_SEEDED_IDS = {
   storeSlug: "decor-store",
 };
 
+const STOREFRONT_CATEGORIES = [
+  "electronics",
+  "fashion",
+  "groceries",
+  "home",
+  "beauty",
+  "sports",
+  "baby",
+  "automotive",
+];
+
+const MIN_APPROVED_PRODUCTS_PER_CATEGORY = 2;
+const MIN_APPROVED_ACTIVE_TOTAL =
+  STOREFRONT_CATEGORIES.length * MIN_APPROVED_PRODUCTS_PER_CATEGORY;
+
 async function main() {
-  const [users, store, order, counts] = await Promise.all([
+  const [users, store, order, counts, approvedActiveByCategory, approvedActiveTotal] =
+    await Promise.all([
     prisma.user.findMany({
       where: { email: { in: REQUIRED_SEEDED_IDS.users } },
       select: { email: true, role: true },
@@ -44,7 +60,15 @@ async function main() {
       prisma.userAddress.count(),
       prisma.affiliateProfile.count(),
     ]),
-  ]);
+    prisma.product.groupBy({
+      by: ["category"],
+      where: { approvalStatus: "APPROVED", isActive: true },
+      _count: { _all: true },
+    }),
+    prisma.product.count({
+      where: { approvalStatus: "APPROVED", isActive: true },
+    }),
+    ]);
 
   const [
     userCount,
@@ -73,6 +97,27 @@ async function main() {
     throw new Error("Seed verification failed: sample order not found");
   }
 
+  if (approvedActiveTotal < MIN_APPROVED_ACTIVE_TOTAL) {
+    throw new Error(
+      `Seed verification failed: expected at least ${MIN_APPROVED_ACTIVE_TOTAL} approved active products, found ${approvedActiveTotal}`
+    );
+  }
+
+  const categoryCoverage = new Map(
+    approvedActiveByCategory.map((row) => [row.category || "uncategorized", row._count._all])
+  );
+
+  const missingCoverageCategories = STOREFRONT_CATEGORIES.filter(
+    (category) =>
+      (categoryCoverage.get(category) || 0) < MIN_APPROVED_PRODUCTS_PER_CATEGORY
+  );
+
+  if (missingCoverageCategories.length > 0) {
+    throw new Error(
+      `Seed verification failed: insufficient approved products for categories: ${missingCoverageCategories.join(", ")}`
+    );
+  }
+
   console.log("Seed verification passed.");
   console.log("Snapshot counts:", {
     users: userCount,
@@ -83,6 +128,8 @@ async function main() {
     orderItems: orderItemCount,
     addresses: addressCount,
     affiliateProfiles: affiliateCount,
+    approvedActiveProducts: approvedActiveTotal,
+    categoryCoverage: Object.fromEntries(categoryCoverage),
   });
 }
 
