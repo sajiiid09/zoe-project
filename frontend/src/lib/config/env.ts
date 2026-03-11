@@ -2,7 +2,7 @@ const required = (value: string | undefined, fallback: string) => value ?? fallb
 
 const apiBaseUrl = required(
   process.env.NEXT_PUBLIC_API_BASE_URL,
-  "http://localhost:5000/api"
+  "http://localhost:8000/api"
 );
 
 const pointsToLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(
