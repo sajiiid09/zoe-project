@@ -36,8 +36,18 @@ export const createApp = () => {
 
   app.set('trust proxy', 1);
 
+  const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow server-to-server requests (SSR, Postman, curl) that have no Origin header
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
     credentials: true,
   }));
 
