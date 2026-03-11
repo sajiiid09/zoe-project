@@ -28,7 +28,7 @@ export default function VendorStorePage() {
       return;
     }
     setSaving(true);
-    const saved = await saveVendorStore({ ...form, id: form.id || `vs-${Date.now()}` });
+    const saved = await saveVendorStore(form);
     setForm(saved);
     setMessage("Store profile saved.");
     setSaving(false);

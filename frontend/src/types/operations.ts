@@ -38,6 +38,8 @@ export type AdminUserRow = {
   email: string;
   role: "customer" | "vendor" | "affiliate" | "admin";
   status: AccessStatus;
+  vendorStoreId?: string;
+  affiliateProfileId?: string;
 };
 
 export type CatalogItem = {

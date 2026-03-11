@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 
 import { PageIntro } from "@/components/layout/PageIntro";
 import { MotionSection, MotionTableRow } from "@/components/ops/Motion";
-import { listOrders } from "@/lib/api/orders";
+import { listAllOrders } from "@/lib/api/orders";
 import type { CustomerOrder } from "@/types/purchase";
 
 export default function AdminOrdersPage() {
   const [rows, setRows] = useState<CustomerOrder[]>([]);
 
   useEffect(() => {
-    void listOrders().then(setRows);
+    void listAllOrders().then(setRows);
   }, []);
 
   return (

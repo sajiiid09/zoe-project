@@ -1,49 +1,78 @@
 import { apiClient } from "@/lib/api/client";
+import { unwrapApiArray, type ApiEnvelope } from "@/lib/api/response";
 import type { Address } from "@/types/purchase";
 
-const ADDRESS_KEY = "zoe_market_addresses";
+type BackendUserAddress = {
+  id: string;
+  label?: string | null;
+  type?: string | null;
+  phone?: string | null;
+  isDefault?: boolean;
+  data?: unknown;
+};
 
-const readLocal = (): Address[] => {
-  if (typeof window === "undefined") return [];
-  const raw = window.localStorage.getItem(ADDRESS_KEY);
-  if (!raw) return [];
+const asRecord = (value: unknown): Record<string, unknown> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as Record<string, unknown>;
+};
+
+const mapAddress = (address: BackendUserAddress): Address => {
+  const data = asRecord(address.data);
+  return {
+    id: address.id,
+    fullName: String(data.fullName ?? ""),
+    phone: String(address.phone ?? data.phone ?? ""),
+    line1: String(data.line1 ?? ""),
+    line2:
+      data.line2 === undefined || data.line2 === null ? "" : String(data.line2),
+    city: String(data.city ?? ""),
+    state: String(data.state ?? ""),
+    zipCode: String(data.zipCode ?? ""),
+    country: String(data.country ?? ""),
+  };
+};
+
+const toAddressPayload = (address: Address) => ({
+  label: "Home",
+  type: "shipping",
+  phone: address.phone,
+  fullName: address.fullName,
+  line1: address.line1,
+  line2: address.line2 || null,
+  city: address.city,
+  state: address.state,
+  zipCode: address.zipCode,
+  country: address.country,
+});
+
+export const listAddresses = async (): Promise<Address[]> => {
   try {
-    return JSON.parse(raw) as Address[];
+    const response = await apiClient<ApiEnvelope<BackendUserAddress[]>>(
+      "/users/addresses"
+    );
+    return unwrapApiArray(response).map(mapAddress);
   } catch {
     return [];
   }
 };
 
-const writeLocal = (addresses: Address[]) => {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(ADDRESS_KEY, JSON.stringify(addresses));
-};
-
-export const listAddresses = async (): Promise<Address[]> => {
-  try {
-    return await apiClient<Address[]>("/addresses/");
-  } catch {
-    return readLocal();
-  }
-};
-
 export const saveAddress = async (address: Address): Promise<Address> => {
-  try {
-    return await apiClient<Address>("/addresses/", { method: "POST", body: JSON.stringify(address) });
-  } catch {
-    const list = readLocal();
-    const index = list.findIndex((item) => item.id === address.id);
-    if (index >= 0) list[index] = address;
-    else list.push(address);
-    writeLocal(list);
-    return address;
-  }
+  const existingAddresses = await listAddresses();
+  const exists = existingAddresses.some((item) => item.id === address.id);
+  const path = exists ? `/users/addresses/${address.id}` : "/users/addresses";
+  const method = exists ? "PUT" : "POST";
+
+  const response = await apiClient<ApiEnvelope<BackendUserAddress[]>>(path, {
+    method,
+    body: JSON.stringify(toAddressPayload(address)),
+  });
+
+  const latest = unwrapApiArray(response).map(mapAddress);
+  return latest.find((item) => item.id === address.id) ?? latest[0] ?? address;
 };
 
 export const deleteAddress = async (id: string): Promise<void> => {
-  try {
-    await apiClient<void>(`/addresses/${id}/`, { method: "DELETE" });
-  } catch {
-    writeLocal(readLocal().filter((item) => item.id !== id));
-  }
+  await apiClient<ApiEnvelope<BackendUserAddress[]>>(`/users/addresses/${id}`, {
+    method: "DELETE",
+  });
 };

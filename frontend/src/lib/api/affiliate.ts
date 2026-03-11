@@ -1,49 +1,103 @@
-import { apiClient } from "@/lib/api/client";
+import { ApiError, apiClient } from "@/lib/api/client";
 import { readStoredSession } from "@/lib/api/auth";
+import { unwrapApiData, type ApiEnvelope } from "@/lib/api/response";
 import type { AccessStatus, AffiliateProfile } from "@/types/operations";
 
-const KEY = "zoe_affiliate_profile";
+type BackendApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
 
-const readLocal = (): AffiliateProfile | null => {
-  if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as AffiliateProfile;
-  } catch {
-    return null;
-  }
+type BackendAffiliateProfile = {
+  id: string;
+  displayName?: string | null;
+  bio?: string | null;
+  website?: string | null;
+  approvalStatus: BackendApprovalStatus;
 };
 
-const writeLocal = (profile: AffiliateProfile) => {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, JSON.stringify(profile));
+const mapApprovalStatus = (status?: BackendApprovalStatus): AccessStatus => {
+  if (status === "APPROVED") return "approved";
+  if (status === "REJECTED") return "blocked";
+  return "pending";
+};
+
+const mapProfile = (
+  profile: BackendAffiliateProfile
+): AffiliateProfile => ({
+  id: profile.id,
+  displayName: profile.displayName ?? "",
+  channel: profile.website ?? "",
+  audienceRegion: profile.bio ?? "",
+  status: mapApprovalStatus(profile.approvalStatus),
+});
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/(^_|_$)+/g, "");
+
+const buildReferralCode = (displayName: string) => {
+  const base = slugify(displayName).slice(0, 18) || "affiliate";
+  return `${base}_${Date.now().toString(36)}`.toUpperCase();
 };
 
 export const getAffiliateStatus = async (): Promise<AccessStatus> => {
+  const session = readStoredSession();
+  if (session?.user.role !== "affiliate") return "blocked";
+
   try {
-    const result = await apiClient<{ status: AccessStatus }>("/affiliate/status/");
-    return result.status;
+    const profile = await getAffiliateProfile();
+    return profile?.status ?? "pending";
   } catch {
-    const session = readStoredSession();
-    if (session?.user.role !== "affiliate") return "blocked";
-    return readLocal()?.status ?? "payment_required";
+    return "pending";
   }
 };
 
 export const getAffiliateProfile = async (): Promise<AffiliateProfile | null> => {
   try {
-    return await apiClient<AffiliateProfile>("/affiliate/profile/");
-  } catch {
-    return readLocal();
+    const response = await apiClient<ApiEnvelope<BackendAffiliateProfile>>(
+      "/affiliate/profile"
+    );
+    const profile = unwrapApiData<BackendAffiliateProfile | null>(response, null);
+    return profile ? mapProfile(profile) : null;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
   }
 };
 
-export const saveAffiliateProfile = async (payload: AffiliateProfile): Promise<AffiliateProfile> => {
-  try {
-    return await apiClient<AffiliateProfile>("/affiliate/profile/", { method: "POST", body: JSON.stringify(payload) });
-  } catch {
-    writeLocal(payload);
-    return payload;
+export const saveAffiliateProfile = async (
+  payload: AffiliateProfile
+): Promise<AffiliateProfile> => {
+  const method = payload.id ? "PUT" : "POST";
+  const body =
+    method === "POST"
+      ? {
+          displayName: payload.displayName,
+          referralCode: buildReferralCode(payload.displayName),
+          bio: payload.audienceRegion || null,
+          website: payload.channel || null,
+        }
+      : {
+          displayName: payload.displayName,
+          bio: payload.audienceRegion || null,
+          website: payload.channel || null,
+        };
+
+  const response = await apiClient<ApiEnvelope<BackendAffiliateProfile>>(
+    "/affiliate/profile",
+    {
+      method,
+      body: JSON.stringify(body),
+    }
+  );
+
+  const profile = unwrapApiData<BackendAffiliateProfile | null>(response, null);
+  if (!profile) {
+    throw new Error("Affiliate profile save returned no payload");
   }
+
+  return mapProfile(profile);
 };
