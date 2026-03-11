@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MotionSection, MotionTableRow } from "@/components/ops/Motion";
 import { PageIntro } from "@/components/layout/PageIntro";
 import { buildTransactions } from "@/lib/analytics/admin";
-import { listOrders } from "@/lib/api/orders";
+import { listAllOrders } from "@/lib/api/orders";
 import type { TransactionRowView } from "@/types/analytics";
 import type { OrderStatus } from "@/types/purchase";
 
@@ -30,7 +30,7 @@ export default function AdminTransactionsPage() {
   const [activeFilter, setActiveFilter] = useState<"all" | OrderStatus>("all");
 
   useEffect(() => {
-    void listOrders().then((orders) => {
+    void listAllOrders().then((orders) => {
       setRows(buildTransactions(orders));
     });
   }, []);

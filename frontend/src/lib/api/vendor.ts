@@ -1,136 +1,279 @@
-import { apiClient } from "@/lib/api/client";
+import { ApiError, apiClient } from "@/lib/api/client";
 import { readStoredSession } from "@/lib/api/auth";
-import type { AccessStatus, VendorProduct, VendorStore, VendorSubmission } from "@/types/operations";
+import { unwrapApiArray, unwrapApiData, type ApiEnvelope } from "@/lib/api/response";
+import type {
+  AccessStatus,
+  VendorProduct,
+  VendorStore,
+  VendorSubmission,
+} from "@/types/operations";
 
-const keyFor = (key: string) => {
-  const userId = readStoredSession()?.user.id ?? "guest";
-  return `zoe_${userId}_${key}`;
+type BackendApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+type BackendSubmissionStatus =
+  | "DRAFT"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "ARCHIVED";
+
+type BackendVendorStore = {
+  id: string;
+  name: string;
+  description?: string | null;
+  email?: string | null;
+  approvalStatus: BackendApprovalStatus;
 };
 
-const readLocal = <T>(key: string, fallback: T): T => {
-  if (typeof window === "undefined") return fallback;
-  const raw = window.localStorage.getItem(keyFor(key));
-  if (!raw) return fallback;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
+type BackendVendorProduct = {
+  id: string;
+  name: string;
+  category?: string | null;
+  price: number | string;
+  stock?: number | null;
+  approvalStatus: BackendApprovalStatus;
 };
 
-const writeLocal = <T>(key: string, value: T) => {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(keyFor(key), JSON.stringify(value));
+type BackendVendorSubmission = {
+  id: string;
+  title: string;
+  category?: string | null;
+  description?: string | null;
+  rejectionReason?: string | null;
+  status: BackendSubmissionStatus;
 };
+
+type VendorDashboardResponse = ApiEnvelope<{
+  hasStore: boolean;
+  store?: {
+    id: string;
+    name: string;
+    approvalStatus: BackendApprovalStatus;
+  };
+  stats?: {
+    totalProducts: number;
+    pendingProducts: number;
+    approvedProducts: number;
+    rejectedProducts: number;
+    totalOrders: number;
+    totalRevenue: number;
+  };
+}>;
+
+const toNumber = (value: unknown, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const mapApprovalStatus = (status?: BackendApprovalStatus): AccessStatus => {
+  if (status === "APPROVED") return "approved";
+  if (status === "REJECTED") return "blocked";
+  return "pending";
+};
+
+const mapStore = (store: BackendVendorStore): VendorStore => ({
+  id: store.id,
+  name: store.name,
+  description: store.description ?? "",
+  supportEmail: store.email ?? "",
+});
+
+const mapProductStatus = (
+  status?: BackendApprovalStatus
+): VendorProduct["status"] => {
+  if (status === "APPROVED") return "approved";
+  if (status === "REJECTED") return "rejected";
+  return "pending";
+};
+
+const mapProduct = (product: BackendVendorProduct): VendorProduct => ({
+  id: product.id,
+  title: product.name,
+  price: toNumber(product.price, 0),
+  stock: Math.max(0, Math.floor(toNumber(product.stock, 0))),
+  category: product.category ?? "Uncategorized",
+  status: mapProductStatus(product.approvalStatus),
+});
+
+const mapSubmissionStatus = (
+  status: BackendSubmissionStatus
+): VendorSubmission["status"] => {
+  if (status === "ACCEPTED") return "accepted";
+  if (status === "REJECTED") return "rejected";
+  return "pending";
+};
+
+const mapSubmission = (submission: BackendVendorSubmission): VendorSubmission => ({
+  id: submission.id,
+  title: submission.title,
+  category: submission.category ?? "Uncategorized",
+  notes: submission.rejectionReason ?? submission.description ?? "",
+  status: mapSubmissionStatus(submission.status),
+});
 
 export const getVendorStatus = async (): Promise<AccessStatus> => {
+  const session = readStoredSession();
+  if (session?.user.role !== "vendor") return "blocked";
+
   try {
-    const result = await apiClient<{ status: AccessStatus }>("/vendor/status/");
-    return result.status;
-  } catch {
-    const role = readStoredSession()?.user.role;
-    if (role !== "vendor") return "blocked";
-    return readLocal<AccessStatus>("vendor_status", "payment_required");
+    const dashboard = await apiClient<VendorDashboardResponse>("/vendor/dashboard");
+    const data = unwrapApiData(dashboard, { hasStore: false });
+    if (!data.hasStore) return "pending";
+    return mapApprovalStatus(data.store?.approvalStatus);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) {
+      return "blocked";
+    }
+    return "pending";
   }
 };
 
-export const setVendorStatusLocal = (status: AccessStatus) => writeLocal("vendor_status", status);
+export const setVendorStatusLocal = (_status: AccessStatus) => {
+  // Local status persistence was removed. Status is backend-derived.
+  void _status;
+};
 
 export const getVendorDashboardStats = async () => {
-  try {
-    return await apiClient<{ products: number; submissions: number; pendingApprovals: number }>("/vendor/dashboard/stats/");
-  } catch {
-    const products = readLocal<VendorProduct[]>("vendor_products", []);
-    const submissions = readLocal<VendorSubmission[]>("vendor_submissions", []);
-    return {
-      products: products.length,
-      submissions: submissions.length,
-      pendingApprovals: products.filter((p) => p.status === "pending").length + submissions.filter((s) => s.status === "pending").length,
-    };
-  }
+  const [dashboard, submissions] = await Promise.all([
+    apiClient<VendorDashboardResponse>("/vendor/dashboard"),
+    listVendorSubmissions(),
+  ]);
+
+  const data = unwrapApiData(dashboard, { hasStore: false });
+  const stats = data.stats ?? {
+    totalProducts: 0,
+    pendingProducts: 0,
+  };
+
+  return {
+    products: stats.totalProducts,
+    submissions: submissions.length,
+    pendingApprovals:
+      stats.pendingProducts +
+      submissions.filter((submission) => submission.status === "pending").length,
+  };
 };
 
 export const getVendorStore = async (): Promise<VendorStore | null> => {
   try {
-    return await apiClient<VendorStore>("/vendor/store/");
-  } catch {
-    return readLocal<VendorStore | null>("vendor_store", null);
+    const response = await apiClient<ApiEnvelope<BackendVendorStore>>("/vendor/store");
+    const store = unwrapApiData<BackendVendorStore | null>(response, null);
+    return store ? mapStore(store) : null;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
   }
 };
 
-export const saveVendorStore = async (payload: VendorStore): Promise<VendorStore> => {
-  try {
-    return await apiClient<VendorStore>("/vendor/store/", { method: "POST", body: JSON.stringify(payload) });
-  } catch {
-    writeLocal("vendor_store", payload);
-    return payload;
+export const saveVendorStore = async (
+  payload: VendorStore
+): Promise<VendorStore> => {
+  const method = payload.id ? "PUT" : "POST";
+  const response = await apiClient<ApiEnvelope<BackendVendorStore>>("/vendor/store", {
+    method,
+    body: JSON.stringify({
+      name: payload.name,
+      description: payload.description || null,
+      email: payload.supportEmail || null,
+    }),
+  });
+
+  const store = unwrapApiData<BackendVendorStore | null>(response, null);
+  if (!store) {
+    throw new Error("Store save returned no payload");
   }
+
+  return mapStore(store);
 };
 
 export const listVendorProducts = async (): Promise<VendorProduct[]> => {
-  try {
-    return await apiClient<VendorProduct[]>("/vendor/products/");
-  } catch {
-    return readLocal<VendorProduct[]>("vendor_products", []);
-  }
+  const response = await apiClient<ApiEnvelope<BackendVendorProduct[]>>(
+    "/vendor/products?limit=200"
+  );
+  return unwrapApiArray(response).map(mapProduct);
 };
 
-export const saveVendorProduct = async (payload: VendorProduct): Promise<VendorProduct> => {
-  try {
-    return await apiClient<VendorProduct>(`/vendor/products/${payload.id ? `${payload.id}/` : ""}`, {
-      method: payload.id ? "PUT" : "POST",
-      body: JSON.stringify(payload),
-    });
-  } catch {
-    const list = readLocal<VendorProduct[]>("vendor_products", []);
-    const id = payload.id || `vp-${Date.now()}`;
-    const next = { ...payload, id };
-    const idx = list.findIndex((item) => item.id === id);
-    if (idx >= 0) list[idx] = next;
-    else list.unshift(next);
-    writeLocal("vendor_products", list);
-    return next;
+export const saveVendorProduct = async (
+  payload: VendorProduct
+): Promise<VendorProduct> => {
+  const path = payload.id ? `/vendor/products/${payload.id}` : "/vendor/products";
+  const method = payload.id ? "PUT" : "POST";
+
+  const response = await apiClient<ApiEnvelope<BackendVendorProduct>>(path, {
+    method,
+    body: JSON.stringify({
+      name: payload.title,
+      category: payload.category,
+      price: payload.price,
+      stock: payload.stock,
+      description: null,
+      images: [],
+    }),
+  });
+
+  const product = unwrapApiData<BackendVendorProduct | null>(response, null);
+  if (!product) {
+    throw new Error("Product save returned no payload");
   }
+
+  return mapProduct(product);
 };
 
 export const deleteVendorProduct = async (id: string): Promise<void> => {
-  try {
-    await apiClient<void>(`/vendor/products/${id}/`, { method: "DELETE" });
-  } catch {
-    writeLocal("vendor_products", readLocal<VendorProduct[]>("vendor_products", []).filter((item) => item.id !== id));
-  }
+  await apiClient<ApiEnvelope<unknown>>(`/vendor/products/${id}`, {
+    method: "DELETE",
+  });
 };
 
 export const listVendorSubmissions = async (): Promise<VendorSubmission[]> => {
-  try {
-    return await apiClient<VendorSubmission[]>("/vendor/submissions/");
-  } catch {
-    return readLocal<VendorSubmission[]>("vendor_submissions", []);
-  }
+  const response = await apiClient<ApiEnvelope<BackendVendorSubmission[]>>(
+    "/vendor/submissions"
+  );
+  return unwrapApiArray(response).map(mapSubmission);
 };
 
-export const saveVendorSubmission = async (payload: VendorSubmission): Promise<VendorSubmission> => {
-  try {
-    return await apiClient<VendorSubmission>(`/vendor/submissions/${payload.id ? `${payload.id}/` : ""}`, {
-      method: payload.id ? "PUT" : "POST",
-      body: JSON.stringify(payload),
-    });
-  } catch {
-    const list = readLocal<VendorSubmission[]>("vendor_submissions", []);
-    const id = payload.id || `vs-${Date.now()}`;
-    const next = { ...payload, id };
-    const idx = list.findIndex((item) => item.id === id);
-    if (idx >= 0) list[idx] = next;
-    else list.unshift(next);
-    writeLocal("vendor_submissions", list);
-    return next;
+export const saveVendorSubmission = async (
+  payload: VendorSubmission
+): Promise<VendorSubmission> => {
+  const path = payload.id
+    ? `/vendor/submissions/${payload.id}`
+    : "/vendor/submissions";
+  const method = payload.id ? "PUT" : "POST";
+  const body =
+    method === "POST"
+      ? {
+          title: payload.title,
+          category: payload.category,
+          description: payload.notes || null,
+          vendorQuotedPrice: 10,
+          suggestedRetailPrice: 15,
+          stockAvailable: 5,
+          currency: "usd",
+          images: [],
+        }
+      : {
+          title: payload.title,
+          category: payload.category,
+          description: payload.notes || null,
+        };
+
+  const response = await apiClient<ApiEnvelope<BackendVendorSubmission>>(path, {
+    method,
+    body: JSON.stringify(body),
+  });
+
+  const submission = unwrapApiData<BackendVendorSubmission | null>(response, null);
+  if (!submission) {
+    throw new Error("Submission save returned no payload");
   }
+
+  return mapSubmission(submission);
 };
 
 export const deleteVendorSubmission = async (id: string): Promise<void> => {
-  try {
-    await apiClient<void>(`/vendor/submissions/${id}/`, { method: "DELETE" });
-  } catch {
-    writeLocal("vendor_submissions", readLocal<VendorSubmission[]>("vendor_submissions", []).filter((item) => item.id !== id));
-  }
+  await apiClient<ApiEnvelope<unknown>>(`/vendor/submissions/${id}`, {
+    method: "DELETE",
+  });
 };

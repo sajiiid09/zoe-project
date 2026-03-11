@@ -5,14 +5,18 @@ import { AppContainer } from "@/components/layout/AppContainer";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { PageIntro } from "@/components/layout/PageIntro";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { listLegacyProducts } from "@/lib/api/products";
+import { getLegacyProductBySlug, listLegacyProducts } from "@/lib/api/products";
 import type { ProductCardModel } from "@/types/catalog";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const all = await listLegacyProducts({ pageSize: 30 });
-  const current = all.items.find((item) => item.slug === slug);
-  const related = all.items.filter((item) => item.slug !== slug).slice(0, 4);
+  const current = await getLegacyProductBySlug(slug);
+  const relatedList = await listLegacyProducts({
+    category: current?.category,
+    sort: "rating",
+    pageSize: 12,
+  });
+  const related = relatedList.items.filter((item) => item.slug !== slug).slice(0, 4);
 
   return (
     <AppContainer>

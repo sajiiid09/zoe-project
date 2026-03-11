@@ -20,7 +20,7 @@ import {
   listAdminSubmissions,
   listAdminUsers,
 } from "@/lib/api/admin";
-import { listOrders } from "@/lib/api/orders";
+import { listAllOrders } from "@/lib/api/orders";
 import type { RevenuePoint, SnapshotCardModel, StatusBreakdownItem } from "@/types/analytics";
 
 const money = (amount: number) =>
@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
       setLoading(true);
       const [baseStats, orders, users, products, submissions, catalog] = await Promise.all([
         getAdminDashboardStats(),
-        listOrders(),
+        listAllOrders(),
         listAdminUsers(),
         listAdminProducts(),
         listAdminSubmissions(),

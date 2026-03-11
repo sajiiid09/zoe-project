@@ -10,7 +10,7 @@ import {
   buildRevenueTrend,
   buildStatusBreakdown,
 } from "@/lib/analytics/admin";
-import { listOrders } from "@/lib/api/orders";
+import { listAllOrders } from "@/lib/api/orders";
 import type { RevenuePoint, StatusBreakdownItem } from "@/types/analytics";
 import type { CustomerOrder } from "@/types/purchase";
 
@@ -27,7 +27,7 @@ export default function AdminRevenuePage() {
   const [statusBreakdown, setStatusBreakdown] = useState<StatusBreakdownItem[]>([]);
 
   useEffect(() => {
-    void listOrders().then((incomingOrders) => {
+    void listAllOrders().then((incomingOrders) => {
       setOrders(incomingOrders);
       setTrend(buildRevenueTrend(incomingOrders, 14));
       setStatusBreakdown(buildStatusBreakdown(incomingOrders));

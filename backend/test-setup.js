@@ -19,6 +19,7 @@ const testConnection = async () => {
 const testEnvVars = () => {
   const requiredVars = [
     'DATABASE_URL',
+    'DIRECT_URL',
     'JWT_SECRET',
   ];
 
@@ -60,7 +61,7 @@ const runTests = async () => {
   console.log('\nNext steps:');
   console.log('1. Run "npm run dev" to start development server');
   console.log('2. Update your Prisma schema and run migrations');
-  console.log('3. Deploy to Render when ready');
+  console.log('3. Deploy to your production host (Hostinger VPS) when ready');
 };
 
 runTests().catch(console.error);

@@ -10,7 +10,9 @@
     "test": "NODE_ENV=test JWT_SECRET=test-jwt-secret node --test tests/unit/*.test.js tests/integration/*.test.js",
     "test:watch": "NODE_ENV=test JWT_SECRET=test-jwt-secret node --test --watch tests/unit/*.test.js tests/integration/*.test.js",
     "test-setup": "node test-setup.js",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "seed": "node prisma/seed.js",
+    "seed:verify": "node prisma/seed-verify.js"
   },
   "keywords": [
     "express",

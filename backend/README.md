@@ -1,140 +1,217 @@
+# E-Commerce Decor Backend
 
-# E-Commerce Decor Website
+Express + Prisma backend for the Zoe marketplace, using PostgreSQL on Supabase.
 
-A full-stack e-commerce website built with **Node.js / Express.js** (backend), **Next.js / React** (frontend), and **Supabase PostgreSQL** via Prisma. It features a complete shopping experience with JWT-based authentication, an admin dashboard, and a clean, responsive UI.
+## Stack
 
-## Features
+- Node.js (Express)
+- Prisma ORM
+- PostgreSQL (Supabase)
+- JWT auth (cookie-first for web clients)
 
-### Frontend
+## Required Environment Variables
 
-- Responsive design that works on all devices
-- Product listings with sorting and filtering
-- Dedicated product detail pages with reviews
-- Fully functional shopping cart with localStorage persistence
-- Multi-step checkout flow
-- JWT-based user authentication (login / register)
-- Admin dashboard for products, orders, users, and revenue
+Create `backend/.env`:
 
-### Backend
+```env
+DATABASE_URL="postgresql://postgres.<project-ref>:<password>@<pooler-host>:6543/postgres?sslmode=require"
+DIRECT_URL="postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres?sslmode=require"
+JWT_SECRET="replace-with-long-random-secret"
+FRONTEND_URL="http://localhost:3000"
+PORT="5000"
+NODE_ENV="development"
+```
 
-- RESTful API built with Express.js
-- PostgreSQL database hosted on Supabase, accessed via Prisma ORM
-- JWT authentication with bcrypt password hashing
-- Role-based access control (Customer / Admin)
-- Complete order management with stock tracking
-- Rate limiting and async error handling middleware
+Notes:
+- `DATABASE_URL` should be the Supabase pooled connection (runtime).
+- `DIRECT_URL` should be the direct DB connection (Prisma CLI/migrations).
+- App startup should fail if `JWT_SECRET` is missing.
 
-## Tech Stack
+## Local Development
 
-- **Frontend:** Next.js, React, TypeScript, Tailwind CSS, Shadcn UI, Framer Motion
-- **Backend:** Node.js, Express.js, Prisma, PostgreSQL (Supabase)
-- **Auth:** JSON Web Tokens (JWT), bcryptjs
-- **Deployment:** Render
+From `backend/`:
 
-## Getting Started
+```bash
+npm install
+npm run prisma:generate
+npm run seed
+npm run dev
+```
 
-### Prerequisites
+API health:
 
-- Node.js (v18+)
-- npm or pnpm
+```bash
+curl http://localhost:5000/api/health
+```
 
-### Installation
+## Supabase Data Migration (Neon -> Supabase)
 
-1. Clone the repo:
-   ```sh
-   git clone https://github.com/your_username/decor-website.git
-   ```
-2. Install backend dependencies:
-   ```sh
-   npm install
-   ```
-3. Install frontend dependencies:
-   ```sh
-   cd frontend && pnpm install
-   ```
-4. Create a `.env` file in the root directory:
-   ```
-   DATABASE_URL="postgresql://postgres.<project-ref>:<password>@<pooler-host>:6543/postgres?sslmode=require"
-   DIRECT_URL="postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres?sslmode=require"
-   JWT_SECRET="your-secret-key"
-   PORT=5000
-   NODE_ENV=development
-   FRONTEND_URL=http://localhost:3000
-   ```
-5. Generate Prisma client and run migrations:
-   ```sh
-   npx prisma generate
-   npx prisma db push
-   ```
-6. Start the backend:
-   ```sh
-   npm run dev
-   ```
-7. Start the frontend (in another terminal):
-   ```sh
-   cd frontend && pnpm dev
-   ```
+One-shot cutover with short write freeze.
 
-## NeonDB to Supabase Migration Runbook
+### 1) Pre-cutover checks
 
-Use this for one-shot cutover with full data copy.
-
-### 1) Pre-cutover validation
-
-1. Create a Supabase project and get both URLs:
-   - pooled runtime URL for `DATABASE_URL`
-   - direct database URL for `DIRECT_URL`
+1. Create Supabase project and collect:
+- pooled URL (`DATABASE_URL`)
+- direct URL (`DIRECT_URL`)
 2. Verify direct connectivity:
-   ```sh
-   DIRECT_URL="<your-supabase-direct-url>" npx prisma db pull
-   ```
-3. Ensure `pg_dump` and `pg_restore` are available in your ops environment.
 
-### 2) Initial data copy
+```bash
+DIRECT_URL="<supabase-direct-url>" npx prisma db pull
+```
 
-```sh
+3. Ensure tools exist on ops machine:
+- `pg_dump`
+- `pg_restore`
+
+### 2) Initial copy
+
+```bash
 pg_dump "$NEON_DATABASE_URL" --format=custom --no-owner --no-acl --file neon_full.dump
 pg_restore --clean --if-exists --no-owner --no-acl --dbname "$SUPABASE_DIRECT_URL" neon_full.dump
 ```
 
-### 3) Post-copy checks
+### 3) Validate copy
 
-1. Compare row counts for critical tables:
-   - `User`
-   - `Order`
-   - `OrderItem`
-   - `Product`
-   - `CatalogProduct`
-   - `VendorSubmission`
-   - `AffiliateProfile`
-2. Spot-check relationships (orders -> order items, users -> addresses).
-3. Run backend tests against Supabase-backed env:
-   ```sh
-   npm test
-   ```
+Check row counts and spot checks for:
+- `User`
+- `Order`
+- `OrderItem`
+- `Product`
+- `CatalogProduct`
+- `VendorSubmission`
+- `AffiliateProfile`
+
+Then run backend tests:
+
+```bash
+npm test
+```
 
 ### 4) Cutover
 
-1. Freeze writes (short maintenance window).
-2. Run final `pg_dump` + `pg_restore` to capture last changes.
-3. Update Render environment variables:
-   - `DATABASE_URL` -> Supabase pooled URL
-   - `DIRECT_URL` -> Supabase direct URL
-4. Redeploy backend.
+1. Freeze writes briefly.
+2. Run final dump/restore.
+3. Update backend env to Supabase:
+- `DATABASE_URL` (pooler)
+- `DIRECT_URL` (direct)
+4. Restart backend.
 5. Unfreeze traffic.
 6. Smoke test:
-   - `GET /api/health`
-   - login
-   - order creation flow
+- `GET /api/health`
+- login
+- order creation path
 
 ### 5) Rollback
 
-1. Restore prior Neon `DATABASE_URL` in Render.
-2. Redeploy immediately.
-3. Keep the Supabase dataset for retry after fix.
+1. Restore previous `DATABASE_URL` and `DIRECT_URL`.
+2. Restart backend immediately.
+3. Keep Supabase snapshot for next retry.
 
-## Usage
+## Hostinger VPS Deployment Runbook
 
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:5000/api`
-- Admin dashboard: `http://localhost:3000/admin`
+Keep backend on VPS with PM2 + Nginx reverse proxy.
+
+### 1) Server bootstrap (Ubuntu)
+
+```bash
+sudo apt update && sudo apt upgrade -y
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs nginx
+sudo npm install -g pm2
+```
+
+### 2) Deploy app code
+
+```bash
+cd /var/www
+sudo mkdir -p zoe-project
+sudo chown -R $USER:$USER zoe-project
+cd zoe-project
+git clone <your-repo-url> .
+cd backend
+npm install
+npm run prisma:generate
+```
+
+Create/update `backend/.env` with production values:
+- `DATABASE_URL` (Supabase pooled URL)
+- `DIRECT_URL` (Supabase direct URL)
+- `JWT_SECRET`
+- `FRONTEND_URL` (your frontend domain)
+- `NODE_ENV=production`
+- `PORT=5000`
+
+### 3) Start backend with PM2
+
+```bash
+cd /var/www/zoe-project/backend
+pm2 start server.js --name zoe-backend
+pm2 save
+pm2 startup
+```
+
+### 4) Configure Nginx reverse proxy
+
+Create `/etc/nginx/sites-available/zoe-backend`:
+
+```nginx
+server {
+  listen 80;
+  server_name api.your-domain.com;
+
+  location / {
+    proxy_pass http://127.0.0.1:5000;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+}
+```
+
+Enable and reload:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/zoe-backend /etc/nginx/sites-enabled/zoe-backend
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+### 5) Enable SSL (Let's Encrypt)
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d api.your-domain.com
+```
+
+### 6) Ongoing deploy/update
+
+```bash
+cd /var/www/zoe-project
+git pull
+cd backend
+npm install
+npm run prisma:generate
+pm2 restart zoe-backend --update-env
+```
+
+### 7) Rollback
+
+```bash
+cd /var/www/zoe-project
+git log --oneline -n 10
+git checkout <last-known-good-commit>
+cd backend
+npm install
+npm run prisma:generate
+pm2 restart zoe-backend --update-env
+```
+
+## Backend Smoke Checklist
+
+- `GET /api/health` returns `success: true`
+- Login/register/logout works with cookie auth
+- Admin, vendor, affiliate protected routes authorize correctly
+- Product/catalog/order flows read/write Supabase data

@@ -35,10 +35,10 @@ export default function CheckoutPage() {
   const selectedAddress = addresses.find((item) => item.id === selectedAddressId);
 
   const onSaveAddress = async (address: Address) => {
-    await saveAddress(address);
+    const saved = await saveAddress(address);
     const latest = await listAddresses();
     setAddresses(latest);
-    setSelectedAddressId(address.id);
+    setSelectedAddressId(saved.id);
     setShowAddressForm(false);
   };
 

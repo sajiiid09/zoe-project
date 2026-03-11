@@ -31,7 +31,10 @@ export default function AffiliateProfilePage() {
       setMessage("Please complete all profile fields.");
       return;
     }
-    const saved = await saveAffiliateProfile({ ...form, id: form.id || `af-${Date.now()}`, status: form.status || "pending" });
+    const saved = await saveAffiliateProfile({
+      ...form,
+      status: form.status || "pending",
+    });
     setForm(saved);
     setMessage("Affiliate profile saved.");
   };

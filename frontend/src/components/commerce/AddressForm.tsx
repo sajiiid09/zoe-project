@@ -40,10 +40,7 @@ export const AddressForm = ({
     setSaving(true);
     setError("");
 
-    await onSave({
-      ...form,
-      id: form.id || crypto.randomUUID(),
-    });
+    await onSave(form);
 
     setSaving(false);
     if (!initial) setForm(blankAddress);
