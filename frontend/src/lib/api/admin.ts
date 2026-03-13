@@ -178,7 +178,7 @@ const buildDefaultUserState = (
   name: toFullName(user.firstName, user.lastName, user.email),
   email: user.email,
   role,
-  accountStatus: user.isActive ? "active" : "blocked",
+  accountStatus: user.isActive === false ? "blocked" : "active",
   onboardingStatus: role === "admin" || role === "customer" ? "not_applicable" : "setup_required",
   approvalStatus: "not_applicable",
   approvalActionable: false,

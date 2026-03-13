@@ -29,6 +29,7 @@ const formatUserResponse = (user) => ({
   phone: user.phone,
   profilePicture: user.profilePicture,
   role: user.role,
+  isActive: user.isActive,
   vendorFeePaid: user.vendorFeePaid || false,
   affiliateFeePaid: user.affiliateFeePaid || false,
   preferences: user.preferences,
