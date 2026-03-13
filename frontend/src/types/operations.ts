@@ -1,10 +1,33 @@
-export type AccessStatus = "pending" | "approved" | "blocked" | "payment_required";
+export type AccessStatus =
+  | "setup_required"
+  | "payment_required"
+  | "pending"
+  | "approved"
+  | "needs_changes"
+  | "blocked";
+
+export type AdminAccountStatus = "active" | "blocked";
+export type AdminOnboardingStatus =
+  | "not_applicable"
+  | "setup_required"
+  | "payment_required"
+  | "pending"
+  | "approved"
+  | "needs_changes";
+export type AdminApprovalStatus =
+  | "not_applicable"
+  | "pending"
+  | "approved"
+  | "needs_changes";
+export type AdminApprovalTargetType = "vendor_store" | "affiliate_profile";
 
 export type VendorStore = {
   id: string;
   name: string;
   description: string;
   supportEmail: string;
+  reviewStatus?: Exclude<AccessStatus, "blocked">;
+  rejectionNote?: string;
 };
 
 export type VendorProduct = {
@@ -22,6 +45,9 @@ export type VendorSubmission = {
   category: string;
   notes: string;
   status: "pending" | "accepted" | "rejected";
+  vendorQuotedPrice: number;
+  suggestedRetailPrice: number | null;
+  reviewable: boolean;
 };
 
 export type AffiliateProfile = {
@@ -30,6 +56,7 @@ export type AffiliateProfile = {
   channel: string;
   audienceRegion: string;
   status: AccessStatus;
+  rejectionNote?: string;
 };
 
 export type AdminUserRow = {
@@ -37,9 +64,25 @@ export type AdminUserRow = {
   name: string;
   email: string;
   role: "customer" | "vendor" | "affiliate" | "admin";
-  status: AccessStatus;
-  vendorStoreId?: string;
-  affiliateProfileId?: string;
+  accountStatus: AdminAccountStatus;
+  onboardingStatus: AdminOnboardingStatus;
+  approvalStatus: AdminApprovalStatus;
+  approvalTargetType?: AdminApprovalTargetType;
+  approvalTargetId?: string;
+  approvalActionable: boolean;
+  approvalNote?: string;
+};
+
+export type AdminApprovalRow = {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  role: "vendor" | "affiliate";
+  onboardingStatus: Exclude<AdminOnboardingStatus, "not_applicable">;
+  approvalStatus: Extract<AdminApprovalStatus, "pending" | "approved" | "needs_changes">;
+  approvalTargetType: AdminApprovalTargetType;
+  approvalTargetId: string;
 };
 
 export type CatalogItem = {

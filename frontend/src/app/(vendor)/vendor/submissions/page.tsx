@@ -1,24 +1,56 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { PageIntro } from "@/components/layout/PageIntro";
 import { MotionSection, MotionTableRow } from "@/components/ops/Motion";
 import { Button } from "@/components/ui/Button";
-import { deleteVendorSubmission, listVendorSubmissions, saveVendorSubmission } from "@/lib/api/vendor";
+import {
+  deleteVendorSubmission,
+  getVendorStatus,
+  listVendorSubmissions,
+  saveVendorSubmission,
+} from "@/lib/api/vendor";
 import type { VendorSubmission } from "@/types/operations";
 
-const blank: VendorSubmission = { id: "", title: "", category: "", notes: "", status: "pending" };
+const blank: VendorSubmission = {
+  id: "",
+  title: "",
+  category: "",
+  notes: "",
+  status: "pending",
+  vendorQuotedPrice: 0,
+  suggestedRetailPrice: null,
+  reviewable: false,
+};
 
 export default function VendorSubmissionsPage() {
+  const router = useRouter();
   const [items, setItems] = useState<VendorSubmission[]>([]);
   const [form, setForm] = useState<VendorSubmission>(blank);
+  const [allowed, setAllowed] = useState(false);
 
   const refresh = async () => setItems(await listVendorSubmissions());
 
   useEffect(() => {
-    void listVendorSubmissions().then(setItems);
-  }, []);
+    const load = async () => {
+      const status = await getVendorStatus();
+      if (status !== "approved") {
+        router.replace("/vendor/dashboard");
+        return;
+      }
+
+      setAllowed(true);
+      setItems(await listVendorSubmissions());
+    };
+
+    void load();
+  }, [router]);
+
+  if (!allowed) {
+    return null;
+  }
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();

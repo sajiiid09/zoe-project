@@ -1,24 +1,47 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { PageIntro } from "@/components/layout/PageIntro";
 import { MotionSection, MotionTableRow } from "@/components/ops/Motion";
 import { Button } from "@/components/ui/Button";
-import { deleteVendorProduct, listVendorProducts, saveVendorProduct } from "@/lib/api/vendor";
+import {
+  deleteVendorProduct,
+  getVendorStatus,
+  listVendorProducts,
+  saveVendorProduct,
+} from "@/lib/api/vendor";
 import type { VendorProduct } from "@/types/operations";
 
 const blank: VendorProduct = { id: "", title: "", price: 0, stock: 0, category: "", status: "draft" };
 
 export default function VendorProductsPage() {
+  const router = useRouter();
   const [items, setItems] = useState<VendorProduct[]>([]);
   const [form, setForm] = useState<VendorProduct>(blank);
+  const [allowed, setAllowed] = useState(false);
 
   const refresh = async () => setItems(await listVendorProducts());
 
   useEffect(() => {
-    void listVendorProducts().then(setItems);
-  }, []);
+    const load = async () => {
+      const status = await getVendorStatus();
+      if (status !== "approved") {
+        router.replace("/vendor/dashboard");
+        return;
+      }
+
+      setAllowed(true);
+      setItems(await listVendorProducts());
+    };
+
+    void load();
+  }, [router]);
+
+  if (!allowed) {
+    return null;
+  }
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();

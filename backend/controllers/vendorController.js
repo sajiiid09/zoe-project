@@ -29,6 +29,10 @@ const slugify = (text) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
 
+const isStoreComplete = (store) => {
+  return Boolean(store?.name?.trim() && store?.email?.trim());
+};
+
 /* ─── store CRUD (vendor) ─── */
 
 /**
@@ -79,7 +83,9 @@ export const createStore = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     data: store,
-    message: 'Store created – pending admin approval',
+    message: req.user.vendorFeePaid
+      ? 'Store created – pending admin approval'
+      : 'Store saved. Complete onboarding payment to submit it for admin review.',
   });
 });
 
@@ -128,6 +134,21 @@ export const updateMyStore = asyncHandler(async (req, res) => {
   if (phone !== undefined) data.phone = phone;
   if (email !== undefined) data.email = email;
 
+  const nextStoreState = {
+    ...store,
+    ...data,
+  };
+
+  if (
+    store.approvalStatus === 'REJECTED' &&
+    req.user.vendorFeePaid &&
+    isStoreComplete(nextStoreState)
+  ) {
+    data.approvalStatus = 'PENDING';
+    data.rejectionNote = null;
+    data.isActive = true;
+  }
+
   const updated = await prisma.store.update({
     where: { id: store.id },
     data,
@@ -137,7 +158,12 @@ export const updateMyStore = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: updated,
-    message: 'Store updated successfully',
+    message:
+      updated.approvalStatus === 'APPROVED'
+        ? 'Store updated successfully'
+        : req.user.vendorFeePaid
+          ? 'Store updated and ready for admin review'
+          : 'Store updated. Complete onboarding payment to submit it for admin review.',
   });
 });
 

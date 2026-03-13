@@ -24,6 +24,7 @@ type BackendVendorStore = {
   description?: string | null;
   email?: string | null;
   approvalStatus: BackendApprovalStatus;
+  rejectionNote?: string | null;
 };
 
 type BackendVendorProduct = {
@@ -66,9 +67,11 @@ const toNumber = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const mapApprovalStatus = (status?: BackendApprovalStatus): AccessStatus => {
+const mapApprovalStatus = (
+  status?: BackendApprovalStatus
+): Extract<AccessStatus, "pending" | "approved" | "needs_changes"> => {
   if (status === "APPROVED") return "approved";
-  if (status === "REJECTED") return "blocked";
+  if (status === "REJECTED") return "needs_changes";
   return "pending";
 };
 
@@ -77,7 +80,13 @@ const mapStore = (store: BackendVendorStore): VendorStore => ({
   name: store.name,
   description: store.description ?? "",
   supportEmail: store.email ?? "",
+  reviewStatus: mapApprovalStatus(store.approvalStatus),
+  rejectionNote: store.rejectionNote ?? undefined,
 });
+
+export const isVendorStoreComplete = (store: VendorStore | null) => {
+  return Boolean(store?.name.trim() && store?.supportEmail.trim());
+};
 
 const mapProductStatus = (
   status?: BackendApprovalStatus
@@ -110,6 +119,9 @@ const mapSubmission = (submission: BackendVendorSubmission): VendorSubmission =>
   category: submission.category ?? "Uncategorized",
   notes: submission.rejectionReason ?? submission.description ?? "",
   status: mapSubmissionStatus(submission.status),
+  vendorQuotedPrice: 0,
+  suggestedRetailPrice: null,
+  reviewable: false,
 });
 
 export const getVendorStatus = async (): Promise<AccessStatus> => {
@@ -117,15 +129,21 @@ export const getVendorStatus = async (): Promise<AccessStatus> => {
   if (session?.user.role !== "vendor") return "blocked";
 
   try {
-    const feePaid = await getVendorFeeStatus();
+    const [feePaid, store] = await Promise.all([
+      getVendorFeeStatus(),
+      getVendorStore(),
+    ]);
+    const storeComplete = isVendorStoreComplete(store);
+
+    if (!store || !storeComplete) {
+      return "setup_required";
+    }
+
     if (!feePaid) {
       return "payment_required";
     }
 
-    const dashboard = await apiClient<VendorDashboardResponse>("/vendor/dashboard");
-    const data = unwrapApiData(dashboard, { hasStore: false });
-    if (!data.hasStore) return "pending";
-    return mapApprovalStatus(data.store?.approvalStatus);
+    return store.reviewStatus ?? "pending";
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
       return "blocked";
@@ -140,6 +158,15 @@ export const setVendorStatusLocal = (_status: AccessStatus) => {
 };
 
 export const getVendorDashboardStats = async () => {
+  const status = await getVendorStatus();
+  if (status !== "approved") {
+    return {
+      products: 0,
+      submissions: 0,
+      pendingApprovals: status === "pending" ? 1 : 0,
+    };
+  }
+
   const [dashboard, submissions] = await Promise.all([
     apiClient<VendorDashboardResponse>("/vendor/dashboard"),
     listVendorSubmissions(),

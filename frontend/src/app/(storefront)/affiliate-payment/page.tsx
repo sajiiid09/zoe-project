@@ -11,15 +11,15 @@ export default function AffiliatePaymentPage() {
     <RolePaymentPage
       role="affiliate"
       badge="Affiliate onboarding"
-      title="Activate your affiliate account before profile approval."
-      description="This one-time fee unlocks affiliate onboarding so you can complete your profile, submit for approval, and prepare for link-based growth tools."
+      title="Pay now or review your profile setup first."
+      description="This one-time fee is only required when you are ready to submit your affiliate profile for admin review. You can review and save the profile before paying."
       nextHref="/affiliate/profile"
       nextLabel="Go to affiliate profile"
       createSession={createAffiliateFeeSession}
       getStatus={getAffiliateFeeStatus}
       checklist={[
         "Secure Stripe checkout with one-time affiliate activation payment",
-        "Access to affiliate profile setup and approval pipeline",
+        "Profile details can be reviewed before payment and submitted after payment",
         "Performance analytics and payout tooling remain dependent on the broader rollout",
       ]}
     />
