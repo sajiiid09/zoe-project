@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { PageIntro } from "@/components/layout/PageIntro";
@@ -31,6 +32,11 @@ export default function AffiliateDashboardPage() {
         <p className="muted" style={{ fontSize: "0.85rem", marginTop: "0.25rem" }}>
           Full performance tracking, affiliate links, and commission payouts will become available as soon as the transition is complete.
         </p>
+        {status === "payment_required" ? (
+          <Link href="/affiliate-payment" className="chip" style={{ width: "fit-content", marginTop: "0.45rem" }}>
+            Complete onboarding payment
+          </Link>
+        ) : null}
       </section>
 
       <section className="ops-stats-grid">

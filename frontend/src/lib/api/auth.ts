@@ -10,6 +10,8 @@ type BackendUser = {
   lastName: string | null;
   phone: string | null;
   role: BackendUserRole;
+  vendorFeePaid?: boolean;
+  affiliateFeePaid?: boolean;
 };
 
 type BackendAuthPayload = {
@@ -84,7 +86,7 @@ const setSessionCache = (session: AuthSession | null) => {
 
 const readApiErrorDetails = (
   error: unknown
-): { message?: string; requiresPayment?: boolean } | null => {
+): { message?: string; requiresPayment?: boolean; user?: BackendUser } | null => {
   if (!(error instanceof ApiError)) {
     return null;
   }
@@ -95,7 +97,7 @@ const readApiErrorDetails = (
   }
   const detailsRecord = details as Record<string, unknown>;
 
-  const result: { message?: string; requiresPayment?: boolean } = {};
+  const result: { message?: string; requiresPayment?: boolean; user?: BackendUser } = {};
 
   if (typeof detailsRecord.message === "string") {
     result.message = detailsRecord.message;
@@ -103,6 +105,10 @@ const readApiErrorDetails = (
 
   if (typeof detailsRecord.requiresPayment === "boolean") {
     result.requiresPayment = detailsRecord.requiresPayment;
+  }
+
+  if (detailsRecord.user && typeof detailsRecord.user === "object") {
+    result.user = detailsRecord.user as BackendUser;
   }
 
   return result;
@@ -159,16 +165,24 @@ export const login = async (email: string, password: string): Promise<AuthResult
 
     const session = toSession(backendUser);
     setSessionCache(session);
-    return { session };
+    return { session, role: session.user.role };
   } catch (error) {
     const details = readApiErrorDetails(error);
     if (error instanceof ApiError && error.status === 402 && details?.requiresPayment) {
+      const backendUser = details.user;
+      const session = backendUser ? toSession(backendUser) : undefined;
+      if (session) {
+        setSessionCache(session);
+      }
+
       return {
+        session,
         error: readApiErrorMessage(
           error,
           "Your account requires payment activation before login."
         ),
         paymentRequired: true,
+        role: session?.user.role,
       };
     }
 
@@ -180,7 +194,7 @@ export const register = async (payload: {
   fullName: string;
   email: string;
   password: string;
-  role?: UserProfile["role"];
+  role?: Extract<UserProfile["role"], "customer" | "vendor" | "affiliate">;
 }): Promise<AuthResult> => {
   const { firstName, lastName } = splitFullName(payload.fullName);
   const backendRole = payload.role ? payload.role.toUpperCase() : undefined;
@@ -204,7 +218,7 @@ export const register = async (payload: {
 
     const session = toSession(backendUser);
     setSessionCache(session);
-    return { session };
+    return { session, role: session.user.role };
   } catch (error) {
     return { error: readApiErrorMessage(error, "Could not create account.") };
   }

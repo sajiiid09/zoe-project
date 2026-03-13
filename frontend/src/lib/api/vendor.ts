@@ -1,5 +1,6 @@
 import { ApiError, apiClient } from "@/lib/api/client";
 import { readStoredSession } from "@/lib/api/auth";
+import { getVendorFeeStatus } from "@/lib/api/payments";
 import { unwrapApiArray, unwrapApiData, type ApiEnvelope } from "@/lib/api/response";
 import type {
   AccessStatus,
@@ -116,6 +117,11 @@ export const getVendorStatus = async (): Promise<AccessStatus> => {
   if (session?.user.role !== "vendor") return "blocked";
 
   try {
+    const feePaid = await getVendorFeeStatus();
+    if (!feePaid) {
+      return "payment_required";
+    }
+
     const dashboard = await apiClient<VendorDashboardResponse>("/vendor/dashboard");
     const data = unwrapApiData(dashboard, { hasStore: false });
     if (!data.hasStore) return "pending";
