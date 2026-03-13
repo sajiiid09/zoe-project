@@ -1,7 +1,15 @@
-import { apiClient } from "@/lib/api/client";
+import { ApiError, apiClient } from "@/lib/api/client";
 import { listAllOrders } from "@/lib/api/orders";
 import { unwrapApiArray, type ApiEnvelope } from "@/lib/api/response";
-import type { AdminUserRow, CatalogItem, VendorProduct, VendorSubmission } from "@/types/operations";
+import type {
+  AdminApprovalRow,
+  AdminApprovalStatus,
+  AdminApprovalTargetType,
+  AdminUserRow,
+  CatalogItem,
+  VendorProduct,
+  VendorSubmission,
+} from "@/types/operations";
 
 type BackendUserRole = "ADMIN" | "CUSTOMER" | "VENDOR" | "AFFILIATE";
 type BackendApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
@@ -68,6 +76,8 @@ type BackendSubmission = {
   category?: string | null;
   description?: string | null;
   rejectionReason?: string | null;
+  vendorQuotedPrice: number | string;
+  suggestedRetailPrice?: number | string | null;
   status: BackendSubmissionStatus;
 };
 
@@ -84,7 +94,11 @@ const toNumber = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const toFullName = (firstName?: string | null, lastName?: string | null, fallback = "Unknown User") => {
+const toFullName = (
+  firstName?: string | null,
+  lastName?: string | null,
+  fallback = "Unknown User"
+) => {
   const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
   return fullName || fallback;
 };
@@ -96,7 +110,9 @@ const mapRole = (role: BackendUserRole): AdminUserRow["role"] => {
   return "customer";
 };
 
-const mapApprovalStatusToAccess = (status?: BackendApprovalStatus | null): AdminUserRow["status"] => {
+const mapApprovalStatus = (
+  status?: BackendApprovalStatus | null
+): Extract<AdminApprovalStatus, "pending" | "approved" | "blocked"> => {
   if (status === "APPROVED") return "approved";
   if (status === "REJECTED") return "blocked";
   return "pending";
@@ -132,54 +148,126 @@ const toBackendCatalogStatus = (
   return "DRAFT";
 };
 
-const mapUserStatus = (
+const buildDefaultUserState = (
   user: BackendUser,
-  vendorByUserId: Map<string, BackendVendor>,
-  affiliateByUserId: Map<string, BackendAffiliateProfile>
-): AdminUserRow["status"] => {
-  if (!user.isActive) {
-    return "blocked";
+  role: AdminUserRow["role"]
+): AdminUserRow => ({
+  id: user.id,
+  name: toFullName(user.firstName, user.lastName, user.email),
+  email: user.email,
+  role,
+  accountStatus: user.isActive ? "active" : "blocked",
+  onboardingStatus: role === "admin" || role === "customer" ? "not_applicable" : "setup_required",
+  approvalStatus: "not_applicable",
+  approvalActionable: false,
+});
+
+const buildVendorRow = (
+  user: BackendUser,
+  baseRow: AdminUserRow,
+  vendorByUserId: Map<string, BackendVendor>
+): AdminUserRow => {
+  if (!user.vendorFeePaid) {
+    return {
+      ...baseRow,
+      onboardingStatus: "payment_required",
+      approvalBlockedReason: "Vendor has not completed the onboarding payment yet.",
+    };
   }
 
-  if (user.role === "VENDOR") {
-    if (!user.vendorFeePaid) return "payment_required";
-    const vendor = vendorByUserId.get(user.id);
-    return mapApprovalStatusToAccess(vendor?.store?.approvalStatus ?? user.store?.approvalStatus);
+  const store = vendorByUserId.get(user.id)?.store ?? user.store ?? null;
+  if (!store) {
+    return {
+      ...baseRow,
+      onboardingStatus: "setup_required",
+      approvalBlockedReason: "Vendor has not created a store yet.",
+    };
   }
 
-  if (user.role === "AFFILIATE") {
-    if (!user.affiliateFeePaid) return "payment_required";
-    const affiliate = affiliateByUserId.get(user.id);
-    return mapApprovalStatusToAccess(affiliate?.approvalStatus);
-  }
-
-  return "approved";
-};
-
-let latestUserRows: AdminUserRow[] = [];
-
-export const getAdminDashboardStats = async () => {
-  const [users, submissions, orders] = await Promise.all([
-    listAdminUsers(),
-    listAdminSubmissions(),
-    listAllOrders(),
-  ]);
+  const approvalStatus = mapApprovalStatus(store.approvalStatus);
 
   return {
-    users: users.length,
-    pendingApprovals: users.filter(
-      (user) =>
-        (user.role === "vendor" || user.role === "affiliate") &&
-        user.status !== "approved"
-    ).length,
-    pendingSubmissions: submissions.filter(
-      (submission) => submission.status === "pending"
-    ).length,
-    orders: orders.length,
+    ...baseRow,
+    onboardingStatus: approvalStatus === "approved" ? "approved" : "ready_for_approval",
+    approvalStatus,
+    approvalTargetType: "vendor_store",
+    approvalTargetId: store.id,
+    approvalActionable: baseRow.accountStatus === "active" && approvalStatus === "pending",
+    approvalBlockedReason:
+      baseRow.accountStatus === "blocked"
+        ? "Account is blocked."
+        : approvalStatus === "blocked"
+          ? "Vendor store approval has already been rejected."
+          : undefined,
   };
 };
 
-export const listAdminUsers = async (): Promise<AdminUserRow[]> => {
+const buildAffiliateRow = (
+  user: BackendUser,
+  baseRow: AdminUserRow,
+  affiliateByUserId: Map<string, BackendAffiliateProfile>
+): AdminUserRow => {
+  if (!user.affiliateFeePaid) {
+    return {
+      ...baseRow,
+      onboardingStatus: "payment_required",
+      approvalBlockedReason: "Affiliate has not completed the onboarding payment yet.",
+    };
+  }
+
+  const profile = affiliateByUserId.get(user.id) ?? null;
+  if (!profile) {
+    return {
+      ...baseRow,
+      onboardingStatus: "setup_required",
+      approvalBlockedReason: "Affiliate has not created a profile yet.",
+    };
+  }
+
+  const approvalStatus = mapApprovalStatus(profile.approvalStatus);
+
+  return {
+    ...baseRow,
+    onboardingStatus: approvalStatus === "approved" ? "approved" : "ready_for_approval",
+    approvalStatus,
+    approvalTargetType: "affiliate_profile",
+    approvalTargetId: profile.id,
+    approvalActionable: baseRow.accountStatus === "active" && approvalStatus === "pending",
+    approvalBlockedReason:
+      baseRow.accountStatus === "blocked"
+        ? "Account is blocked."
+        : approvalStatus === "blocked"
+          ? "Affiliate profile approval has already been rejected."
+          : undefined,
+  };
+};
+
+const toApprovalRow = (row: AdminUserRow): AdminApprovalRow | null => {
+  if (
+    !row.approvalActionable ||
+    row.approvalStatus !== "pending" ||
+    !row.approvalTargetType ||
+    !row.approvalTargetId ||
+    (row.role !== "vendor" && row.role !== "affiliate")
+  ) {
+    return null;
+  }
+
+  return {
+    id: `${row.role}:${row.approvalTargetId}`,
+    userId: row.id,
+    name: row.name,
+    email: row.email,
+    role: row.role,
+    onboardingStatus:
+      row.onboardingStatus === "not_applicable" ? "ready_for_approval" : row.onboardingStatus,
+    approvalStatus: row.approvalStatus,
+    approvalTargetType: row.approvalTargetType,
+    approvalTargetId: row.approvalTargetId,
+  };
+};
+
+const fetchAdminUsersState = async () => {
   const [usersResponse, vendorsResponse, affiliatesResponse] = await Promise.all([
     apiClient<ApiEnvelope<BackendUser[]>>("/users/admin/all?limit=500"),
     apiClient<ApiEnvelope<BackendVendor[]>>("/users/admin/vendors?limit=500"),
@@ -193,73 +281,112 @@ export const listAdminUsers = async (): Promise<AdminUserRow[]> => {
   const vendorByUserId = new Map(vendors.map((vendor) => [vendor.id, vendor]));
   const affiliateByUserId = new Map(
     affiliates
-      .filter((profile): profile is BackendAffiliateProfile & { user: NonNullable<BackendAffiliateProfile["user"]> } => Boolean(profile.user))
+      .filter(
+        (
+          profile
+        ): profile is BackendAffiliateProfile & {
+          user: NonNullable<BackendAffiliateProfile["user"]>;
+        } => Boolean(profile.user)
+      )
       .map((profile) => [profile.user.id, profile])
   );
 
-  const rows = users.map((user) => {
+  const rows: AdminUserRow[] = users.map((user) => {
     const role = mapRole(user.role);
-    const row: AdminUserRow = {
-      id: user.id,
-      name: toFullName(user.firstName, user.lastName, user.email),
-      email: user.email,
-      role,
-      status: mapUserStatus(user, vendorByUserId, affiliateByUserId),
-      vendorStoreId: vendorByUserId.get(user.id)?.store?.id,
-      affiliateProfileId: affiliateByUserId.get(user.id)?.id,
-    };
+    const baseRow = buildDefaultUserState(user, role);
 
-    return row;
+    if (role === "vendor") {
+      return buildVendorRow(user, baseRow, vendorByUserId);
+    }
+
+    if (role === "affiliate") {
+      return buildAffiliateRow(user, baseRow, affiliateByUserId);
+    }
+
+    return {
+      ...baseRow,
+      onboardingStatus: "not_applicable",
+    };
   });
 
-  latestUserRows = rows;
+  const approvalQueue = rows
+    .map(toApprovalRow)
+    .filter((row): row is AdminApprovalRow => Boolean(row));
+
+  return { rows, approvalQueue };
+};
+
+export const readAdminErrorMessage = (error: unknown, fallback = "Could not update right now.") => {
+  if (error instanceof ApiError) {
+    const details = error.details;
+    if (!details || typeof details !== "object") {
+      return fallback;
+    }
+
+    const message = (details as Record<string, unknown>).message;
+    return typeof message === "string" ? message : fallback;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
+
+export const getAdminDashboardStats = async () => {
+  const [{ rows, approvalQueue }, submissions, orders] = await Promise.all([
+    fetchAdminUsersState(),
+    listAdminSubmissions(),
+    listAllOrders(),
+  ]);
+
+  return {
+    users: rows.length,
+    pendingApprovals: approvalQueue.length,
+    pendingSubmissions: submissions.filter((submission) => submission.status === "pending").length,
+    orders: orders.length,
+  };
+};
+
+export const listAdminUsers = async (): Promise<AdminUserRow[]> => {
+  const { rows } = await fetchAdminUsersState();
   return rows;
 };
 
-export const setAdminUserStatus = async (
-  id: string,
-  status: AdminUserRow["status"]
-) => {
-  let row = latestUserRows.find((item) => item.id === id);
+export const listAdminApprovalQueue = async (): Promise<AdminApprovalRow[]> => {
+  const { approvalQueue } = await fetchAdminUsersState();
+  return approvalQueue;
+};
 
-  if (!row) {
-    const rows = await listAdminUsers();
-    row = rows.find((item) => item.id === id);
-  }
-
-  if (!row) return;
-
-  if (row.role === "vendor" && row.vendorStoreId) {
-    const path =
-      status === "approved"
-        ? `/users/admin/vendors/${row.vendorStoreId}/approve`
-        : `/users/admin/vendors/${row.vendorStoreId}/reject`;
-    const body = status === "approved" ? {} : { reason: "Rejected by admin" };
-
-    await apiClient<ApiEnvelope<unknown>>(path, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    });
-    return;
-  }
-
-  if (row.role === "affiliate" && row.affiliateProfileId) {
-    const path =
-      status === "approved"
-        ? `/users/admin/affiliates/${row.affiliateProfileId}/approve`
-        : `/users/admin/affiliates/${row.affiliateProfileId}/reject`;
-    const body = status === "approved" ? {} : { reason: "Rejected by admin" };
-
-    await apiClient<ApiEnvelope<unknown>>(path, {
-      method: "PUT",
-      body: JSON.stringify(body),
-    });
-    return;
-  }
-
+export const setAdminAccountActive = async (id: string, isActive: boolean) => {
   await apiClient<ApiEnvelope<unknown>>(`/users/admin/${id}`, {
     method: "PUT",
-    body: JSON.stringify({ isActive: status !== "blocked" }),
+    body: JSON.stringify({ isActive }),
+  });
+};
+
+export const setAdminApprovalStatus = async (
+  target: {
+    approvalTargetType: AdminApprovalTargetType;
+    approvalTargetId: string;
+  },
+  status: Extract<AdminApprovalStatus, "approved" | "blocked">
+) => {
+  const path =
+    target.approvalTargetType === "vendor_store"
+      ? status === "approved"
+        ? `/users/admin/vendors/${target.approvalTargetId}/approve`
+        : `/users/admin/vendors/${target.approvalTargetId}/reject`
+      : status === "approved"
+        ? `/users/admin/affiliates/${target.approvalTargetId}/approve`
+        : `/users/admin/affiliates/${target.approvalTargetId}/reject`;
+
+  const body = status === "approved" ? {} : { reason: "Rejected by admin" };
+
+  await apiClient<ApiEnvelope<unknown>>(path, {
+    method: "PUT",
+    body: JSON.stringify(body),
   });
 };
 
@@ -316,22 +443,33 @@ export const listAdminSubmissions = async (): Promise<VendorSubmission[]> => {
     category: submission.category ?? "Uncategorized",
     notes: submission.rejectionReason ?? submission.description ?? "",
     status: mapSubmissionStatus(submission.status),
+    vendorQuotedPrice: toNumber(submission.vendorQuotedPrice, 0),
+    suggestedRetailPrice:
+      submission.suggestedRetailPrice === null || submission.suggestedRetailPrice === undefined
+        ? null
+        : toNumber(submission.suggestedRetailPrice, 0),
+    reviewable: submission.status === "SUBMITTED" || submission.status === "UNDER_REVIEW",
   }));
 };
 
-export const setAdminSubmissionStatus = async (
-  id: string,
-  status: VendorSubmission["status"]
-) => {
-  if (status === "accepted") {
-    await apiClient<ApiEnvelope<unknown>>(`/admin/submissions/${id}/accept`, {
+export const setAdminSubmissionStatus = async (input: {
+  id: string;
+  status: VendorSubmission["status"];
+  retailPrice?: number;
+}) => {
+  if (input.status === "accepted") {
+    if (input.retailPrice === undefined || input.retailPrice <= 0) {
+      throw new Error("A positive retail price is required to accept a submission.");
+    }
+
+    await apiClient<ApiEnvelope<unknown>>(`/admin/submissions/${input.id}/accept`, {
       method: "PUT",
-      body: JSON.stringify({}),
+      body: JSON.stringify({ retailPrice: input.retailPrice }),
     });
     return;
   }
 
-  await apiClient<ApiEnvelope<unknown>>(`/admin/submissions/${id}/reject`, {
+  await apiClient<ApiEnvelope<unknown>>(`/admin/submissions/${input.id}/reject`, {
     method: "PUT",
     body: JSON.stringify({ reason: "Rejected by admin" }),
   });

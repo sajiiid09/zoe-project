@@ -3570,3 +3570,41 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.admin-inline-error {
+  margin-bottom: 0.9rem;
+}
+
+.admin-review-drawer {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-review-metrics {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.admin-review-metrics article {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 0.85rem 0.95rem;
+}
+
+.admin-review-metrics span {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  margin-bottom: 0.2rem;
+}
+
+.admin-review-metrics strong {
+  font-size: 1rem;
+}
+
+@media (min-width: 720px) {
+  .admin-review-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

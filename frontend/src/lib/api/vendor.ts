@@ -110,6 +110,9 @@ const mapSubmission = (submission: BackendVendorSubmission): VendorSubmission =>
   category: submission.category ?? "Uncategorized",
   notes: submission.rejectionReason ?? submission.description ?? "",
   status: mapSubmissionStatus(submission.status),
+  vendorQuotedPrice: 0,
+  suggestedRetailPrice: null,
+  reviewable: false,
 });
 
 export const getVendorStatus = async (): Promise<AccessStatus> => {

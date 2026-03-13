@@ -8,7 +8,16 @@ import { Button } from "@/components/ui/Button";
 import { deleteVendorSubmission, listVendorSubmissions, saveVendorSubmission } from "@/lib/api/vendor";
 import type { VendorSubmission } from "@/types/operations";
 
-const blank: VendorSubmission = { id: "", title: "", category: "", notes: "", status: "pending" };
+const blank: VendorSubmission = {
+  id: "",
+  title: "",
+  category: "",
+  notes: "",
+  status: "pending",
+  vendorQuotedPrice: 0,
+  suggestedRetailPrice: null,
+  reviewable: false,
+};
 
 export default function VendorSubmissionsPage() {
   const [items, setItems] = useState<VendorSubmission[]>([]);
