@@ -1,5 +1,6 @@
 import { ApiError, apiClient } from "@/lib/api/client";
 import { readStoredSession } from "@/lib/api/auth";
+import { getAffiliateFeeStatus } from "@/lib/api/payments";
 import { unwrapApiData, type ApiEnvelope } from "@/lib/api/response";
 import type { AccessStatus, AffiliateProfile } from "@/types/operations";
 
@@ -46,6 +47,11 @@ export const getAffiliateStatus = async (): Promise<AccessStatus> => {
   if (session?.user.role !== "affiliate") return "blocked";
 
   try {
+    const feePaid = await getAffiliateFeeStatus();
+    if (!feePaid) {
+      return "payment_required";
+    }
+
     const profile = await getAffiliateProfile();
     return profile?.status ?? "pending";
   } catch {

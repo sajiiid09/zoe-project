@@ -16,4 +16,5 @@ export type AuthResult = {
   session?: AuthSession;
   error?: string;
   paymentRequired?: boolean;
+  role?: Exclude<UserRole, "guest">;
 };

@@ -17,7 +17,14 @@ type AuthContextValue = {
   session: AuthSession | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string; paymentRequired?: boolean; role?: Exclude<UserRole, "guest"> }>;
-  register: (input: { fullName: string; email: string; password: string; role?: Exclude<UserRole, "guest"> }) => Promise<{ ok: boolean; error?: string }>;
+  register: (
+    input: {
+      fullName: string;
+      email: string;
+      password: string;
+      role?: Extract<UserRole, "customer" | "vendor" | "affiliate">;
+    }
+  ) => Promise<{ ok: boolean; error?: string; role?: Exclude<UserRole, "guest"> }>;
   logout: () => Promise<void>;
   updateProfile: (input: Partial<UserProfile>) => Promise<{ ok: boolean; error?: string }>;
 };
@@ -52,9 +59,12 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setLoading(false);
     if (result.session) {
       setSession(result.session);
-      return { ok: true, role: result.session.user.role };
+      if (result.paymentRequired) {
+        return { ok: false, error: result.error, paymentRequired: true, role: result.role ?? result.session.user.role };
+      }
+      return { ok: true, role: result.role ?? result.session.user.role };
     }
-    return { ok: false, error: result.error, paymentRequired: result.paymentRequired };
+    return { ok: false, error: result.error, paymentRequired: result.paymentRequired, role: result.role };
   };
 
   const register: AuthContextValue["register"] = async (input) => {
@@ -63,7 +73,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setLoading(false);
     if (result.session) {
       setSession(result.session);
-      return { ok: true };
+      return { ok: true, role: result.role ?? result.session.user.role };
     }
     return { ok: false, error: result.error };
   };

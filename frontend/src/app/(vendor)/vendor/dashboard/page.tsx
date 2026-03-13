@@ -11,7 +11,6 @@ import {
   getVendorStatus,
   listVendorProducts,
   listVendorSubmissions,
-  setVendorStatusLocal,
 } from "@/lib/api/vendor";
 import type { RevenuePoint } from "@/types/analytics";
 import type { AccessStatus } from "@/types/operations";
@@ -61,9 +60,9 @@ export default function VendorDashboardPage() {
       <MotionSection className="ops-banner ops-banner-premium" delay={0.03}>
         <p>Status: <span className={`order-status ${status === "approved" ? "delivered" : status === "payment_required" ? "cancelled" : "processing"}`}>{statusText[status]}</span></p>
         {status === "payment_required" ? (
-          <button type="button" className="chip" onClick={() => { setVendorStatusLocal("pending"); setStatus("pending"); }}>
-            Mark onboarding payment as submitted
-          </button>
+          <Link className="chip" href="/vendor-payment">
+            Complete onboarding payment
+          </Link>
         ) : null}
       </MotionSection>
 
