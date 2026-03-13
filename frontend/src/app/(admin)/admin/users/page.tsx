@@ -72,8 +72,8 @@ export default function AdminUsersPage() {
                   <MotionTableRow key={row.id} delay={index * 0.018}>
                     <td>
                       <div>{row.name}</div>
-                      {row.approvalBlockedReason ? (
-                        <small className="muted">{row.approvalBlockedReason}</small>
+                      {row.approvalNote ? (
+                        <small className="muted">{row.approvalNote}</small>
                       ) : null}
                     </td>
                     <td>{row.email}</td>
@@ -84,12 +84,12 @@ export default function AdminUsersPage() {
                       </span>
                     </td>
                     <td>
-                      <span className={`order-status ${row.onboardingStatus === "approved" ? "delivered" : row.onboardingStatus === "payment_required" ? "cancelled" : "processing"}`}>
+                      <span className={`order-status ${row.onboardingStatus === "approved" ? "delivered" : row.onboardingStatus === "needs_changes" ? "cancelled" : row.onboardingStatus === "payment_required" ? "cancelled" : "processing"}`}>
                         {formatStatusLabel(row.onboardingStatus)}
                       </span>
                     </td>
                     <td>
-                      <span className={`order-status ${row.approvalStatus === "approved" ? "delivered" : row.approvalStatus === "blocked" ? "cancelled" : "processing"}`}>
+                      <span className={`order-status ${row.approvalStatus === "approved" ? "delivered" : row.approvalStatus === "needs_changes" ? "cancelled" : "processing"}`}>
                         {formatStatusLabel(row.approvalStatus)}
                       </span>
                     </td>

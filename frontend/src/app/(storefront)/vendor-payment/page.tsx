@@ -11,16 +11,16 @@ export default function VendorPaymentPage() {
     <RolePaymentPage
       role="vendor"
       badge="Vendor onboarding"
-      title="Activate your vendor account before opening your store."
-      description="This one-time fee unlocks the vendor onboarding path, including store setup, approval tracking, and product workflows."
+      title="Pay now or review your store setup first."
+      description="This one-time fee is only required when you are ready to submit your store for admin review. You can review and save your store setup before paying."
       nextHref="/vendor/store"
       nextLabel="Go to store setup"
       createSession={createVendorFeeSession}
       getStatus={getVendorFeeStatus}
       checklist={[
         "Secure Stripe checkout with one-time vendor activation payment",
-        "Access to store setup, product creation, and submission workflow",
-        "Approval still required after payment before the store becomes fully active",
+        "Store details can be reviewed before payment and submitted after payment",
+        "Approval still required after payment before the vendor workspace becomes fully active",
       ]}
     />
   );

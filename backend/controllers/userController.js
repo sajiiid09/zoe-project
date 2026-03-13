@@ -580,6 +580,7 @@ export const getVendors = asyncHandler(async (req, res) => {
             id: true,
             name: true,
             slug: true,
+            email: true,
             approvalStatus: true,
             rejectionNote: true,
             isActive: true,

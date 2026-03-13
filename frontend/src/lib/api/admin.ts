@@ -25,7 +25,9 @@ type BackendUser = {
   affiliateFeePaid?: boolean;
   store?: {
     id: string;
+    name?: string | null;
     approvalStatus: BackendApprovalStatus;
+    email?: string | null;
   } | null;
 };
 
@@ -36,13 +38,19 @@ type BackendVendor = {
   lastName?: string | null;
   store?: {
     id: string;
+    name?: string | null;
+    email?: string | null;
     approvalStatus: BackendApprovalStatus;
   } | null;
 };
 
 type BackendAffiliateProfile = {
   id: string;
+  displayName?: string | null;
+  bio?: string | null;
+  website?: string | null;
   approvalStatus: BackendApprovalStatus;
+  rejectionNote?: string | null;
   user?: {
     id: string;
     email: string;
@@ -112,10 +120,24 @@ const mapRole = (role: BackendUserRole): AdminUserRow["role"] => {
 
 const mapApprovalStatus = (
   status?: BackendApprovalStatus | null
-): Extract<AdminApprovalStatus, "pending" | "approved" | "blocked"> => {
+): Extract<AdminApprovalStatus, "pending" | "approved" | "needs_changes"> => {
   if (status === "APPROVED") return "approved";
-  if (status === "REJECTED") return "blocked";
+  if (status === "REJECTED") return "needs_changes";
   return "pending";
+};
+
+const isVendorStoreComplete = (
+  store?: { name?: string | null; email?: string | null } | null
+) => {
+  return Boolean(store?.name?.trim() && store?.email?.trim());
+};
+
+const isAffiliateProfileComplete = (
+  profile?: { displayName?: string | null; bio?: string | null; website?: string | null } | null
+) => {
+  return Boolean(
+    profile?.displayName?.trim() && profile?.bio?.trim() && profile?.website?.trim()
+  );
 };
 
 const mapVendorProductStatus = (
@@ -167,20 +189,22 @@ const buildVendorRow = (
   baseRow: AdminUserRow,
   vendorByUserId: Map<string, BackendVendor>
 ): AdminUserRow => {
+  const store = vendorByUserId.get(user.id)?.store ?? user.store ?? null;
+  const storeComplete = isVendorStoreComplete(store);
+
+  if (!store || !storeComplete) {
+    return {
+      ...baseRow,
+      onboardingStatus: "setup_required",
+      approvalNote: "Vendor has not completed store setup yet.",
+    };
+  }
+
   if (!user.vendorFeePaid) {
     return {
       ...baseRow,
       onboardingStatus: "payment_required",
-      approvalBlockedReason: "Vendor has not completed the onboarding payment yet.",
-    };
-  }
-
-  const store = vendorByUserId.get(user.id)?.store ?? user.store ?? null;
-  if (!store) {
-    return {
-      ...baseRow,
-      onboardingStatus: "setup_required",
-      approvalBlockedReason: "Vendor has not created a store yet.",
+      approvalNote: "Vendor has completed setup but still needs to pay before review.",
     };
   }
 
@@ -188,16 +212,21 @@ const buildVendorRow = (
 
   return {
     ...baseRow,
-    onboardingStatus: approvalStatus === "approved" ? "approved" : "ready_for_approval",
+    onboardingStatus:
+      approvalStatus === "approved"
+        ? "approved"
+        : approvalStatus === "needs_changes"
+          ? "needs_changes"
+          : "pending",
     approvalStatus,
     approvalTargetType: "vendor_store",
     approvalTargetId: store.id,
     approvalActionable: baseRow.accountStatus === "active" && approvalStatus === "pending",
-    approvalBlockedReason:
+    approvalNote:
       baseRow.accountStatus === "blocked"
         ? "Account is blocked."
-        : approvalStatus === "blocked"
-          ? "Vendor store approval has already been rejected."
+        : approvalStatus === "needs_changes"
+          ? "Vendor store needs revisions before it can be approved."
           : undefined,
   };
 };
@@ -207,20 +236,22 @@ const buildAffiliateRow = (
   baseRow: AdminUserRow,
   affiliateByUserId: Map<string, BackendAffiliateProfile>
 ): AdminUserRow => {
+  const profile = affiliateByUserId.get(user.id) ?? null;
+  const profileComplete = isAffiliateProfileComplete(profile);
+
+  if (!profile || !profileComplete) {
+    return {
+      ...baseRow,
+      onboardingStatus: "setup_required",
+      approvalNote: "Affiliate has not completed the profile yet.",
+    };
+  }
+
   if (!user.affiliateFeePaid) {
     return {
       ...baseRow,
       onboardingStatus: "payment_required",
-      approvalBlockedReason: "Affiliate has not completed the onboarding payment yet.",
-    };
-  }
-
-  const profile = affiliateByUserId.get(user.id) ?? null;
-  if (!profile) {
-    return {
-      ...baseRow,
-      onboardingStatus: "setup_required",
-      approvalBlockedReason: "Affiliate has not created a profile yet.",
+      approvalNote: "Affiliate has completed setup but still needs to pay before review.",
     };
   }
 
@@ -228,16 +259,21 @@ const buildAffiliateRow = (
 
   return {
     ...baseRow,
-    onboardingStatus: approvalStatus === "approved" ? "approved" : "ready_for_approval",
+    onboardingStatus:
+      approvalStatus === "approved"
+        ? "approved"
+        : approvalStatus === "needs_changes"
+          ? "needs_changes"
+          : "pending",
     approvalStatus,
     approvalTargetType: "affiliate_profile",
     approvalTargetId: profile.id,
     approvalActionable: baseRow.accountStatus === "active" && approvalStatus === "pending",
-    approvalBlockedReason:
+    approvalNote:
       baseRow.accountStatus === "blocked"
         ? "Account is blocked."
-        : approvalStatus === "blocked"
-          ? "Affiliate profile approval has already been rejected."
+        : approvalStatus === "needs_changes"
+          ? "Affiliate profile needs revisions before it can be approved."
           : undefined,
   };
 };
@@ -260,7 +296,7 @@ const toApprovalRow = (row: AdminUserRow): AdminApprovalRow | null => {
     email: row.email,
     role: row.role,
     onboardingStatus:
-      row.onboardingStatus === "not_applicable" ? "ready_for_approval" : row.onboardingStatus,
+      row.onboardingStatus === "not_applicable" ? "pending" : row.onboardingStatus,
     approvalStatus: row.approvalStatus,
     approvalTargetType: row.approvalTargetType,
     approvalTargetId: row.approvalTargetId,
@@ -371,7 +407,7 @@ export const setAdminApprovalStatus = async (
     approvalTargetType: AdminApprovalTargetType;
     approvalTargetId: string;
   },
-  status: Extract<AdminApprovalStatus, "approved" | "blocked">
+  status: Extract<AdminApprovalStatus, "approved" | "needs_changes">
 ) => {
   const path =
     target.approvalTargetType === "vendor_store"
@@ -382,7 +418,7 @@ export const setAdminApprovalStatus = async (
         ? `/users/admin/affiliates/${target.approvalTargetId}/approve`
         : `/users/admin/affiliates/${target.approvalTargetId}/reject`;
 
-  const body = status === "approved" ? {} : { reason: "Rejected by admin" };
+  const body = status === "approved" ? {} : { reason: "Changes requested by admin" };
 
   await apiClient<ApiEnvelope<unknown>>(path, {
     method: "PUT",

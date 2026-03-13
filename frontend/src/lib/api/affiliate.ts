@@ -12,11 +12,14 @@ type BackendAffiliateProfile = {
   bio?: string | null;
   website?: string | null;
   approvalStatus: BackendApprovalStatus;
+  rejectionNote?: string | null;
 };
 
-const mapApprovalStatus = (status?: BackendApprovalStatus): AccessStatus => {
+const mapApprovalStatus = (
+  status?: BackendApprovalStatus
+): Extract<AccessStatus, "pending" | "approved" | "needs_changes"> => {
   if (status === "APPROVED") return "approved";
-  if (status === "REJECTED") return "blocked";
+  if (status === "REJECTED") return "needs_changes";
   return "pending";
 };
 
@@ -28,7 +31,14 @@ const mapProfile = (
   channel: profile.website ?? "",
   audienceRegion: profile.bio ?? "",
   status: mapApprovalStatus(profile.approvalStatus),
+  rejectionNote: profile.rejectionNote ?? undefined,
 });
+
+export const isAffiliateProfileComplete = (profile: AffiliateProfile | null) => {
+  return Boolean(
+    profile?.displayName.trim() && profile?.channel.trim() && profile?.audienceRegion.trim()
+  );
+};
 
 const slugify = (value: string) =>
   value
@@ -47,13 +57,21 @@ export const getAffiliateStatus = async (): Promise<AccessStatus> => {
   if (session?.user.role !== "affiliate") return "blocked";
 
   try {
-    const feePaid = await getAffiliateFeeStatus();
+    const [feePaid, profile] = await Promise.all([
+      getAffiliateFeeStatus(),
+      getAffiliateProfile(),
+    ]);
+    const profileComplete = isAffiliateProfileComplete(profile);
+
+    if (!profile || !profileComplete) {
+      return "setup_required";
+    }
+
     if (!feePaid) {
       return "payment_required";
     }
 
-    const profile = await getAffiliateProfile();
-    return profile?.status ?? "pending";
+    return profile.status ?? "pending";
   } catch {
     return "pending";
   }

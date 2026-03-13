@@ -71,7 +71,7 @@ export const AuthStatusDialog = ({
             {actionLabel}
           </Link>
           <Button variant="ghost" type="button" onClick={onClose}>
-            Continue browsing
+            Review onboarding first
           </Button>
         </div>
       </section>

@@ -127,9 +127,9 @@ export const RolePaymentPage = ({
                 <div className="payment-status-card">
                   <CreditCard size={22} weight="duotone" />
                   <div>
-                    <h2>Ready to continue</h2>
+                    <h2>Choose your next step</h2>
                     <p>
-                      Launch the secure checkout, finish the payment, and return to Zoe to continue onboarding.
+                      Pay now to unlock submission immediately, or review your onboarding form first and pay later when you are ready to submit it for review.
                     </p>
                   </div>
                 </div>
@@ -146,7 +146,7 @@ export const RolePaymentPage = ({
                     {launching ? "Redirecting to checkout..." : "Continue to secure payment"}
                   </Button>
                   <Link href={nextHref} className="payment-inline-link">
-                    Skip for now and review setup
+                    Review onboarding first
                     <ArrowSquareOut size={16} weight="bold" />
                   </Link>
                 </div>

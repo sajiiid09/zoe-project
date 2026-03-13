@@ -62,15 +62,15 @@ const roleMeta: Record<
     icon: Storefront,
     title: "Vendor account",
     eyebrow: "Sell on Zoe",
-    description: "Create a store, pay the onboarding fee, and move into approval.",
-    nextStep: "Next step: vendor payment and store setup.",
+    description: "Create your account, then choose whether to pay now or review your store setup first.",
+    nextStep: "Next step: choose payment now or review store setup.",
   },
   affiliate: {
     icon: CreditCard,
     title: "Affiliate account",
     eyebrow: "Grow with Zoe",
-    description: "Pay the onboarding fee, submit your profile, and await approval.",
-    nextStep: "Next step: affiliate payment and profile setup.",
+    description: "Create your account, then choose whether to pay now or review your profile setup first.",
+    nextStep: "Next step: choose payment now or review profile setup.",
   },
 };
 
@@ -366,13 +366,13 @@ export const AuthForm = ({ mode }: { mode: Mode }) => {
         open={dialogRole !== null}
         title={
           dialogRole === "vendor"
-            ? "Vendor payment still needs to be completed"
-            : "Affiliate payment still needs to be completed"
+            ? "Vendor onboarding payment is still pending"
+            : "Affiliate onboarding payment is still pending"
         }
         description={
           dialogRole === "vendor"
-            ? "Your account is recognized as a vendor account. Continue to the onboarding payment page, then return to store setup and approval."
-            : "Your account is recognized as an affiliate account. Continue to the onboarding payment page, then return to profile setup and approval."
+            ? "Your vendor account is active. You can review store setup now, or go to the payment page whenever you are ready to submit it for approval."
+            : "Your affiliate account is active. You can review profile setup now, or go to the payment page whenever you are ready to submit it for approval."
         }
         actionHref={dialogRole === "vendor" ? "/vendor-payment" : "/affiliate-payment"}
         actionLabel={dialogRole === "vendor" ? "Continue vendor onboarding" : "Continue affiliate onboarding"}

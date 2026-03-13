@@ -1,5 +1,5 @@
 import { affiliateRepository } from '../repositories/affiliateRepository.js';
-import { ConflictError, NotFoundError, ValidationError } from '../utils/errors.js';
+import { ConflictError, NotFoundError } from '../utils/errors.js';
 
 const mapAffiliateProfile = (profile) => ({
   id: profile.id,
@@ -18,16 +18,16 @@ const mapAffiliateProfile = (profile) => ({
   updatedAt: profile.updatedAt,
 });
 
+const isProfileComplete = (profile) => {
+  return Boolean(profile?.displayName?.trim() && profile?.bio?.trim() && profile?.website?.trim());
+};
+
 export class AffiliateProfileService {
   constructor(repository = affiliateRepository) {
     this.repository = repository;
   }
 
   async createProfile(user, data) {
-    if (!user.affiliateFeePaid) {
-      throw new ValidationError('Affiliate fee must be paid before creating a profile');
-    }
-
     const existing = await this.repository.findProfileByUserId(user.id);
 
     if (existing) {
@@ -65,12 +65,26 @@ export class AffiliateProfileService {
       throw new NotFoundError('Affiliate profile not found');
     }
 
-    const updated = await this.repository.updateProfileByUserId(userId, {
+    const nextProfileState = {
       displayName: data.displayName ?? existing.displayName,
       bio: data.bio ?? existing.bio,
       website: data.website ?? existing.website,
       payoutEmail: data.payoutEmail ?? existing.payoutEmail,
-    });
+    };
+
+    const update = { ...nextProfileState };
+
+    if (
+      existing.approvalStatus === 'REJECTED' &&
+      existing.user?.affiliateFeePaid &&
+      isProfileComplete(nextProfileState)
+    ) {
+      update.approvalStatus = 'PENDING';
+      update.rejectionNote = null;
+      update.isActive = true;
+    }
+
+    const updated = await this.repository.updateProfileByUserId(userId, update);
 
     return mapAffiliateProfile(updated);
   }

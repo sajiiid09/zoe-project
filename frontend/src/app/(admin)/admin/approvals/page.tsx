@@ -27,7 +27,7 @@ export default function AdminApprovalsPage() {
 
   const handleAction = async (
     row: AdminApprovalRow,
-    status: "approved" | "blocked"
+    status: "approved" | "needs_changes"
   ) => {
     setPendingActionId(`${row.id}:${status}`);
     setError("");
@@ -73,7 +73,7 @@ export default function AdminApprovalsPage() {
             <tbody>
               {rows.map((row, index) => {
                 const approveId = `${row.id}:approved`;
-                const rejectId = `${row.id}:blocked`;
+                const rejectId = `${row.id}:needs_changes`;
                 return (
                   <MotionTableRow key={row.id} delay={index * 0.02}>
                     <td>{row.name}</td>
@@ -97,9 +97,9 @@ export default function AdminApprovalsPage() {
                         size="sm"
                         variant="ghost"
                         disabled={pendingActionId !== null}
-                        onClick={() => void handleAction(row, "blocked")}
+                        onClick={() => void handleAction(row, "needs_changes")}
                       >
-                        {pendingActionId === rejectId ? "Rejecting..." : "Reject"}
+                        {pendingActionId === rejectId ? "Sending..." : "Request changes"}
                       </Button>
                     </td>
                   </MotionTableRow>
