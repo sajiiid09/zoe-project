@@ -35,6 +35,7 @@ From `backend/`:
 npm install
 npm run prisma:generate
 npm run seed
+npm run seed:verify
 npm run dev
 ```
 
@@ -43,6 +44,21 @@ API health:
 ```bash
 curl http://localhost:5000/api/health
 ```
+
+## Seed Data Notes
+
+- `npm run seed` is idempotent and safe to rerun against the configured development database.
+- `npm run seed:verify` validates that core development data exists after seeding.
+- Current storefront seed coverage guarantees at least `2` approved active products in each public category:
+  - `electronics`
+  - `fashion`
+  - `groceries`
+  - `home`
+  - `beauty`
+  - `sports`
+  - `baby`
+  - `automotive`
+- Seed data also includes baseline admin/customer/vendor/affiliate accounts, approved onboarding examples, sample addresses, and sample order data for development verification.
 
 ## Supabase Data Migration (Neon -> Supabase)
 

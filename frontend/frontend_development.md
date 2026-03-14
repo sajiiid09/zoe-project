@@ -42,3 +42,26 @@
 - Standardized dashboard navigation with reusable sidebar + navbar patterns across admin, vendor, affiliate, and account areas.
 - Refactored role layout composition into modular shell components to improve consistency, maintainability, and extensibility.
 - Added and polished admin operations analytics views (`Revenue`, `Transactions`) while preserving existing API contracts and role workflows.
+
+## Phase 10 — Role Onboarding + Admin Contract Hardening (completed)
+- Rebuilt public auth to support role-aware signup for `customer`, `vendor`, and `affiliate` from one frontend flow.
+- Added dedicated payment entry/success routes for role onboarding fees:
+  - `/vendor-payment`
+  - `/vendor-payment-success`
+  - `/affiliate-payment`
+  - `/affiliate-payment-success`
+- Added a payment-required login path that preserves the authenticated session for unpaid vendor and affiliate users, then routes them toward payment instead of treating the login as a hard failure.
+- Standardized vendor and affiliate onboarding UX around the same visible lifecycle:
+  - `setup_required`
+  - `payment_required`
+  - `pending`
+  - `approved`
+  - `needs_changes`
+- Kept `blocked` as an account-level moderation state only. User-facing onboarding rejection should be presented as `needs_changes`, not `blocked`.
+- Updated vendor and affiliate dashboards so unpaid users can still access onboarding surfaces, but operational tools remain hidden or gated until approval.
+- Adjusted onboarding forms so users can review and save setup details before payment, then pay when ready to submit for admin review.
+- Hardened admin operations so:
+  - the `Users` page manages account activation only
+  - the `Approvals` page shows only real pending store/profile approvals
+  - submission acceptance requires an explicit `retailPrice`
+- Fixed the false `blocked` badge issue in the admin `Users` table by restoring the backend `isActive` field in the admin user payload and treating only explicit `false` as blocked on the frontend.
