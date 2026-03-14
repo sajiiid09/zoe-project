@@ -70,29 +70,33 @@ Never calculate these later from mutable product settings.
 ## Vendor Workflow
 
 1. User registers as `VENDOR`
-2. Vendor pays onboarding fee
-3. Vendor creates `VendorProfile`
-4. Admin approves or rejects vendor profile
-5. Approved vendor creates `VendorSubmission`
-6. Admin reviews submission
-7. If accepted:
+2. Vendor can either pay onboarding fee immediately or review onboarding first
+3. Vendor creates or updates the onboarding record (`Store`) as a draft/setup record
+4. Vendor must complete onboarding and pay the fee before the record becomes admin-reviewable
+5. Complete + paid vendor onboarding becomes `PENDING`
+6. Admin approves or requests changes on the vendor onboarding record
+7. Approved vendor creates `VendorSubmission`
+8. Admin reviews submission
+9. If accepted:
    - create `CatalogProduct`
    - create `VendorSupplyAgreement`
-8. Customer purchases `CatalogProduct`
-9. Vendor payout becomes eligible after delivery + return window
+10. Customer purchases `CatalogProduct`
+11. Vendor payout becomes eligible after delivery + return window
 
 ## Affiliate Workflow
 
 1. User registers as `AFFILIATE`
-2. Affiliate pays onboarding fee
-3. Affiliate creates `AffiliateProfile`
-4. Admin approves or rejects affiliate profile
-5. Affiliate browses commissionable catalog products
-6. Affiliate generates or copies product referral link
-7. Visitor lands with referral token
-8. System records attribution and click
-9. If purchase qualifies, create `AffiliateCommission`
-10. Affiliate payout becomes eligible after delivery + return window
+2. Affiliate can either pay onboarding fee immediately or review onboarding first
+3. Affiliate creates or updates the onboarding record (`AffiliateProfile`) as a draft/setup record
+4. Affiliate must complete onboarding and pay the fee before the record becomes admin-reviewable
+5. Complete + paid affiliate onboarding becomes `PENDING`
+6. Admin approves or requests changes on the affiliate onboarding record
+7. Approved affiliate browses commissionable catalog products
+8. Affiliate generates or copies product referral link
+9. Visitor lands with referral token
+10. System records attribution and click
+11. If purchase qualifies, create `AffiliateCommission`
+12. Affiliate payout becomes eligible after delivery + return window
 
 ## Affiliate Attribution Rules
 
@@ -179,6 +183,21 @@ Enforce server-side validation for:
 - non-negative margins
 - attribution-window validity
 - self-referral blocking
+
+## Current Implementation Notes
+
+- Vendor and affiliate onboarding should follow the same visible state model:
+  - `setup_required`
+  - `payment_required`
+  - `pending`
+  - `approved`
+  - `needs_changes`
+- `blocked` is an account-security state only and should map to `User.isActive === false`, not to normal onboarding rejection.
+- Admin approval eligibility should require both:
+  - a real onboarding record exists and is complete
+  - the onboarding fee is paid
+- Admin approvals should only surface paid, complete records in `PENDING`.
+- The admin user payload must include `isActive`; otherwise frontend admin tooling will falsely render active users as blocked.
 
 ## Reporting Rules
 
