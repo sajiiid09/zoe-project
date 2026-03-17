@@ -24,8 +24,13 @@ export type AdminApprovalTargetType = "vendor_store" | "affiliate_profile";
 export type VendorStore = {
   id: string;
   name: string;
+  slug?: string;
   description: string;
   supportEmail: string;
+  phone: string;
+  address: string;
+  logo: string;
+  banner: string;
   reviewStatus?: Exclude<AccessStatus, "blocked">;
   rejectionNote?: string;
 };
@@ -33,21 +38,33 @@ export type VendorStore = {
 export type VendorProduct = {
   id: string;
   title: string;
+  description: string;
   price: number;
   stock: number;
   category: string;
+  images: string[];
   status: "draft" | "pending" | "approved" | "rejected";
+  rejectionNote?: string;
+  storeName?: string;
+  vendorName?: string;
 };
 
 export type VendorSubmission = {
   id: string;
   title: string;
   category: string;
-  notes: string;
+  description: string;
+  images: string[];
   status: "pending" | "accepted" | "rejected";
   vendorQuotedPrice: number;
   suggestedRetailPrice: number | null;
+  stockAvailable: number;
+  currency: string;
   reviewable: boolean;
+  rejectionReason?: string;
+  notes: string;
+  storeName?: string;
+  vendorName?: string;
 };
 
 export type AffiliateProfile = {
@@ -71,6 +88,14 @@ export type AdminUserRow = {
   approvalTargetId?: string;
   approvalActionable: boolean;
   approvalNote?: string;
+  storeName?: string;
+  storeEmail?: string;
+  storePhone?: string;
+  storeAddress?: string;
+  storeDescription?: string;
+  storeLogo?: string;
+  storeBanner?: string;
+  rejectionNote?: string;
 };
 
 export type AdminApprovalRow = {
@@ -83,6 +108,14 @@ export type AdminApprovalRow = {
   approvalStatus: Extract<AdminApprovalStatus, "pending" | "approved" | "needs_changes">;
   approvalTargetType: AdminApprovalTargetType;
   approvalTargetId: string;
+  storeName?: string;
+  storeEmail?: string;
+  storePhone?: string;
+  storeAddress?: string;
+  storeDescription?: string;
+  storeLogo?: string;
+  storeBanner?: string;
+  rejectionNote?: string;
 };
 
 export type CatalogItem = {

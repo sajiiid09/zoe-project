@@ -3603,8 +3603,238 @@ body {
   font-size: 1rem;
 }
 
+.vendor-form-shell,
+.vendor-form-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.vendor-form-header {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.vendor-form-header h2,
+.admin-review-section h3,
+.media-gallery-title {
+  margin: 0;
+}
+
+.vendor-form-header p,
+.admin-review-copy p {
+  margin: 0;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+.vendor-textarea {
+  min-height: 132px;
+  resize: vertical;
+  font: inherit;
+}
+
+.vendor-textarea-compact {
+  min-height: 110px;
+}
+
+.store-status-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 87, 122, 0.08);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-1);
+}
+
+.store-status-banner strong,
+.admin-review-copy span,
+.admin-review-details span,
+.vendor-review-summary-card span {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.store-status-banner p,
+.store-media-empty,
+.url-list-empty,
+.media-gallery-empty {
+  margin: 0.35rem 0 0;
+  color: var(--ink-muted);
+}
+
+.store-status-banner-critical {
+  border-color: rgba(220, 38, 38, 0.14);
+  background: rgba(254, 242, 242, 0.8);
+}
+
+.store-media-grid,
+.vendor-review-summary {
+  display: grid;
+  gap: 1rem;
+}
+
+.store-media-card,
+.vendor-review-summary-card,
+.admin-review-details div,
+.media-gallery-empty {
+  border: 1px solid rgba(34, 87, 122, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.95rem;
+  box-shadow: var(--shadow-1);
+}
+
+.store-media-card h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.store-media-preview,
+.store-media-empty,
+.url-list-preview,
+.media-gallery-item {
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(87, 204, 153, 0.08), rgba(34, 87, 122, 0.08)),
+    rgba(244, 248, 251, 0.92);
+  border: 1px solid rgba(34, 87, 122, 0.08);
+}
+
+.store-media-preview {
+  min-height: 180px;
+}
+
+.store-media-preview img,
+.url-list-preview img,
+.media-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.store-media-empty,
+.url-list-empty,
+.media-gallery-empty {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+}
+
+.vendor-rejection-note {
+  margin: 0;
+  padding: 0.8rem 0.95rem;
+  border-radius: 18px;
+  border: 1px solid rgba(220, 38, 38, 0.16);
+  background: rgba(254, 242, 242, 0.84);
+}
+
+.url-list-field {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.url-list-item {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.url-list-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.url-list-preview {
+  min-height: 180px;
+}
+
+.url-list-empty {
+  gap: 0.5rem;
+  flex-direction: column;
+}
+
+.media-gallery-block {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.media-gallery-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.media-gallery-item {
+  min-height: 160px;
+}
+
+.vendor-table-copy {
+  display: block;
+  margin-top: 0.3rem;
+}
+
+.admin-review-section {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.admin-review-kicker {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(34, 87, 122, 0.08);
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.admin-review-details {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.admin-review-details strong {
+  display: block;
+  margin-top: 0.25rem;
+  line-height: 1.45;
+}
+
+.admin-review-copy {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.vendor-review-summary-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+}
+
 @media (min-width: 720px) {
   .admin-review-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .store-media-grid,
+  .vendor-review-summary,
+  .admin-review-details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
