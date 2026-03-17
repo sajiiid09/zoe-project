@@ -27,9 +27,30 @@ const statusText: Record<AccessStatus, string> = {
 
 export default function VendorDashboardPage() {
   const [status, setStatus] = useState<AccessStatus>("setup_required");
-  const [stats, setStats] = useState({ products: 0, submissions: 0, pendingApprovals: 0 });
+  const [stats, setStats] = useState({
+    products: 0,
+    submissions: 0,
+    pendingApprovals: 0,
+    approvedProducts: 0,
+    rejectedProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+  });
   const [overview, setOverview] = useState<RevenuePoint[]>([]);
   const [store, setStore] = useState<VendorStore | null>(null);
+
+  const storeFields = [
+    Boolean(store?.name.trim()),
+    Boolean(store?.supportEmail.trim()),
+    Boolean(store?.description.trim()),
+    Boolean(store?.phone.trim()),
+    Boolean(store?.address.trim()),
+    Boolean(store?.logo.trim()),
+    Boolean(store?.banner.trim()),
+  ];
+  const storeCompleteness = Math.round(
+    (storeFields.filter(Boolean).length / storeFields.length) * 100
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -40,7 +61,15 @@ export default function VendorDashboardPage() {
       setStore(currentStore);
 
       if (vendorStatus !== "approved") {
-        setStats({ products: 0, submissions: 0, pendingApprovals: vendorStatus === "pending" ? 1 : 0 });
+        setStats({
+          products: 0,
+          submissions: 0,
+          pendingApprovals: vendorStatus === "pending" ? 1 : 0,
+          approvedProducts: 0,
+          rejectedProducts: 0,
+          totalOrders: 0,
+          totalRevenue: 0,
+        });
         setOverview([
           { label: "Setup", value: currentStore ? 1 : 0 },
           { label: "Payment", value: vendorStatus === "payment_required" ? 1 : 0 },
@@ -105,11 +134,23 @@ export default function VendorDashboardPage() {
         {bannerAction}
       </MotionSection>
 
+      {store?.rejectionNote ? (
+        <MotionSection className="store-status-banner store-status-banner-critical" delay={0.045}>
+          <div>
+            <strong>Admin feedback</strong>
+            <p>{store.rejectionNote}</p>
+          </div>
+          <Link className="chip" href="/vendor/store">
+            Update store profile
+          </Link>
+        </MotionSection>
+      ) : null}
+
       <MotionSection className="ops-kpi-grid" delay={0.06}>
         <MotionCard className="ops-kpi-card" delay={0.08}><p>Products</p><h3>{stats.products}</h3><span>Listed or drafted items</span></MotionCard>
         <MotionCard className="ops-kpi-card" delay={0.1}><p>Submissions</p><h3>{stats.submissions}</h3><span>Catalog migration entries</span></MotionCard>
         <MotionCard className="ops-kpi-card" delay={0.12}><p>Pending approvals</p><h3>{stats.pendingApprovals}</h3><span>Awaiting admin review</span></MotionCard>
-        <MotionCard className="ops-kpi-card" delay={0.14}><p>Store readiness</p><h3>{status === "approved" ? "Live" : "In setup"}</h3><span>Control surface availability</span></MotionCard>
+        <MotionCard className="ops-kpi-card" delay={0.14}><p>Store completeness</p><h3>{storeCompleteness}%</h3><span>{status === "approved" ? "Live and editable" : "Improves profile quality"}</span></MotionCard>
       </MotionSection>
 
       <MotionSection className="ops-analytics-grid" delay={0.1}>
@@ -127,9 +168,10 @@ export default function VendorDashboardPage() {
             <p>Jump to daily vendor workflows</p>
           </header>
           <div className="ops-snapshot-grid ops-snapshot-grid-compact">
-            <Link href="/vendor/store" className="ops-snapshot-card"><h4>Store</h4><p>{store?.name || "Setup"}</p><span>Brand details</span></Link>
-            {status === "approved" ? <Link href="/vendor/products" className="ops-snapshot-card"><h4>Products</h4><p>{stats.products}</p><span>Catalog control</span></Link> : null}
-            {status === "approved" ? <Link href="/vendor/submissions" className="ops-snapshot-card"><h4>Submissions</h4><p>{stats.submissions}</p><span>Review pipeline</span></Link> : null}
+            <Link href="/vendor/store" className="ops-snapshot-card"><h4>Store</h4><p>{store?.name || "Setup"}</p><span>{storeCompleteness}% complete</span></Link>
+            {status === "approved" ? <Link href="/vendor/products" className="ops-snapshot-card"><h4>Products</h4><p>{stats.products}</p><span>{stats.approvedProducts} approved</span></Link> : null}
+            {status === "approved" ? <Link href="/vendor/submissions" className="ops-snapshot-card"><h4>Submissions</h4><p>{stats.submissions}</p><span>{stats.pendingApprovals} in review flow</span></Link> : null}
+            {status === "approved" ? <div className="ops-snapshot-card"><h4>Revenue</h4><p>${stats.totalRevenue.toFixed(2)}</p><span>{stats.totalOrders} backend-tracked orders</span></div> : null}
           </div>
         </article>
       </MotionSection>

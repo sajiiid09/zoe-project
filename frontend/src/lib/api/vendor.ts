@@ -21,7 +21,12 @@ type BackendSubmissionStatus =
 type BackendVendorStore = {
   id: string;
   name: string;
+  slug?: string | null;
   description?: string | null;
+  logo?: string | null;
+  banner?: string | null;
+  address?: string | null;
+  phone?: string | null;
   email?: string | null;
   approvalStatus: BackendApprovalStatus;
   rejectionNote?: string | null;
@@ -30,10 +35,21 @@ type BackendVendorStore = {
 type BackendVendorProduct = {
   id: string;
   name: string;
+  description?: string | null;
   category?: string | null;
   price: number | string;
   stock?: number | null;
+  images?: unknown;
   approvalStatus: BackendApprovalStatus;
+  rejectionNote?: string | null;
+  store?: {
+    name?: string | null;
+    owner?: {
+      firstName?: string | null;
+      lastName?: string | null;
+      email?: string | null;
+    } | null;
+  } | null;
 };
 
 type BackendVendorSubmission = {
@@ -43,6 +59,19 @@ type BackendVendorSubmission = {
   description?: string | null;
   rejectionReason?: string | null;
   status: BackendSubmissionStatus;
+  vendorQuotedPrice?: number | string;
+  suggestedRetailPrice?: number | string | null;
+  stockAvailable?: number | null;
+  currency?: string | null;
+  images?: unknown;
+  store?: {
+    name?: string | null;
+  } | null;
+  vendor?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    email?: string | null;
+  } | null;
 };
 
 type VendorDashboardResponse = ApiEnvelope<{
@@ -62,6 +91,18 @@ type VendorDashboardResponse = ApiEnvelope<{
   };
 }>;
 
+const toStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item).trim()).filter(Boolean);
+};
+
+const toDisplayName = (
+  user?: { firstName?: string | null; lastName?: string | null; email?: string | null } | null
+) => {
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim();
+  return fullName || user?.email || undefined;
+};
+
 const toNumber = (value: unknown, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -78,8 +119,13 @@ const mapApprovalStatus = (
 const mapStore = (store: BackendVendorStore): VendorStore => ({
   id: store.id,
   name: store.name,
+  slug: store.slug ?? undefined,
   description: store.description ?? "",
   supportEmail: store.email ?? "",
+  phone: store.phone ?? "",
+  address: store.address ?? "",
+  logo: store.logo ?? "",
+  banner: store.banner ?? "",
   reviewStatus: mapApprovalStatus(store.approvalStatus),
   rejectionNote: store.rejectionNote ?? undefined,
 });
@@ -99,10 +145,15 @@ const mapProductStatus = (
 const mapProduct = (product: BackendVendorProduct): VendorProduct => ({
   id: product.id,
   title: product.name,
+  description: product.description ?? "",
   price: toNumber(product.price, 0),
   stock: Math.max(0, Math.floor(toNumber(product.stock, 0))),
   category: product.category ?? "Uncategorized",
+  images: toStringArray(product.images),
   status: mapProductStatus(product.approvalStatus),
+  rejectionNote: product.rejectionNote ?? undefined,
+  storeName: product.store?.name ?? undefined,
+  vendorName: toDisplayName(product.store?.owner ?? null),
 });
 
 const mapSubmissionStatus = (
@@ -117,11 +168,21 @@ const mapSubmission = (submission: BackendVendorSubmission): VendorSubmission =>
   id: submission.id,
   title: submission.title,
   category: submission.category ?? "Uncategorized",
-  notes: submission.rejectionReason ?? submission.description ?? "",
+  description: submission.description ?? "",
+  images: toStringArray(submission.images),
   status: mapSubmissionStatus(submission.status),
-  vendorQuotedPrice: 0,
-  suggestedRetailPrice: null,
-  reviewable: false,
+  vendorQuotedPrice: toNumber(submission.vendorQuotedPrice, 0),
+  suggestedRetailPrice:
+    submission.suggestedRetailPrice === null || submission.suggestedRetailPrice === undefined
+      ? null
+      : toNumber(submission.suggestedRetailPrice, 0),
+  stockAvailable: Math.max(0, Math.floor(toNumber(submission.stockAvailable, 0))),
+  currency: submission.currency ?? "usd",
+  reviewable: submission.status === "SUBMITTED" || submission.status === "UNDER_REVIEW",
+  rejectionReason: submission.rejectionReason ?? undefined,
+  notes: submission.rejectionReason ?? submission.description ?? "",
+  storeName: submission.store?.name ?? undefined,
+  vendorName: toDisplayName(submission.vendor ?? null),
 });
 
 export const getVendorStatus = async (): Promise<AccessStatus> => {
@@ -164,6 +225,10 @@ export const getVendorDashboardStats = async () => {
       products: 0,
       submissions: 0,
       pendingApprovals: status === "pending" ? 1 : 0,
+      approvedProducts: 0,
+      rejectedProducts: 0,
+      totalOrders: 0,
+      totalRevenue: 0,
     };
   }
 
@@ -176,6 +241,10 @@ export const getVendorDashboardStats = async () => {
   const stats = data.stats ?? {
     totalProducts: 0,
     pendingProducts: 0,
+    approvedProducts: 0,
+    rejectedProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
   };
 
   return {
@@ -184,6 +253,10 @@ export const getVendorDashboardStats = async () => {
     pendingApprovals:
       stats.pendingProducts +
       submissions.filter((submission) => submission.status === "pending").length,
+    approvedProducts: stats.approvedProducts,
+    rejectedProducts: stats.rejectedProducts,
+    totalOrders: stats.totalOrders,
+    totalRevenue: toNumber(stats.totalRevenue, 0),
   };
 };
 
@@ -209,6 +282,10 @@ export const saveVendorStore = async (
     body: JSON.stringify({
       name: payload.name,
       description: payload.description || null,
+      logo: payload.logo || null,
+      banner: payload.banner || null,
+      address: payload.address || null,
+      phone: payload.phone || null,
       email: payload.supportEmail || null,
     }),
   });
@@ -241,8 +318,8 @@ export const saveVendorProduct = async (
       category: payload.category,
       price: payload.price,
       stock: payload.stock,
-      description: null,
-      images: [],
+      description: payload.description || null,
+      images: payload.images,
     }),
   });
 
@@ -279,17 +356,21 @@ export const saveVendorSubmission = async (
       ? {
           title: payload.title,
           category: payload.category,
-          description: payload.notes || null,
-          vendorQuotedPrice: 10,
-          suggestedRetailPrice: 15,
-          stockAvailable: 5,
-          currency: "usd",
-          images: [],
+          description: payload.description || null,
+          vendorQuotedPrice: payload.vendorQuotedPrice,
+          suggestedRetailPrice: payload.suggestedRetailPrice,
+          stockAvailable: payload.stockAvailable,
+          currency: payload.currency || "usd",
+          images: payload.images,
         }
       : {
           title: payload.title,
           category: payload.category,
-          description: payload.notes || null,
+          description: payload.description || null,
+          vendorQuotedPrice: payload.vendorQuotedPrice,
+          suggestedRetailPrice: payload.suggestedRetailPrice,
+          stockAvailable: payload.stockAvailable,
+          images: payload.images,
         };
 
   const response = await apiClient<ApiEnvelope<BackendVendorSubmission>>(path, {

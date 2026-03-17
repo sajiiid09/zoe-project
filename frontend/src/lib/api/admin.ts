@@ -26,8 +26,14 @@ type BackendUser = {
   store?: {
     id: string;
     name?: string | null;
+    description?: string | null;
+    logo?: string | null;
+    banner?: string | null;
+    address?: string | null;
+    phone?: string | null;
     approvalStatus: BackendApprovalStatus;
     email?: string | null;
+    rejectionNote?: string | null;
   } | null;
 };
 
@@ -39,8 +45,14 @@ type BackendVendor = {
   store?: {
     id: string;
     name?: string | null;
+    description?: string | null;
+    logo?: string | null;
+    banner?: string | null;
+    address?: string | null;
+    phone?: string | null;
     email?: string | null;
     approvalStatus: BackendApprovalStatus;
+    rejectionNote?: string | null;
   } | null;
 };
 
@@ -64,10 +76,22 @@ type BackendAffiliateProfile = {
 type BackendProduct = {
   id: string;
   name: string;
+  description?: string | null;
   category?: string | null;
   price: number | string;
   stock?: number | null;
+  images?: unknown;
   approvalStatus: BackendApprovalStatus;
+  rejectionNote?: string | null;
+  store?: {
+    name?: string | null;
+    logo?: string | null;
+    owner?: {
+      firstName?: string | null;
+      lastName?: string | null;
+      email?: string | null;
+    } | null;
+  } | null;
 };
 
 type BackendSubmissionStatus =
@@ -86,7 +110,18 @@ type BackendSubmission = {
   rejectionReason?: string | null;
   vendorQuotedPrice: number | string;
   suggestedRetailPrice?: number | string | null;
+  stockAvailable?: number | null;
+  currency?: string | null;
+  images?: unknown;
   status: BackendSubmissionStatus;
+  store?: {
+    name?: string | null;
+  } | null;
+  vendor?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    email?: string | null;
+  } | null;
 };
 
 type BackendCatalogStatus = "DRAFT" | "ACTIVE" | "DISCONTINUED";
@@ -109,6 +144,11 @@ const toFullName = (
 ) => {
   const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
   return fullName || fallback;
+};
+
+const toStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item).trim()).filter(Boolean);
 };
 
 const mapRole = (role: BackendUserRole): AdminUserRow["role"] => {
@@ -222,6 +262,14 @@ const buildVendorRow = (
     approvalTargetType: "vendor_store",
     approvalTargetId: store.id,
     approvalActionable: baseRow.accountStatus === "active" && approvalStatus === "pending",
+    storeName: store.name ?? undefined,
+    storeEmail: store.email ?? undefined,
+    storePhone: store.phone ?? undefined,
+    storeAddress: store.address ?? undefined,
+    storeDescription: store.description ?? undefined,
+    storeLogo: store.logo ?? undefined,
+    storeBanner: store.banner ?? undefined,
+    rejectionNote: store.rejectionNote ?? undefined,
     approvalNote:
       baseRow.accountStatus === "blocked"
         ? "Account is blocked."
@@ -300,6 +348,14 @@ const toApprovalRow = (row: AdminUserRow): AdminApprovalRow | null => {
     approvalStatus: row.approvalStatus,
     approvalTargetType: row.approvalTargetType,
     approvalTargetId: row.approvalTargetId,
+    storeName: row.storeName,
+    storeEmail: row.storeEmail,
+    storePhone: row.storePhone,
+    storeAddress: row.storeAddress,
+    storeDescription: row.storeDescription,
+    storeLogo: row.storeLogo,
+    storeBanner: row.storeBanner,
+    rejectionNote: row.rejectionNote,
   };
 };
 
@@ -407,7 +463,8 @@ export const setAdminApprovalStatus = async (
     approvalTargetType: AdminApprovalTargetType;
     approvalTargetId: string;
   },
-  status: Extract<AdminApprovalStatus, "approved" | "needs_changes">
+  status: Extract<AdminApprovalStatus, "approved" | "needs_changes">,
+  reason?: string
 ) => {
   const path =
     target.approvalTargetType === "vendor_store"
@@ -418,7 +475,10 @@ export const setAdminApprovalStatus = async (
         ? `/users/admin/affiliates/${target.approvalTargetId}/approve`
         : `/users/admin/affiliates/${target.approvalTargetId}/reject`;
 
-  const body = status === "approved" ? {} : { reason: "Changes requested by admin" };
+  const body =
+    status === "approved"
+      ? {}
+      : { reason: reason?.trim() || "Changes requested by admin" };
 
   await apiClient<ApiEnvelope<unknown>>(path, {
     method: "PUT",
@@ -444,16 +504,28 @@ export const listAdminProducts = async (): Promise<VendorProduct[]> => {
   return [...dedupedById.values()].map((product) => ({
     id: product.id,
     title: product.name,
+    description: product.description ?? "",
     category: product.category ?? "Uncategorized",
     price: toNumber(product.price, 0),
     stock: Math.max(0, Math.floor(toNumber(product.stock, 0))),
+    images: toStringArray(product.images),
     status: mapVendorProductStatus(product.approvalStatus),
+    rejectionNote: product.rejectionNote ?? undefined,
+    storeName: product.store?.name ?? undefined,
+    vendorName: product.store?.owner
+      ? toFullName(
+          product.store.owner.firstName,
+          product.store.owner.lastName,
+          product.store.owner.email ?? "Unknown Vendor"
+        )
+      : undefined,
   }));
 };
 
 export const setAdminProductStatus = async (
   id: string,
-  status: VendorProduct["status"]
+  status: VendorProduct["status"],
+  reason?: string
 ) => {
   if (status === "approved") {
     await apiClient<ApiEnvelope<unknown>>(`/products/admin/${id}/approve`, {
@@ -465,7 +537,7 @@ export const setAdminProductStatus = async (
 
   await apiClient<ApiEnvelope<unknown>>(`/products/admin/${id}/reject`, {
     method: "PUT",
-    body: JSON.stringify({ reason: "Rejected by admin" }),
+    body: JSON.stringify({ reason: reason?.trim() || "Rejected by admin" }),
   });
 };
 
@@ -477,14 +549,27 @@ export const listAdminSubmissions = async (): Promise<VendorSubmission[]> => {
     id: submission.id,
     title: submission.title,
     category: submission.category ?? "Uncategorized",
-    notes: submission.rejectionReason ?? submission.description ?? "",
+    description: submission.description ?? "",
+    images: toStringArray(submission.images),
     status: mapSubmissionStatus(submission.status),
     vendorQuotedPrice: toNumber(submission.vendorQuotedPrice, 0),
     suggestedRetailPrice:
       submission.suggestedRetailPrice === null || submission.suggestedRetailPrice === undefined
         ? null
         : toNumber(submission.suggestedRetailPrice, 0),
+    stockAvailable: Math.max(0, Math.floor(toNumber(submission.stockAvailable, 0))),
+    currency: submission.currency ?? "usd",
     reviewable: submission.status === "SUBMITTED" || submission.status === "UNDER_REVIEW",
+    rejectionReason: submission.rejectionReason ?? undefined,
+    notes: submission.rejectionReason ?? submission.description ?? "",
+    storeName: submission.store?.name ?? undefined,
+    vendorName: submission.vendor
+      ? toFullName(
+          submission.vendor.firstName,
+          submission.vendor.lastName,
+          submission.vendor.email ?? "Unknown Vendor"
+        )
+      : undefined,
   }));
 };
 
@@ -492,6 +577,7 @@ export const setAdminSubmissionStatus = async (input: {
   id: string;
   status: VendorSubmission["status"];
   retailPrice?: number;
+  reason?: string;
 }) => {
   if (input.status === "accepted") {
     if (input.retailPrice === undefined || input.retailPrice <= 0) {
@@ -507,7 +593,7 @@ export const setAdminSubmissionStatus = async (input: {
 
   await apiClient<ApiEnvelope<unknown>>(`/admin/submissions/${input.id}/reject`, {
     method: "PUT",
-    body: JSON.stringify({ reason: "Rejected by admin" }),
+    body: JSON.stringify({ reason: input.reason?.trim() || "Rejected by admin" }),
   });
 };
 
