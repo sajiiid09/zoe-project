@@ -90,3 +90,19 @@ test('admin submission routes list, inspect, accept, and reject submissions', as
   await runHandler(rejectAdminSubmission, rejectReq, rejectRes);
   assert.equal(rejectRes.body.data.status, 'REJECTED');
 });
+
+test('accept submission validation rejects disallowed image URL hosts', async () => {
+  const req = createMockRequest({
+    body: {
+      retailPrice: 95,
+      images: ['https://example.com/image.jpg'],
+    },
+  });
+  const res = createMockResponse();
+
+  await runHandler(validate(acceptSubmissionSchema), req, res);
+
+  assert.equal(res.statusCode, 400);
+  assert.equal(res.body.code, 'VALIDATION_ERROR');
+  assert.equal(res.body.message, 'image URL host is not allowed');
+});

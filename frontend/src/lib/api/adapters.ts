@@ -23,6 +23,21 @@ type BackendCatalogProduct = {
   status?: string;
 };
 
+const APPROVED_IMAGE_HOSTS = new Set([
+  "images.unsplash.com",
+  "a.nooncdn.com",
+  "cdn.britannica.com",
+]);
+
+const isApprovedImageUrl = (value: string) => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" && APPROVED_IMAGE_HOSTS.has(parsed.hostname);
+  } catch {
+    return false;
+  }
+};
+
 const toNumber = (value: unknown, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -38,7 +53,19 @@ const normalizeImages = (images: unknown): string[] => {
     return [];
   }
 
-  return images.filter((item): item is string => typeof item === "string" && item.length > 0);
+  return images.reduce<string[]>((acc, item) => {
+    if (typeof item !== "string") {
+      return acc;
+    }
+
+    const normalized = item.trim();
+    if (!normalized || !isApprovedImageUrl(normalized)) {
+      return acc;
+    }
+
+    acc.push(normalized);
+    return acc;
+  }, []);
 };
 
 const stockStatusFromCount = (stock: number): ProductCardModel["stockStatus"] => {

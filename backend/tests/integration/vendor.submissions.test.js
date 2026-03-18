@@ -101,3 +101,33 @@ test('vendor submission routes support CRUD for the authenticated vendor', async
   await runHandler(deleteMySubmission, deleteReq, deleteRes);
   assert.equal(deleteRes.body.success, true);
 });
+
+test('create submission validation rejects disallowed and malformed image URLs', async () => {
+  const disallowedHostReq = createMockRequest({
+    body: {
+      title: 'Handmade Vase',
+      vendorQuotedPrice: 45,
+      stockAvailable: 10,
+      images: ['https://example.com/image.jpg'],
+    },
+  });
+  const disallowedHostRes = createMockResponse();
+  await runHandler(validate(createSubmissionSchema), disallowedHostReq, disallowedHostRes);
+  assert.equal(disallowedHostRes.statusCode, 400);
+  assert.equal(disallowedHostRes.body.code, 'VALIDATION_ERROR');
+  assert.equal(disallowedHostRes.body.message, 'image URL host is not allowed');
+
+  const malformedUrlReq = createMockRequest({
+    body: {
+      title: 'Handmade Vase',
+      vendorQuotedPrice: 45,
+      stockAvailable: 10,
+      images: ['not-a-url'],
+    },
+  });
+  const malformedUrlRes = createMockResponse();
+  await runHandler(validate(createSubmissionSchema), malformedUrlReq, malformedUrlRes);
+  assert.equal(malformedUrlRes.statusCode, 400);
+  assert.equal(malformedUrlRes.body.code, 'VALIDATION_ERROR');
+  assert.equal(malformedUrlRes.body.message, 'image URL host is not allowed');
+});

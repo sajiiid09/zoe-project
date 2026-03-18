@@ -1,5 +1,20 @@
 import { ValidationError } from '../utils/errors.js';
 
+const APPROVED_IMAGE_HOSTS = new Set([
+  'images.unsplash.com',
+  'a.nooncdn.com',
+  'cdn.britannica.com',
+]);
+
+const isApprovedImageUrl = (value) => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'https:' && APPROVED_IMAGE_HOSTS.has(parsed.hostname);
+  } catch {
+    return false;
+  }
+};
+
 const optionalString = (value, fieldName, maxLength = 255) => {
   if (value === undefined) {
     return undefined;
@@ -51,7 +66,24 @@ const imagesArray = (value) => {
     throw new ValidationError('images must be an array');
   }
 
-  return value;
+  const normalizedImages = value.map((item) => {
+    if (typeof item !== 'string') {
+      throw new ValidationError('images must contain only non-empty URL strings');
+    }
+
+    const normalized = item.trim();
+    if (!normalized) {
+      throw new ValidationError('images must contain only non-empty URL strings');
+    }
+
+    if (!isApprovedImageUrl(normalized)) {
+      throw new ValidationError('image URL host is not allowed');
+    }
+
+    return normalized;
+  });
+
+  return normalizedImages;
 };
 
 export const createSubmissionSchema = async (req) => ({
