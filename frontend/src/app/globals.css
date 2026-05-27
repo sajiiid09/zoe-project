@@ -3740,6 +3740,17 @@ body {
   background: rgba(254, 242, 242, 0.84);
 }
 
+.upload-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.upload-input {
+  display: none;
+}
+
 .url-list-field {
   display: grid;
   gap: 0.85rem;

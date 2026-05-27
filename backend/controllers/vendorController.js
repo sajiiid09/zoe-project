@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import prisma from '../config/db.js';
 import { asyncHandler } from '../middleware/authMiddleware.js';
+import { cloudinaryService } from '../services/cloudinaryService.js';
 
 /* ─── helpers ─── */
 
@@ -164,6 +165,25 @@ export const updateMyStore = asyncHandler(async (req, res) => {
         : req.user.vendorFeePaid
           ? 'Store updated and ready for admin review'
           : 'Store updated. Complete onboarding payment to submit it for admin review.',
+  });
+});
+
+/**
+ * POST /api/vendor/media/sign – Create a signed Cloudinary upload payload for vendor media.
+ */
+export const signVendorMediaUpload = asyncHandler(async (req, res) => {
+  const { scope, filename } = req.body;
+
+  const payload = cloudinaryService.createVendorUploadSignature({
+    vendorId: req.user.id,
+    scope,
+    filename,
+  });
+
+  res.json({
+    success: true,
+    data: payload,
+    message: 'Upload signature generated successfully',
   });
 });
 

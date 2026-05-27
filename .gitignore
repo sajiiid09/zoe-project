@@ -1,4 +1,6 @@
 frontend/.next/
+frontend/.open-next/
+frontend/.wrangler/
 node_modules
 .env
 .env.local

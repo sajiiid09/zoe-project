@@ -65,3 +65,28 @@
   - the `Approvals` page shows only real pending store/profile approvals
   - submission acceptance requires an explicit `retailPrice`
 - Fixed the false `blocked` badge issue in the admin `Users` table by restoring the backend `isActive` field in the admin user payload and treating only explicit `false` as blocked on the frontend.
+
+## Phase 11 — Vendor Media Upload Pipeline (completed)
+- Added signed direct-upload Cloudinary support for vendor product images, vendor submission images, store logo, and store banner uploads.
+- Kept the existing persistence model intact: Cloudinary `secure_url` values are still stored in `product.images`, `vendorSubmission.images`, `store.logo`, and `store.banner`.
+- Added a vendor-authenticated backend signature endpoint and kept file bytes out of the application server by uploading directly from the browser to Cloudinary.
+- Updated remote image allow-lists so Cloudinary-hosted media renders in the vendor dashboard, admin review surfaces, storefront cards, and PDP views.
+
+## Cloudinary Setup
+1. Create or log in to your Cloudinary account at [cloudinary.com](https://cloudinary.com/).
+2. Open the Cloudinary dashboard and copy these three values:
+   - `Cloud name`
+   - `API Key`
+   - `API Secret`
+3. Open `backend/.env`.
+4. Add these variables:
+   - `CLOUDINARY_CLOUD_NAME=your_cloud_name`
+   - `CLOUDINARY_API_KEY=your_api_key`
+   - `CLOUDINARY_API_SECRET=your_api_secret`
+5. Restart the backend server so the new environment variables are loaded.
+6. Sign in as a vendor and test:
+   - store logo upload
+   - store banner upload
+   - product image upload
+   - submission image upload
+7. Verify that the saved media URLs start with `https://res.cloudinary.com/`.

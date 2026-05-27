@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { PageIntro } from "@/components/layout/PageIntro";
 import { MotionSection } from "@/components/ops/Motion";
+import { UrlListField } from "@/components/ops/UrlListField";
 import { Button } from "@/components/ui/Button";
 import { getVendorFeeStatus } from "@/lib/api/payments";
 import { getVendorStatus, getVendorStore, saveVendorStore } from "@/lib/api/vendor";
@@ -31,26 +32,13 @@ const statusText: Record<AccessStatus, string> = {
   blocked: "Blocked",
 };
 
-const PreviewCard = ({ src, label }: { src: string; label: string }) => (
-  <div className="store-media-card">
-    <span className="field-label">{label}</span>
-    {src.trim() ? (
-      <div className="store-media-preview">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={`${label} preview`} />
-      </div>
-    ) : (
-      <div className="store-media-empty">Paste an image URL to preview this asset.</div>
-    )}
-  </div>
-);
-
 export default function VendorStorePage() {
   const [form, setForm] = useState<VendorStore>(blank);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<AccessStatus>("setup_required");
   const [feePaid, setFeePaid] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -205,39 +193,41 @@ export default function VendorStorePage() {
           <section className="vendor-form-section">
             <header className="vendor-form-header">
               <h2>Brand media</h2>
-              <p>Cloudinary is deferred, so use direct image URLs for now.</p>
+              <p>Upload from your device. The returned Cloudinary URL is still stored in the existing logo and banner fields.</p>
             </header>
-            <div className="form-grid">
-              <label className="field">
-                <span className="field-label">Logo URL</span>
-                <input
-                  className="field-input"
-                  type="url"
-                  value={form.logo}
-                  onChange={(event) => setForm((current) => ({ ...current, logo: event.target.value }))}
-                  placeholder="https://example.com/logo.png"
-                />
-              </label>
-              <label className="field">
-                <span className="field-label">Banner URL</span>
-                <input
-                  className="field-input"
-                  type="url"
-                  value={form.banner}
-                  onChange={(event) => setForm((current) => ({ ...current, banner: event.target.value }))}
-                  placeholder="https://example.com/banner.jpg"
-                />
-              </label>
-            </div>
             <div className="store-media-grid">
-              <PreviewCard src={form.logo} label="Logo preview" />
-              <PreviewCard src={form.banner} label="Banner preview" />
+              <UrlListField
+                label="Store logo"
+                values={form.logo ? [form.logo] : []}
+                maxItems={1}
+                uploadScope="store_logo"
+                uploadLabel="Upload logo"
+                hint="Upload a square or compact logo image. You can still paste a URL manually if needed."
+                onUploadingChange={setIsUploadingMedia}
+                onChange={(images) =>
+                  setForm((current) => ({ ...current, logo: images[0] || "" }))
+                }
+              />
+              <UrlListField
+                label="Store banner"
+                values={form.banner ? [form.banner] : []}
+                maxItems={1}
+                uploadScope="store_banner"
+                uploadLabel="Upload banner"
+                hint="Upload a wide store cover image. You can still paste a URL manually if needed."
+                onUploadingChange={setIsUploadingMedia}
+                onChange={(images) =>
+                  setForm((current) => ({ ...current, banner: images[0] || "" }))
+                }
+              />
             </div>
           </section>
 
           {message ? <p className="muted">{message}</p> : null}
           <div className="ops-actions-cell">
-            <Button disabled={saving}>{saving ? "Saving..." : "Save store details"}</Button>
+            <Button disabled={saving || isUploadingMedia}>
+              {saving ? "Saving..." : isUploadingMedia ? "Wait for uploads..." : "Save store details"}
+            </Button>
             {status !== "approved" && !feePaid ? (
               <Link className="chip" href="/vendor-payment">
                 Continue to payment
