@@ -4,6 +4,7 @@ import {
   createStore,
   getMyStore,
   updateMyStore,
+  signVendorMediaUpload,
   getMyProducts,
   createVendorProduct,
   updateVendorProduct,
@@ -23,6 +24,7 @@ router.get('/dashboard', getVendorDashboard);
 router.post('/store', createStore);
 router.get('/store', getMyStore);
 router.put('/store', updateMyStore);
+router.post('/media/sign', signVendorMediaUpload);
 
 // Products
 router.get('/products', getMyProducts);

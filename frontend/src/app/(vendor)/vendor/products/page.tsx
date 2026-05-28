@@ -36,6 +36,7 @@ export default function VendorProductsPage() {
   const [allowed, setAllowed] = useState(false);
   const [activeFilter, setActiveFilter] = useState<ProductFilter>("all");
   const [message, setMessage] = useState("");
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   const refresh = async () => setItems(await listVendorProducts());
 
@@ -89,7 +90,7 @@ export default function VendorProductsPage() {
           <section className="vendor-form-section">
             <header className="vendor-form-header">
               <h2>{form.id ? "Edit product" : "Create product"}</h2>
-              <p>Product media is URL-based for now. Cloudinary upload comes later.</p>
+              <p>Upload product images from your device. Uploaded Cloudinary URLs still persist through the existing images array.</p>
             </header>
             <div className="form-grid">
               <label className="field">
@@ -148,11 +149,19 @@ export default function VendorProductsPage() {
               label="Product images"
               values={form.images}
               onChange={(images) => setForm((current) => ({ ...current, images }))}
-              hint="Use direct image URLs. The first image should be the primary visual."
+              uploadScope="product"
+              hint="Upload from device or paste approved image URLs. The first image should be the primary visual."
+              onUploadingChange={setIsUploadingMedia}
             />
             {message ? <p className="muted">{message}</p> : null}
             <div className="ops-actions-cell">
-              <Button>{form.id ? "Update product" : "Create product"}</Button>
+              <Button disabled={isUploadingMedia}>
+                {isUploadingMedia
+                  ? "Wait for uploads..."
+                  : form.id
+                    ? "Update product"
+                    : "Create product"}
+              </Button>
               {form.id ? (
                 <Button type="button" variant="ghost" onClick={() => setForm(blank)}>
                   Cancel edit

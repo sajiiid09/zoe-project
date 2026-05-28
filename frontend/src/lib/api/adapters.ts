@@ -27,6 +27,7 @@ const APPROVED_IMAGE_HOSTS = new Set([
   "images.unsplash.com",
   "a.nooncdn.com",
   "cdn.britannica.com",
+  "res.cloudinary.com",
 ]);
 
 const isApprovedImageUrl = (value: string) => {

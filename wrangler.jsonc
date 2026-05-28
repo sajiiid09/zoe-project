@@ -1,0 +1,23 @@
+{
+  "name": "zoe-market-frontend",
+  "main": "frontend/.open-next/worker.js",
+  "compatibility_date": "2026-05-28",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": "frontend/.open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "zoe-market-frontend"
+    }
+  ],
+  "build": {
+    "command": "npm install --prefix frontend && npm run build:cloudflare --prefix frontend",
+    "watch_dir": "frontend/src"
+  }
+}

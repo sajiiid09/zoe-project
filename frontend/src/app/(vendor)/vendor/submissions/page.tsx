@@ -47,6 +47,7 @@ export default function VendorSubmissionsPage() {
   const [allowed, setAllowed] = useState(false);
   const [activeFilter, setActiveFilter] = useState<SubmissionFilter>("all");
   const [message, setMessage] = useState("");
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   const refresh = async () => setItems(await listVendorSubmissions());
 
@@ -106,7 +107,7 @@ export default function VendorSubmissionsPage() {
           <section className="vendor-form-section">
             <header className="vendor-form-header">
               <h2>{form.id ? "Edit submission" : "Create submission"}</h2>
-              <p>Use this flow for catalog proposals that still need admin review before they become marketplace items.</p>
+              <p>Use this flow for catalog proposals that still need admin review before they become marketplace items, with direct image upload to Cloudinary.</p>
             </header>
 
             <div className="form-grid">
@@ -211,13 +212,21 @@ export default function VendorSubmissionsPage() {
               label="Submission images"
               values={form.images}
               onChange={(images) => setForm((current) => ({ ...current, images }))}
-              hint="Use direct image URLs. The first image should represent the submission best."
+              uploadScope="submission"
+              hint="Upload from device or paste approved image URLs. The first image should represent the submission best."
+              onUploadingChange={setIsUploadingMedia}
             />
 
             {message ? <p className="muted">{message}</p> : null}
 
             <div className="ops-actions-cell">
-              <Button>{form.id ? "Update submission" : "Create submission"}</Button>
+              <Button disabled={isUploadingMedia}>
+                {isUploadingMedia
+                  ? "Wait for uploads..."
+                  : form.id
+                    ? "Update submission"
+                    : "Create submission"}
+              </Button>
               {form.id ? (
                 <Button type="button" variant="ghost" onClick={() => setForm(blank)}>
                   Cancel edit
